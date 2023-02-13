@@ -1580,6 +1580,7 @@ class BrushTaskUpdate(ClientResource):
     parser.add_argument('brushtask_seedsize', type=int, help='上传量(GB)', location='form')
     parser.add_argument('brushtask_dltime', type=float, help='下载耗时(小时)', location='form')
     parser.add_argument('brushtask_avg_upspeed', type=int, help='平均上传速度(KB/S)', location='form')
+    parser.add_argument('brushtask_iatime', type=float, help='未活动时间(小时)', location='form')
     parser.add_argument('brushtask_pubdate', type=int, help='发布时间（小时）', location='form')
     parser.add_argument('brushtask_upspeed', type=int, help='上传限速（KB/S）', location='form')
     parser.add_argument('brushtask_downspeed', type=int, help='下载限速（KB/S）', location='form')
@@ -2074,14 +2075,27 @@ class SyncDirectoryList(ClientResource):
         return WebAction().api_action(cmd='get_directorysync')
 
 
+@sync.route('/directory/run')
+class SyncDirectoryRun(ApiResource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('sid', type=int, help='同步目录ID', location='args', required=True)
+
+    @sync.doc(parser=parser)
+    def get(self):
+        """
+        立即运行单个目录同步服务（密钥认证）
+        """
+        return WebAction().api_action(cmd='run_directory_sync', data=self.parser.parse_args())
+
+
 @sync.route('/run')
 class SyncRun(ApiResource):
+
     @staticmethod
     def get():
         """
-        立即运行目录同步服务（密钥认证）
+        立即运行所有目录同步服务（密钥认证）
         """
-        # 返回站点信息
         return WebAction().api_action(cmd='sch', data={"item": "sync"})
 
 

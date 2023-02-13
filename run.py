@@ -43,6 +43,7 @@ from app.rsschecker import RssChecker
 from app.scheduler import run_scheduler, restart_scheduler
 from app.sync import run_monitor, restart_monitor
 from app.torrentremover import TorrentRemover
+from app.speedlimiter import SpeedLimiter
 from check_config import update_config, check_config
 from version import APP_VERSION
 
@@ -67,6 +68,7 @@ def get_run_config():
     _web_port = 3000
     _ssl_cert = None
     _ssl_key = None
+    _debug = False
 
     app_conf = Config().get_config('app')
     if app_conf:
@@ -75,8 +77,10 @@ def get_run_config():
         _web_port = int(app_conf.get('web_port')) if str(app_conf.get('web_port', '')).isdigit() else 3000
         _ssl_cert = app_conf.get('ssl_cert')
         _ssl_key = app_conf.get('ssl_key')
+        _ssl_key = app_conf.get('ssl_key')
+        _debug = True if app_conf.get("debug") else False
 
-    app_arg = dict(host=_web_host, port=_web_port, debug=False, threaded=True, use_reloader=False)
+    app_arg = dict(host=_web_host, port=_web_port, debug=_debug, threaded=True, use_reloader=False)
     if _ssl_cert:
         app_arg['ssl_context'] = (_ssl_cert, _ssl_key)
     return app_arg
@@ -116,6 +120,8 @@ def start_service():
     RssChecker()
     # 启动自动删种服务
     TorrentRemover()
+    # 启动播放限速服务
+    SpeedLimiter()
     # 加载索引器配置
     IndexerHelper()
     # 初始化浏览器

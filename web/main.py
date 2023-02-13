@@ -23,13 +23,14 @@ from app.brushtask import BrushTask
 from app.conf import ModuleConf, SystemConfig
 from app.downloader import Downloader
 from app.filter import Filter
-from app.helper import SecurityHelper, MetaHelper, ChromeHelper
+from app.helper import SecurityHelper, MetaHelper, ChromeHelper, ThreadHelper
 from app.indexer import Indexer
 from app.media.meta import MetaInfo
 from app.mediaserver import WebhookEvent
 from app.message import Message
 from app.rsschecker import RssChecker
 from app.sites import Sites
+from app.speedlimiter import SpeedLimiter
 from app.subscribe import Subscribe
 from app.sync import Sync
 from app.torrentremover import TorrentRemover
@@ -69,10 +70,10 @@ App.register_blueprint(apiv1_bp, url_prefix="/api/v1")
 def add_header(r):
     """
     统一添加Http头，标用缓存，避免Flask多线程+Chrome内核会发生的静态资源加载出错的问题
-    """
     r.headers["Cache-Control"] = "no-cache, no-store, max-age=0"
     r.headers["Pragma"] = "no-cache"
     r.headers["Expires"] = "0"
+    """
     return r
 
 
@@ -127,6 +128,7 @@ def login():
         SiteFavicons = Sites().get_site_favicon()
         Indexers = Indexer().get_indexers()
         SearchSource = "douban" if Config().get_config("laboratory").get("use_douban_titles") else "tmdb"
+        CustomScriptCfg = SystemConfig().get_system_config("CustomScript")
         return render_template('navigation.html',
                                GoPage=GoPage,
                                UserName=userinfo.username,
@@ -140,7 +142,8 @@ def login():
                                SiteFavicons=SiteFavicons,
                                RmtModeDict=RmtModeDict,
                                Indexers=Indexers,
-                               SearchSource=SearchSource)
+                               SearchSource=SearchSource,
+                               CustomScriptCfg=CustomScriptCfg)
 
     def redirect_to_login(errmsg=''):
         """
@@ -344,12 +347,14 @@ def sites():
     DownloadSettings = {did: attr["name"] for did, attr in Downloader().get_download_setting().items()}
     ChromeOk = ChromeHelper().get_status()
     CookieCloudCfg = SystemConfig().get_system_config('CookieCloud')
+    CookieUserInfoCfg = SystemConfig().get_system_config('CookieUserInfo')
     return render_template("site/site.html",
                            Sites=CfgSites,
                            RuleGroups=RuleGroups,
                            DownloadSettings=DownloadSettings,
                            ChromeOk=ChromeOk,
-                           CookieCloudCfg=CookieCloudCfg)
+                           CookieCloudCfg=CookieCloudCfg,
+                           CookieUserInfoCfg=CookieUserInfoCfg)
 
 
 # 站点列表页面
@@ -397,6 +402,8 @@ def recommend():
     PersonId = request.args.get("personid") or ""
     Keyword = request.args.get("keyword") or ""
     Source = request.args.get("source") or ""
+    FilterKey = request.args.get("filter") or ""
+    Params = json.loads(request.args.get("params")) if request.args.get("params") else {}
     return render_template("discovery/recommend.html",
                            Type=Type,
                            SubType=SubType,
@@ -407,37 +414,78 @@ def recommend():
                            PersonId=PersonId,
                            SubTitle=SubTitle,
                            Keyword=Keyword,
-                           Source=Source)
+                           Source=Source,
+                           Filter=FilterKey,
+                           FilterConf=ModuleConf.DISCOVER_FILTER_CONF.get(FilterKey) if FilterKey else {},
+                           Params=Params)
 
 
-# 电影推荐页面
-@App.route('/discovery_movie', methods=['POST', 'GET'])
+# 推荐页面
+@App.route('/ranking', methods=['POST', 'GET'])
 @login_required
-def discovery_movie():
-    return render_template("discovery/discovery.html",
-                           DiscoveryType="MOV")
+def ranking():
+    return render_template("discovery/ranking.html",
+                           DiscoveryType="RANKING")
 
 
-# 电视剧推荐页面
-@App.route('/discovery_tv', methods=['POST', 'GET'])
+# 豆瓣电影
+@App.route('/douban_movie', methods=['POST', 'GET'])
 @login_required
-def discovery_tv():
-    return render_template("discovery/discovery.html",
-                           DiscoveryType="TV")
+def douban_movie():
+    return render_template("discovery/recommend.html",
+                           Type="DOUBANTAG",
+                           SubType="MOV",
+                           Title="豆瓣电影",
+                           Filter="douban_movie",
+                           FilterConf=ModuleConf.DISCOVER_FILTER_CONF.get('douban_movie'))
+
+
+# 豆瓣电视剧
+@App.route('/douban_tv', methods=['POST', 'GET'])
+@login_required
+def douban_tv():
+    return render_template("discovery/recommend.html",
+                           Type="DOUBANTAG",
+                           SubType="TV",
+                           Title="豆瓣电视剧",
+                           Filter="douban_tv",
+                           FilterConf=ModuleConf.DISCOVER_FILTER_CONF.get('douban_tv'))
+
+
+@App.route('/tmdb_movie', methods=['POST', 'GET'])
+@login_required
+def tmdb_movie():
+    return render_template("discovery/recommend.html",
+                           Type="DISCOVER",
+                           SubType="MOV",
+                           Title="TMDB电影",
+                           Filter="tmdb_movie",
+                           FilterConf=ModuleConf.DISCOVER_FILTER_CONF.get('tmdb_movie'))
+
+
+@App.route('/tmdb_tv', methods=['POST', 'GET'])
+@login_required
+def tmdb_tv():
+    return render_template("discovery/recommend.html",
+                           Type="DISCOVER",
+                           SubType="TV",
+                           Title="TMDB电视剧",
+                           Filter="tmdb_tv",
+                           FilterConf=ModuleConf.DISCOVER_FILTER_CONF.get('tmdb_tv'))
 
 
 # Bangumi每日放送
-@App.route('/discovery_bangumi', methods=['POST', 'GET'])
+@App.route('/bangumi', methods=['POST', 'GET'])
 @login_required
 def discovery_bangumi():
-    return render_template("discovery/discovery.html",
+    return render_template("discovery/ranking.html",
                            DiscoveryType="BANGUMI")
 
 
 # 媒体详情页面
-@App.route('/discovery_detail', methods=['POST', 'GET'])
+@App.route('/media_detail', methods=['POST', 'GET'])
 @login_required
-def discovery_detail():
+def media_detail():
     TmdbId = request.args.get("id")
     Type = request.args.get("type")
     return render_template("discovery/mediainfo.html",
@@ -936,10 +984,12 @@ def basic():
     if proxy:
         proxy = proxy.replace("http://", "")
     RmtModeDict = WebAction().get_rmt_modes()
+    CustomScriptCfg = SystemConfig().get_system_config("CustomScript")
     return render_template("setting/basic.html",
                            Config=Config().get_config(),
                            Proxy=proxy,
-                           RmtModeDict=RmtModeDict)
+                           RmtModeDict=RmtModeDict,
+                           CustomScriptCfg=CustomScriptCfg)
 
 
 # 自定义识别词设置页面
@@ -981,6 +1031,7 @@ def douban():
 def downloader():
     return render_template("setting/downloader.html",
                            Config=Config().get_config(),
+                           SpeedLimitConf=SystemConfig().get_system_config("SpeedLimit") or {},
                            DownloaderConf=ModuleConf.DOWNLOADER_CONF)
 
 
@@ -1268,11 +1319,12 @@ def plex_webhook():
         return '不允许的IP地址请求'
     request_json = json.loads(request.form.get('payload', {}))
     log.debug("收到Plex Webhook报文：%s" % str(request_json))
-    WebhookEvent().plex_action(request_json)
+    ThreadHelper().start_thread(WebhookEvent().plex_action, (request_json,))
+    ThreadHelper().start_thread(SpeedLimiter().plex_action, (request_json,))
     return 'Ok'
 
 
-# Emby Webhook
+# Jellyfin Webhook
 @App.route('/jellyfin', methods=['POST'])
 def jellyfin_webhook():
     if not SecurityHelper().check_mediaserver_ip(request.remote_addr):
@@ -1280,7 +1332,8 @@ def jellyfin_webhook():
         return '不允许的IP地址请求'
     request_json = request.get_json()
     log.debug("收到Jellyfin Webhook报文：%s" % str(request_json))
-    WebhookEvent().jellyfin_action(request_json)
+    ThreadHelper().start_thread(WebhookEvent().jellyfin_action, (request_json,))
+    ThreadHelper().start_thread(SpeedLimiter().jellyfin_action, (request_json,))
     return 'Ok'
 
 
@@ -1292,7 +1345,8 @@ def emby_webhook():
         return '不允许的IP地址请求'
     request_json = json.loads(request.form.get('data', {}))
     log.debug("收到Emby Webhook报文：%s" % str(request_json))
-    WebhookEvent().emby_action(request_json)
+    ThreadHelper().start_thread(WebhookEvent().emby_action, (request_json,))
+    ThreadHelper().start_thread(SpeedLimiter().emby_action, (request_json,))
     return 'Ok'
 
 

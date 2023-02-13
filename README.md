@@ -5,7 +5,7 @@
 [![GitHub forks](https://img.shields.io/github/forks/jxxghp/nas-tools?style=plastic)](https://github.com/jxxghp/nas-tools/network/members)
 [![GitHub issues](https://img.shields.io/github/issues/jxxghp/nas-tools?style=plastic)](https://github.com/jxxghp/nas-tools/issues)
 [![GitHub license](https://img.shields.io/github/license/jxxghp/nas-tools?style=plastic)](https://github.com/jxxghp/nas-tools/blob/master/LICENSE.md)
-[![Docker pulls](https://img.shields.io/docker/pulls/lswl/vertex?style=plastic)](https://hub.docker.com/r/jxxghp/nas-tools)
+[![Docker pulls](https://img.shields.io/docker/pulls/jxxghp/nas-tools?style=plastic)](https://hub.docker.com/r/jxxghp/nas-tools)
 [![Platform](https://img.shields.io/badge/platform-amd64/arm64-pink?style=plastic)](https://hub.docker.com/r/jxxghp/nas-tools)
 
 
@@ -122,7 +122,7 @@ https://spk7.imnks.com/
    >> 儿童
 
 ### 4、配置下载器及下载目录
-支持qbittorrent（推荐）、transmission、aria2、115网盘等，右上角按钮设置好下载目录。
+支持qbittorrent（推荐）、transmission、aria2、115网盘、pikpak网盘等，右上角按钮设置好下载目录。
 
 ### 5、配置同步目录
 * 目录同步可以对多个分散的文件夹进行监控，文件夹中有新增媒体文件时会自动进行识别重命名，并按配置的转移方式转移到媒体库目录或指定的目录中。
@@ -137,7 +137,7 @@ https://spk7.imnks.com/
 
   由于微信官方限制，2022年6月20日后创建的企业微信应用需要有固定的公网IP地址并加入IP白名单后才能接收到消息，使用有固定公网IP的代理服务器转发可解决该问题
 
-    如使用nginx搭建代理服务，需在配置中增加以下代理配置：
+    如使用 Nginx 搭建代理服务，需在配置中增加以下代理配置：
     ```
     location /cgi-bin/gettoken {
       proxy_pass https://qyapi.weixin.qq.com;
@@ -147,12 +147,18 @@ https://spk7.imnks.com/
     }
     ```
 
-    如使用Caddy搭建代理服务，需在配置中增加以下代理配置（`{upstream_hostport}` 部分不是变量，不要改，原封不动复制粘贴过去即可）。
+    如使用 Caddy 搭建代理服务，需在配置中增加以下代理配置（`{upstream_hostport}` 部分不是变量，不要改，原封不动复制粘贴过去即可）。
     ```
     reverse_proxy https://qyapi.weixin.qq.com {
       header_up Host {upstream_hostport}
     }
     ```
+
+    如使用 Traefik 搭建代理服务，需在额外配置:
+    ```
+    loadBalancer.passHostHeader=false
+    ```
+
     注意：代理服务器仅适用于在微信中接收工具推送的消息，消息回调与代理服务器无关。
 
 
@@ -171,7 +177,7 @@ https://spk7.imnks.com/
 
    **一级菜单及一级菜单下的前几个子菜单顺序需要一模一样**，在符合截图的示例项后可以自己增加别的二级菜单项。
 
-   ![image](https://user-images.githubusercontent.com/54088512/215088822-b8353fa9-9569-4c96-a47e-e5ab387b1943.png)
+   ![image](https://user-images.githubusercontent.com/54088512/218261870-ed15b6b6-895f-45e4-913c-4dda75144a9a.png)
 
 
 2) **Telegram Bot机器人**
@@ -188,15 +194,19 @@ https://spk7.imnks.com/
 
   **命令与功能对应关系**
 
-   |  命令   | 功能 |
-   | ----  | ----  |
-   | /rss  | RSS订阅 |
-   | /ptt  | 下载文件转移 |
-   | /ptr  | 删种 |
-   | /pts | 站点签到 |
-   | /udt | 系统更新 |
-   | /rst  | 目录同步 |
-   | /db   | 豆瓣想看 |
+   |  命令   | 功能      |
+   |---------| ----  |
+   | /rss  | RSS订阅   |
+   | /ssa   | 订阅搜索    |
+   | /ptt  | 下载文件转移  |
+   | /ptr  | 自动删种    |
+   | /pts | 站点签到    |
+   | /udt | 系统更新    |
+   | /tbl   | 清理转移缓存  |
+   | /trh   | 清理RSS缓存 |
+   | /rst  | 目录同步    |
+   | /db   | 豆瓣想看    |
+   | /utf   | 重新识别    |
 
 4) **Synology Chat**
 
