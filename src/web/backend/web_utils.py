@@ -2,7 +2,7 @@ import cn2an
 
 from app.media import Bangumi, DouBan, Media
 from app.media.meta import MetaInfo
-from app.utils import ExceptionUtils, RequestUtils, StringUtils, SystemUtils
+from app.utils import ExceptionUtils, RequestUtils, StringUtils
 from app.utils.types import MediaType
 from config import Config
 from version import APP_VERSION

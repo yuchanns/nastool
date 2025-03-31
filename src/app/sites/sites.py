@@ -8,6 +8,7 @@ from datetime import datetime
 from functools import lru_cache
 from multiprocessing.dummy import Pool as ThreadPool
 from threading import Lock
+from typing import Optional
 
 from lxml import etree
 from selenium.webdriver.common.by import By
@@ -23,8 +24,6 @@ from app.sites.site_user_info_factory import SiteUserInfoFactory
 from app.utils import ExceptionUtils, RequestUtils, StringUtils
 from app.utils.commons import singleton
 from config import Config
-
-from typing import Optional
 
 
 lock = Lock()
@@ -667,7 +666,9 @@ class Sites:
             site_info.update(public_site)
         return site_info
 
-    def parse_site_download_url(self, page_url: Optional[str]=None, xpath: Optional[str]=None):
+    def parse_site_download_url(
+        self, page_url: Optional[str] = None, xpath: Optional[str] = None
+    ):
         """
         从站点详情页面中解析中下载链接
         :param page_url: 详情页面地址
