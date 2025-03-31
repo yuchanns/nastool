@@ -1,9 +1,10 @@
 [project]
 name = "nas-tools"
-version = "4.0.0"
+version = "2.10.0"
 description = "Default template for PDM package"
 authors = [
     {name = "Hanchin Hsieh", email = "me@yuchanns.xyz"},
+    {name = "jxxghp", email = "jxxghp@gmail.com" },
 ]
 dependencies = [
     "alembic==1.8.1",

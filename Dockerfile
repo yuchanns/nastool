@@ -22,9 +22,10 @@ RUN pdm install --prod --no-lock --no-editable
 # Final stage
 FROM python:3.10-slim
 
-COPY ./package_list.txt /tmp/package_list.txt
-
 ENV DEBIAN_FRONTEND=noninteractive
+
+# Create non-root user
+RUN groupadd -r nastools && useradd -r -g nastools nastools
 
 # Install runtime dependencies
 RUN apt update && apt install -y curl unzip \
@@ -60,9 +61,17 @@ RUN ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime \
     && echo "${TZ}" > /etc/timezone \
     && ln -sf /usr/bin/python3 /usr/bin/python \
     && echo 'fs.inotify.max_user_watches=524288' >> /etc/sysctl.conf \
-    && echo 'fs.inotify.max_user_instances=524288' >> /etc/sysctl.conf
+    && echo 'fs.inotify.max_user_instances=524288' >> /etc/sysctl.conf \
+    && mkdir -p /config
 
 COPY ./src /nas-tools
+
+# Change ownership of application files
+RUN chown -R nastools:nastools ${WORKDIR} \
+      && chown -R nastools:nastools /config
+
+# Switch to non-root user
+USER nastools
 
 EXPOSE 3000
 VOLUME ["/config"]
