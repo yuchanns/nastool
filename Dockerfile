@@ -62,7 +62,7 @@ RUN ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime \
     && echo 'fs.inotify.max_user_watches=524288' >> /etc/sysctl.conf \
     && echo 'fs.inotify.max_user_instances=524288' >> /etc/sysctl.conf
 
-COPY . /nas-tools
+COPY ./src /nas-tools
 
 EXPOSE 3000
 VOLUME ["/config"]

@@ -12,5 +12,4 @@ test.py
 out/
 gen/
 .pdm-python
-config/*.db
-.*
+*.db

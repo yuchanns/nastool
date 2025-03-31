@@ -4,9 +4,9 @@ import sys
 
 
 def main():
-    os.environ["NASTOOL_CONFIG"] = os.path.join(".", "config", "config.yaml")
+    os.environ["NASTOOL_CONFIG"] = os.path.join("src", "config", "config.yaml")
 
-    cmd = [sys.executable, "run.py"]
+    cmd = [sys.executable, os.path.join("src", "run.py")]
 
     try:
         subprocess.run(cmd, check=True)
