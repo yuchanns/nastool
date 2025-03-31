@@ -1,11 +1,32 @@
+from version import APP_VERSION
+from check_config import update_config, check_config
+from app.speedlimiter import SpeedLimiter
+from app.torrentremover import TorrentRemover
+from app.sync import run_monitor, restart_monitor
+from app.scheduler import run_scheduler, restart_scheduler
+from app.rsschecker import RssChecker
+from app.brushtask import BrushTask
+from app.helper import IndexerHelper, DisplayHelper, ChromeHelper
+from app.db import init_db, update_db, init_data
+from app.utils.commons import INSTANCES
+from app.utils import ConfigLoadCache
+from web.main import App
+import log
+from config import Config
 import os
-import signal
 import sys
 import time
 import warnings
 
+from typing import cast, TypedDict, Union, Literal
+
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
+
+from twisted.web.wsgi import WSGIResource
+from twisted.web.server import Site
+from twisted.internet import reactor, endpoints
+from twisted.internet.base import ReactorBase
 
 warnings.filterwarnings('ignore')
 
@@ -30,65 +51,49 @@ if is_windows_exe:
             os.makedirs(config_dir)
     except Exception as err:
         print(str(err))
-
-from config import Config
-import log
-from web.main import App
-from app.utils import SystemUtils, ConfigLoadCache
-from app.utils.commons import INSTANCES
-from app.db import init_db, update_db, init_data
-from app.helper import IndexerHelper, DisplayHelper, ChromeHelper
-from app.brushtask import BrushTask
-from app.rsschecker import RssChecker
-from app.scheduler import run_scheduler, restart_scheduler
-from app.sync import run_monitor, restart_monitor
-from app.torrentremover import TorrentRemover
-from app.speedlimiter import SpeedLimiter
-from check_config import update_config, check_config
-from version import APP_VERSION
+else:
+    NullWriter = None
+    TrayIcon = None
+    threading = None
 
 
-def sigal_handler(num, stack):
-    """
-    信号处理
-    """
-    if SystemUtils.is_docker():
-        log.warn('捕捉到退出信号：%s，开始退出...' % num)
-        # 停止虚拟显示
-        DisplayHelper().quit()
-        # 退出主进程
-        sys.exit()
+class FlaskRunArgs(TypedDict, total=False):
+    host: str
+    port: int
+    debug: bool
+    threaded: bool
+    use_reloader: bool
+    ssl_context: Union[tuple[str, str], Literal['adhoc'], None]
 
 
 def get_run_config():
     """
     获取运行配置
     """
-    _web_host = "::"
-    _web_port = 3000
-    _ssl_cert = None
-    _ssl_key = None
-    _debug = False
+    args: FlaskRunArgs = {
+        'host': '::',
+        'port': 3000,
+        'debug': False,
+        'ssl_context': None
+    }
 
     app_conf = Config().get_config('app')
     if app_conf:
-        if app_conf.get("web_host"):
-            _web_host = app_conf.get("web_host").replace('[', '').replace(']', '')
-        _web_port = int(app_conf.get('web_port')) if str(app_conf.get('web_port', '')).isdigit() else 3000
-        _ssl_cert = app_conf.get('ssl_cert')
-        _ssl_key = app_conf.get('ssl_key')
-        _ssl_key = app_conf.get('ssl_key')
-        _debug = True if app_conf.get("debug") else False
+        web_host = app_conf.get('web_host')
+        web_port = str(app_conf.get('web_port', '')).strip()
+        if web_port.isdigit():
+            args['port'] = int(web_port)
+        if web_host is not None:
+            args['host'] = cast(str, web_host.replace('[', '').replace(']', ''))
+        ssl_cert = app_conf.get('ssl_cert')
+        ssl_key = app_conf.get('ssl_key')
+        if ssl_cert is not None and ssl_key is not None:
+            _ssl_cert = cast(str, ssl_cert)
+            _ssl_key = cast(str, ssl_key)
+            args['ssl_context'] = (_ssl_cert, _ssl_key)
+        args['debug'] = True if app_conf.get("debug") else False
 
-    app_arg = dict(host=_web_host, port=_web_port, debug=_debug, threaded=True, use_reloader=False)
-    if _ssl_cert:
-        app_arg['ssl_context'] = (_ssl_cert, _ssl_key)
-    return app_arg
-
-
-# 退出事件
-signal.signal(signal.SIGINT, sigal_handler)
-signal.signal(signal.SIGTERM, sigal_handler)
+    return args
 
 
 def init_system():
@@ -139,8 +144,7 @@ def monitor_config():
             FileSystemEventHandler.__init__(self)
 
         def on_modified(self, event):
-            if not event.is_directory \
-                    and os.path.basename(event.src_path) == "config.yaml":
+            if not event.is_directory and os.path.basename(event.src_path) == "config.yaml":
                 # 10秒内只能加载一次
                 if ConfigLoadCache.get(event.src_path):
                     return
@@ -177,7 +181,7 @@ monitor_config()
 # 本地运行
 if __name__ == '__main__':
     # Windows启动托盘
-    if is_windows_exe:
+    if is_windows_exe and NullWriter is not None:
         homepage = Config().get_config('app').get('domain')
         if not homepage:
             homepage = "http://localhost:%s" % str(Config().get_config('app').get('web_port'))
@@ -186,14 +190,31 @@ if __name__ == '__main__':
         sys.stdout = NullWriter()
         sys.stderr = NullWriter()
 
-
         def traystart():
+            if TrayIcon is None:
+                return
             TrayIcon(homepage, log_path)
 
-
-        if len(os.popen("tasklist| findstr %s" % os.path.basename(sys.executable), 'r').read().splitlines()) <= 2:
+        if threading is not None and len(os.popen("tasklist| findstr %s" % os.path.basename(sys.executable), 'r').read().splitlines()) <= 2:
             p1 = threading.Thread(target=traystart, daemon=True)
             p1.start()
 
-    # gunicorn 启动
-    App.run(**get_run_config())
+    # Initialize Twisted WSGI server for handling web requests
+    # Twisted provides better performance and scalability compared to Flask's default server
+    typed_reactor = cast(ReactorBase, reactor)
+    config = get_run_config()
+    App.debug = config['debug']
+    resource = WSGIResource(typed_reactor, typed_reactor.getThreadPool(), App)
+    if config['ssl_context'] is None:
+        endpoint = endpoints.TCP4ServerEndpoint(typed_reactor, config['port'], interface=config['host'])
+    else:
+        from twisted.internet import ssl
+        factory = ssl.DefaultOpenSSLContextFactory(
+            config['ssl_context'][0],
+            config['ssl_context'][1],
+        )
+        endpoint = endpoints.SSL4ServerEndpoint(typed_reactor, config['port'], factory,
+                                                interface=config['host'])
+    endpoint.listen(Site(resource))
+    log.info(f"Starting server on port {config['port']}")
+    typed_reactor.run()
