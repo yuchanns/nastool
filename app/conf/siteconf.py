@@ -1,5 +1,4 @@
 class SiteConf:
-
     # 站点签到支持的识别XPATH
     SITE_CHECKIN_XPATH = [
         '//a[@id="signed"]',

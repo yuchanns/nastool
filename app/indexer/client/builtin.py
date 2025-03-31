@@ -3,6 +3,7 @@ import datetime
 import time
 
 import log
+
 from app.helper import ChromeHelper, IndexerConf, IndexerHelper, ProgressHelper
 from app.indexer.client._base import _IIndexClient
 from app.indexer.client._rarbg import Rarbg
@@ -115,7 +116,13 @@ class BuiltinIndexer(_IIndexClient):
         return ret_indexers
 
     def search(
-        self, order_seq, indexer, key_word, filter_args: dict, match_media, in_from: SearchType
+        self,
+        order_seq,
+        indexer,
+        key_word,
+        filter_args: dict,
+        match_media,
+        in_from: SearchType,
     ):
         """
         根据关键字多线程检索
@@ -152,7 +159,9 @@ class BuiltinIndexer(_IIndexClient):
         try:
             if indexer.parser == "Rarbg":
                 imdb_id = match_media.imdb_id if match_media else None
-                result_array = Rarbg().search(keyword=search_word, indexer=indexer, imdb_id=imdb_id)
+                result_array = Rarbg().search(
+                    keyword=search_word, indexer=indexer, imdb_id=imdb_id
+                )
             elif indexer.parser == "TNodeSpider":
                 result_array = TNodeSpider(indexer=indexer).search(keyword=search_word)
             elif indexer.parser == "RenderSpider":
@@ -174,7 +183,9 @@ class BuiltinIndexer(_IIndexClient):
             self.progress.update(ptype="search", text=f"{indexer.name} 未检索到数据")
             return []
         else:
-            log.warn(f"【{self.index_type}】{indexer.name} 返回数据：{len(result_array)}")
+            log.warn(
+                f"【{self.index_type}】{indexer.name} 返回数据：{len(result_array)}"
+            )
             return self.filter_search_results(
                 result_array=result_array,
                 order_seq=order_seq,

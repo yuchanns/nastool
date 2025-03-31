@@ -20,7 +20,9 @@ class Unit3dSiteUserInfo(_ISiteUserInfo):
         html_text = self._prepare_html_text(html_text)
         html = etree.HTML(html_text)
 
-        tmps = html.xpath('//a[contains(@href, "/users/") and contains(@href, "settings")]/@href')
+        tmps = html.xpath(
+            '//a[contains(@href, "/users/") and contains(@href, "settings")]/@href'
+        )
         if tmps:
             user_name_match = re.search(r"/users/(.+)/settings", tmps[0])
             if user_name_match and user_name_match.group().strip():
@@ -115,8 +117,12 @@ class Unit3dSiteUserInfo(_ISiteUserInfo):
             page_seeding = len(seeding_sizes)
 
             for i in range(0, len(seeding_sizes)):
-                size = StringUtils.num_filesize(seeding_sizes[i].xpath("string(.)").strip())
-                seeders = StringUtils.str_int(seeding_seeders[i].xpath("string(.)").strip())
+                size = StringUtils.num_filesize(
+                    seeding_sizes[i].xpath("string(.)").strip()
+                )
+                seeders = StringUtils.str_int(
+                    seeding_seeders[i].xpath("string(.)").strip()
+                )
 
                 page_seeding_size += size
                 page_seeding_info.append([seeders, size])
@@ -144,16 +150,24 @@ class Unit3dSiteUserInfo(_ISiteUserInfo):
             html_text,
             re.IGNORECASE,
         )
-        self.upload = StringUtils.num_filesize(upload_match.group(1).strip()) if upload_match else 0
+        self.upload = (
+            StringUtils.num_filesize(upload_match.group(1).strip())
+            if upload_match
+            else 0
+        )
         download_match = re.search(
             r"[^总子影力]下[载載]量?[:：_<>/a-zA-Z-=\"'\s#;]+([\d,.\s]+[KMGTPI]*B)",
             html_text,
             re.IGNORECASE,
         )
         self.download = (
-            StringUtils.num_filesize(download_match.group(1).strip()) if download_match else 0
+            StringUtils.num_filesize(download_match.group(1).strip())
+            if download_match
+            else 0
         )
-        ratio_match = re.search(r"分享率[:：_<>/a-zA-Z-=\"'\s#;]+([\d,.\s]+)", html_text)
+        ratio_match = re.search(
+            r"分享率[:：_<>/a-zA-Z-=\"'\s#;]+([\d,.\s]+)", html_text
+        )
         self.ratio = (
             StringUtils.str_float(ratio_match.group(1))
             if (ratio_match and ratio_match.group(1).strip())

@@ -2,13 +2,16 @@ import json
 import os.path
 import tempfile
 import time
+
 from functools import reduce
 from threading import Lock
 
 import undetected_chromedriver as uc
+
 from webdriver_manager.chrome import ChromeDriverManager
 
 from app.utils import RequestUtils, SystemUtils
+
 
 lock = Lock()
 
@@ -22,8 +25,9 @@ class ChromeHelper(object):
     _headless = False
 
     def __init__(self, headless=False):
-
-        self._executable_path = SystemUtils.get_webdriver_path() or driver_executable_path
+        self._executable_path = (
+            SystemUtils.get_webdriver_path() or driver_executable_path
+        )
 
         if SystemUtils.is_windows():
             self._headless = False
@@ -76,11 +80,15 @@ class ChromeHelper(object):
             options.add_argument("--headless")
         prefs = {
             "useAutomationExtension": False,
-            "profile.managed_default_content_settings.images": 2 if self._headless else 1,
+            "profile.managed_default_content_settings.images": 2
+            if self._headless
+            else 1,
             "excludeSwitches": ["enable-automation"],
         }
         options.add_experimental_option("prefs", prefs)
-        chrome = ChromeWithPrefs(options=options, driver_executable_path=self._executable_path)
+        chrome = ChromeWithPrefs(
+            options=options, driver_executable_path=self._executable_path
+        )
         chrome.set_page_load_timeout(30)
         return chrome
 
@@ -89,14 +97,16 @@ class ChromeHelper(object):
             return False
         try:
             if ua:
-                self._chrome.execute_cdp_cmd("Emulation.setUserAgentOverride", {"userAgent": ua})
+                self._chrome.execute_cdp_cmd(
+                    "Emulation.setUserAgentOverride", {"userAgent": ua}
+                )
             if timeout:
                 self._chrome.implicitly_wait(timeout)
             self._chrome.get(url)
             if cookie:
                 self._chrome.delete_all_cookies()
-                for cookie in RequestUtils.cookie_parse(cookie, array=True):
-                    self._chrome.add_cookie(cookie)
+                for ck in RequestUtils.cookie_parse(cookie, array=True):
+                    self._chrome.add_cookie(ck)
                 self._chrome.get(url)
             return True
         except Exception as err:
@@ -125,7 +135,7 @@ class ChromeHelper(object):
 
     def pass_cloudflare(self, waittime=10):
         cloudflare = False
-        for i in range(0, waittime):
+        for _ in range(0, waittime):
             if self.get_title() != "Just a moment...":
                 cloudflare = True
                 break
@@ -184,7 +194,9 @@ class ChromeHelper(object):
         """
         try:
             # chromedriver 进程
-            if hasattr(self._chrome, "service") and getattr(self._chrome.service, "process", None):
+            if hasattr(self._chrome, "service") and getattr(
+                self._chrome.service, "process", None
+            ):
                 self._chrome.service.process.wait(3)
             # chrome 进程
             os.waitpid(self._chrome.browser_pid, 0)

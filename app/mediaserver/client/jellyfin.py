@@ -1,6 +1,7 @@
 import re
 
 import log
+
 from app.mediaserver.client._base import _IMediaClient
 from app.utils import ExceptionUtils, RequestUtils, SystemUtils
 from app.utils.types import MediaServerType
@@ -58,11 +59,15 @@ class Jellyfin(_IMediaClient):
             if res:
                 return res.json()
             else:
-                log.error(f"【{self.server_type}】Library/VirtualFolders 未获取到返回数据")
+                log.error(
+                    f"【{self.server_type}】Library/VirtualFolders 未获取到返回数据"
+                )
                 return []
         except Exception as e:
             ExceptionUtils.exception_traceback(e)
-            log.error(f"【{self.server_type}】连接Library/VirtualFolders 出错：" + str(e))
+            log.error(
+                f"【{self.server_type}】连接Library/VirtualFolders 出错：" + str(e)
+            )
             return []
 
     def get_user_count(self):
@@ -126,7 +131,10 @@ class Jellyfin(_IMediaClient):
                     if item.get("Type") == "SessionStarted":
                         event_type = "LG"
                         event_date = re.sub(r"\dZ", "Z", item.get("Date"))
-                        event_str = "%s, %s" % (item.get("Name"), item.get("ShortOverview"))
+                        event_str = "%s, %s" % (
+                            item.get("Name"),
+                            item.get("ShortOverview"),
+                        )
                         activity = {
                             "type": event_type,
                             "event": event_str,
@@ -143,11 +151,15 @@ class Jellyfin(_IMediaClient):
                         }
                         ret_array.append(activity)
             else:
-                log.error(f"【{self.server_type}】System/ActivityLog/Entries 未获取到返回数据")
+                log.error(
+                    f"【{self.server_type}】System/ActivityLog/Entries 未获取到返回数据"
+                )
                 return []
         except Exception as e:
             ExceptionUtils.exception_traceback(e)
-            log.error(f"【{self.server_type}】连接System/ActivityLog/Entries出错：" + str(e))
+            log.error(
+                f"【{self.server_type}】连接System/ActivityLog/Entries出错：" + str(e)
+            )
             return []
         return ret_array
 
@@ -278,7 +290,9 @@ class Jellyfin(_IMediaClient):
         if not self._host or not self._apikey or not self._user:
             return None
         # 电视剧
-        series_id, season_id = self.__get_jellyfin_season_id_by_name(title, year, season)
+        series_id, season_id = self.__get_jellyfin_season_id_by_name(
+            title, year, season
+        )
         if series_id is None or season_id is None:
             return None
         if not series_id or not season_id:
@@ -288,12 +302,15 @@ class Jellyfin(_IMediaClient):
         if tmdb_id and item_tmdbid:
             if str(tmdb_id) != str(item_tmdbid):
                 return []
-        req_url = "%sShows/%s/Episodes?seasonId=%s&&userId=%s&isMissing=false&api_key=%s" % (
-            self._host,
-            series_id,
-            season_id,
-            self._user,
-            self._apikey,
+        req_url = (
+            "%sShows/%s/Episodes?seasonId=%s&&userId=%s&isMissing=false&api_key=%s"
+            % (
+                self._host,
+                series_id,
+                season_id,
+                self._user,
+                self._apikey,
+            )
         )
         try:
             res_json = RequestUtils().get_res(req_url)
@@ -336,7 +353,11 @@ class Jellyfin(_IMediaClient):
         """
         if not self._host or not self._apikey:
             return None
-        req_url = "%sItems/%s/RemoteImages?api_key=%s" % (self._host, item_id, self._apikey)
+        req_url = "%sItems/%s/RemoteImages?api_key=%s" % (
+            self._host,
+            item_id,
+            self._apikey,
+        )
         try:
             res = RequestUtils().get_res(req_url)
             if res:
@@ -405,7 +426,12 @@ class Jellyfin(_IMediaClient):
             return {}
         if not self._host or not self._apikey:
             return {}
-        req_url = "%sUsers/%s/Items/%s?api_key=%s" % (self._host, self._user, itemid, self._apikey)
+        req_url = "%sUsers/%s/Items/%s?api_key=%s" % (
+            self._host,
+            self._user,
+            itemid,
+            self._apikey,
+        )
         try:
             res = RequestUtils().get_res(req_url)
             if res and res.status_code == 200:

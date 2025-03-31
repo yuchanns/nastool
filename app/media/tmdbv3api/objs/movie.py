@@ -3,6 +3,7 @@ import warnings
 from app.media.tmdbv3api.as_obj import AsObj
 from app.media.tmdbv3api.tmdb import TMDb
 
+
 try:
     from urllib import quote
 except ImportError:
@@ -53,7 +54,9 @@ class Movie(TMDb):
         :return:
         """
         if append_to_response == "all":
-            append_to_response = "images,credits,alternative_titles,translations,external_ids"
+            append_to_response = (
+                "images,credits,alternative_titles,translations,external_ids"
+            )
         elif append_to_response is None:
             append_to_response = "alternative_titles,translations,external_ids"
         return AsObj(
@@ -85,7 +88,11 @@ class Movie(TMDb):
             self._call(
                 self._urls["changes"] % movie_id,
                 urlencode(
-                    {"start_date": str(start_date), "end_date": str(end_date), "page": str(page)}
+                    {
+                        "start_date": str(start_date),
+                        "end_date": str(end_date),
+                        "page": str(page),
+                    }
                 ),
             ),
             "changes",
@@ -105,7 +112,9 @@ class Movie(TMDb):
         :param movie_id:
         :return:
         """
-        return self._get_obj(self._call(self._urls["external_ids"] % (str(movie_id)), ""), None)
+        return self._get_obj(
+            self._call(self._urls["external_ids"] % (str(movie_id)), ""), None
+        )
 
     def images(self, movie_id, include_image_language=""):
         """
@@ -119,7 +128,8 @@ class Movie(TMDb):
         """
         return AsObj(
             **self._call(
-                self._urls["images"] % movie_id, "include_image_language=" + include_image_language
+                self._urls["images"] % movie_id,
+                "include_image_language=" + include_image_language,
             )
         )
 
@@ -138,7 +148,9 @@ class Movie(TMDb):
         :param page:
         :return:
         """
-        return self._get_obj(self._call(self._urls["lists"] % movie_id, "page=" + str(page)))
+        return self._get_obj(
+            self._call(self._urls["lists"] % movie_id, "page=" + str(page))
+        )
 
     def recommendations(self, movie_id, page=1):
         """
@@ -166,7 +178,9 @@ class Movie(TMDb):
         :param page:
         :return:
         """
-        return self._get_obj(self._call(self._urls["reviews"] % movie_id, "page=" + str(page)))
+        return self._get_obj(
+            self._call(self._urls["reviews"] % movie_id, "page=" + str(page))
+        )
 
     def videos(self, vid, page=1):
         """
@@ -175,7 +189,9 @@ class Movie(TMDb):
         :param page:
         :return:
         """
-        return self._get_obj(self._call(self._urls["videos"] % vid, "page=" + str(page)))
+        return self._get_obj(
+            self._call(self._urls["videos"] % vid, "page=" + str(page))
+        )
 
     def latest(self):
         """
@@ -237,7 +253,9 @@ class Movie(TMDb):
         :param page:
         :return:
         """
-        return self._get_obj(self._call(self._urls["similar"] % movie_id, "page=" + str(page)))
+        return self._get_obj(
+            self._call(self._urls["similar"] % movie_id, "page=" + str(page))
+        )
 
     def external(self, external_id, external_source):
         """
@@ -249,6 +267,7 @@ class Movie(TMDb):
         warnings.warn(
             "external method is deprecated use tmdbv3api.Find().find(external_id, external_source)",
             DeprecationWarning,
+            2,
         )
         return self._get_obj(
             self._call(

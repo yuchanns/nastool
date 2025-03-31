@@ -3,11 +3,13 @@ import os
 import re
 import threading
 import time
+
 from collections import deque
 from html import escape
 from logging.handlers import RotatingFileHandler
 
 from config import Config
+
 
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 lock = threading.Lock()
@@ -39,7 +41,9 @@ class Logger:
                 log_server_handler = logging.handlers.SysLogHandler(
                     (logip, logport), logging.handlers.SysLogHandler.LOG_USER
                 )
-                log_server_handler.setFormatter(logging.Formatter("%(filename)s: %(message)s"))
+                log_server_handler.setFormatter(
+                    logging.Formatter("%(filename)s: %(message)s")
+                )
                 self.logger.addHandler(log_server_handler)
         elif logtype == "file":
             # 记录日志到文件

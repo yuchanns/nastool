@@ -3,6 +3,7 @@ import random
 import re
 import time
 import traceback
+
 from datetime import datetime
 from functools import lru_cache
 from multiprocessing.dummy import Pool as ThreadPool
@@ -14,6 +15,7 @@ from selenium.webdriver.support import expected_conditions as es
 from selenium.webdriver.support.wait import WebDriverWait
 
 import log
+
 from app.conf import SiteConf
 from app.helper import ChromeHelper, DbHelper, SiteHelper
 from app.message import Message
@@ -21,6 +23,7 @@ from app.sites.site_user_info_factory import SiteUserInfoFactory
 from app.utils import ExceptionUtils, RequestUtils, StringUtils
 from app.utils.commons import singleton
 from config import Config
+
 
 lock = Lock()
 
@@ -81,12 +84,18 @@ class Sites:
             site_uses = site.INCLUDE or ""
             uses = []
             if site_uses:
-                signin_enable = True if "Q" in site_uses and site_signurl and site_cookie else False
+                signin_enable = (
+                    True if "Q" in site_uses and site_signurl and site_cookie else False
+                )
                 rss_enable = True if "D" in site_uses and site_rssurl else False
-                brush_enable = True if "S" in site_uses and site_rssurl and site_cookie else False
+                brush_enable = (
+                    True if "S" in site_uses and site_rssurl and site_cookie else False
+                )
                 statistic_enable = (
                     True
-                    if "T" in site_uses and (site_rssurl or site_signurl) and site_cookie
+                    if "T" in site_uses
+                    and (site_rssurl or site_signurl)
+                    and site_cookie
                     else False
                 )
                 uses.append("Q") if signin_enable else None
@@ -135,7 +144,13 @@ class Sites:
         }
 
     def get_sites(
-        self, siteid=None, siteurl=None, rss=False, brush=False, signin=False, statistic=False
+        self,
+        siteid=None,
+        siteurl=None,
+        rss=False,
+        brush=False,
+        signin=False,
+        statistic=False,
     ):
         """
         获取站点配置
@@ -166,7 +181,9 @@ class Sites:
         """
         return [
             {"id": site.get("id"), "name": site.get("name")}
-            for site in self.get_sites(rss=rss, brush=brush, signin=signin, statistic=statistic)
+            for site in self.get_sites(
+                rss=rss, brush=brush, signin=signin, statistic=statistic
+            )
         ]
 
     def get_site_names(self, rss=False, brush=False, signin=False, statistic=False):
@@ -175,7 +192,9 @@ class Sites:
         """
         return [
             site.get("name")
-            for site in self.get_sites(rss=rss, brush=brush, signin=signin, statistic=statistic)
+            for site in self.get_sites(
+                rss=rss, brush=brush, signin=signin, statistic=statistic
+            )
         ]
 
     def get_site_favicon(self, site_name=None):
@@ -205,7 +224,6 @@ class Sites:
             return
 
         with lock:
-
             if (
                 not force
                 and not specify_sites
@@ -283,7 +301,9 @@ class Sites:
 
                 # 获取不到数据时，仅返回错误信息，不做历史数据更新
                 if site_user_info.err_msg:
-                    self._sites_data.update({site_name: {"err_msg": site_user_info.err_msg}})
+                    self._sites_data.update(
+                        {site_name: {"err_msg": site_user_info.err_msg}}
+                    )
                     return
 
                 # 发送通知，存在未读消息
@@ -353,7 +373,9 @@ class Sites:
         if not site_cookie:
             return False, "未配置站点Cookie", 0
         ua = site_info.get("ua")
-        site_url = StringUtils.get_base_url(site_info.get("signurl") or site_info.get("rssurl"))
+        site_url = StringUtils.get_base_url(
+            site_info.get("signurl") or site_info.get("rssurl")
+        )
         if not site_url:
             return False, "未配置站点地址", 0
         chrome = ChromeHelper()
@@ -446,7 +468,10 @@ class Sites:
                     if html.xpath(xpath):
                         xpath_str = xpath
                         break
-                if re.search(r"已签|签到已得", html_text, re.IGNORECASE) and not xpath_str:
+                if (
+                    re.search(r"已签|签到已得", html_text, re.IGNORECASE)
+                    and not xpath_str
+                ):
                     log.info("【Sites】%s 今日已签到" % site)
                     return f"【{site}】今日已签到"
                 if not xpath_str:
@@ -490,13 +515,17 @@ class Sites:
                         log.info(f"【Sites】{site} {checkin_text}成功")
                         return f"【{site}】{checkin_text}成功"
                 elif res is not None:
-                    log.warn(f"【Sites】{site} {checkin_text}失败，状态码：{res.status_code}")
+                    log.warn(
+                        f"【Sites】{site} {checkin_text}失败，状态码：{res.status_code}"
+                    )
                     return f"【{site}】{checkin_text}失败，状态码：{res.status_code}！"
                 else:
                     log.warn(f"【Sites】{site} {checkin_text}失败，无法打开网站")
                     return f"【{site}】{checkin_text}失败，无法打开网站！"
         except Exception as e:
-            log.error("【Sites】%s 签到出错：%s - %s" % (site, str(e), traceback.format_exc()))
+            log.error(
+                "【Sites】%s 签到出错：%s - %s" % (site, str(e), traceback.format_exc())
+            )
             return f"{site} 签到出错：{str(e)}！"
 
     def refresh_pt_date_now(self):
@@ -522,7 +551,9 @@ class Sites:
             if site_url:
                 site_urls.append(site_url)
 
-        return self.dbhelper.get_site_statistics_recent_sites(days=days, strict_urls=site_urls)
+        return self.dbhelper.get_site_statistics_recent_sites(
+            days=days, strict_urls=site_urls
+        )
 
     def get_site_user_statistics(self, sites=None, encoding="RAW"):
         """
@@ -578,10 +609,16 @@ class Sites:
         :param days: 最大数据量
         :return:
         """
-        site_activities = [["time", "upload", "download", "bonus", "seeding", "seeding_size"]]
-        sql_site_activities = self.dbhelper.get_site_statistics_history(site=site, days=days)
+        site_activities = [
+            ["time", "upload", "download", "bonus", "seeding", "seeding_size"]
+        ]
+        sql_site_activities = self.dbhelper.get_site_statistics_history(
+            site=site, days=days
+        )
         for sql_site_activity in sql_site_activities:
-            timestamp = datetime.strptime(sql_site_activity.DATE, "%Y-%m-%d").timestamp() * 1000
+            timestamp = (
+                datetime.strptime(sql_site_activity.DATE, "%Y-%m-%d").timestamp() * 1000
+            )
             site_activities.append(
                 [
                     timestamp,
@@ -680,7 +717,9 @@ class Sites:
                 return chrome.get_html()
         else:
             res = RequestUtils(
-                cookies=cookie, headers=ua, proxies=Config().get_proxies() if proxy else None
+                cookies=cookie,
+                headers=ua,
+                proxies=Config().get_proxies() if proxy else None,
             ).get_res(url=url)
             if res and res.status_code == 200:
                 res.encoding = res.apparent_encoding
@@ -713,7 +752,11 @@ class Sites:
         if not xpath_strs:
             return ret_attr
         html_text = self.__get_site_page_html(
-            url=torrent_url, cookie=cookie, ua=ua, render=xpath_strs.get("RENDER"), proxy=proxy
+            url=torrent_url,
+            cookie=cookie,
+            ua=ua,
+            render=xpath_strs.get("RENDER"),
+            proxy=proxy,
         )
         if not html_text:
             return ret_attr
@@ -742,7 +785,9 @@ class Sites:
                         if m.isdigit():
                             peer_count_digit_str = peer_count_digit_str + m
                     ret_attr["peer_count"] = (
-                        int(peer_count_digit_str) if len(peer_count_digit_str) > 0 else 0
+                        int(peer_count_digit_str)
+                        if len(peer_count_digit_str) > 0
+                        else 0
                     )
         except Exception as err:
             ExceptionUtils.exception_traceback(err)

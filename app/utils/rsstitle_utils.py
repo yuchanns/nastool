@@ -4,7 +4,6 @@ from app.utils.exception_utils import ExceptionUtils
 
 
 class RssTitleUtils:
-
     @staticmethod
     def keepfriends_title(title):
         """

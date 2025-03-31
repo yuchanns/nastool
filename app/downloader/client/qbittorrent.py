@@ -1,13 +1,16 @@
 import os
 import re
 import time
+
 from datetime import datetime
 from urllib import parse
 
 import qbittorrentapi
+
 from pkg_resources import parse_version as v
 
 import log
+
 from app.downloader.client._base import _IDownloadClient
 from app.utils import ExceptionUtils, StringUtils
 from app.utils.types import DownloaderType
@@ -102,7 +105,9 @@ class Qbittorrent(_IDownloadClient):
         if not self.qbc:
             return [], True
         try:
-            torrents = self.qbc.torrents_info(torrent_hashes=ids, status_filter=status, tag=tag)
+            torrents = self.qbc.torrents_info(
+                torrent_hashes=ids, status_filter=status, tag=tag
+            )
             if self.is_ver_less_4_4():
                 torrents = self.filter_torrent_by_tag(torrents, tag=tag)
             return torrents or [], False
@@ -213,7 +218,9 @@ class Qbittorrent(_IDownloadClient):
         qb_state = config.get("qb_state")
         qb_category = config.get("qb_category")
         for torrent in torrents:
-            date_done = torrent.completion_on if torrent.completion_on > 0 else torrent.added_on
+            date_done = (
+                torrent.completion_on if torrent.completion_on > 0 else torrent.added_on
+            )
             date_now = int(time.mktime(datetime.now().timetuple()))
             torrent_seeding_time = date_now - date_done if date_done else 0
             torrent_upload_avs = (
@@ -263,7 +270,9 @@ class Qbittorrent(_IDownloadClient):
                             {
                                 "id": torrent.hash,
                                 "name": torrent.name,
-                                "site": parse.urlparse(torrent.tracker).netloc.split(".")[-2],
+                                "site": parse.urlparse(torrent.tracker).netloc.split(
+                                    "."
+                                )[-2],
                                 "size": torrent.size,
                             }
                         )
@@ -292,7 +301,7 @@ class Qbittorrent(_IDownloadClient):
         """
         torrent_id = None
         # QB添加下载后需要时间，重试5次每次等待5秒
-        for i in range(1, 6):
+        for _ in range(1, 6):
             time.sleep(5)
             torrent_id = self.__get_last_add_torrentid_by_tag(tag=tag, status=status)
             if torrent_id is None:
@@ -454,12 +463,18 @@ class Qbittorrent(_IDownloadClient):
             return []
         ret_dirs = []
         try:
-            categories = self.qbc.torrents_categories(requests_args={"timeout": (5, 10)}) or {}
+            categories = (
+                self.qbc.torrents_categories(requests_args={"timeout": (5, 10)}) or {}
+            )
         except Exception as err:
             ExceptionUtils.exception_traceback(err)
             return []
         for category in categories.values():
-            if category and category.get("savePath") and category.get("savePath") not in ret_dirs:
+            if (
+                category
+                and category.get("savePath")
+                and category.get("savePath") not in ret_dirs
+            ):
                 ret_dirs.append(category.get("savePath"))
         return ret_dirs
 
@@ -526,10 +541,21 @@ class Qbittorrent(_IDownloadClient):
                 _dlspeed = StringUtils.str_filesize(torrent.get("dlspeed"))
                 _upspeed = StringUtils.str_filesize(torrent.get("upspeed"))
                 if progress >= 100:
-                    speed = "%s%sB/s %s%sB/s" % (chr(8595), _dlspeed, chr(8593), _upspeed)
+                    speed = "%s%sB/s %s%sB/s" % (
+                        chr(8595),
+                        _dlspeed,
+                        chr(8593),
+                        _upspeed,
+                    )
                 else:
                     eta = StringUtils.str_timelong(torrent.get("eta"))
-                    speed = "%s%sB/s %s%sB/s %s" % (chr(8595), _dlspeed, chr(8593), _upspeed, eta)
+                    speed = "%s%sB/s %s%sB/s %s" % (
+                        chr(8595),
+                        _dlspeed,
+                        chr(8593),
+                        _upspeed,
+                        eta,
+                    )
             # 主键
             DispTorrents.append(
                 {

@@ -1,5 +1,6 @@
 import base64
 import datetime
+
 from functools import lru_cache
 
 from app.media import Media
@@ -8,7 +9,11 @@ from config import Config
 
 
 @lru_cache(maxsize=1)
-def get_login_wallpaper(today=datetime.datetime.strftime(datetime.datetime.now(), "%Y%m%d")):
+def get_login_wallpaper(
+    today=None,
+):
+    if today is None:
+        today = datetime.datetime.strftime(datetime.datetime.now(), "%Y%m%d")
     """
     获取Base64编码的壁纸图片
     """

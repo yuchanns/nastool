@@ -32,10 +32,16 @@ class IptSiteUserInfo(_ISiteUserInfo):
 
         tmps = html.xpath('//div[@class = "stats"]/div/div')
         if tmps:
-            self.upload = StringUtils.num_filesize(str(tmps[0].xpath("span/text()")[1]).strip())
-            self.download = StringUtils.num_filesize(str(tmps[0].xpath("span/text()")[2]).strip())
+            self.upload = StringUtils.num_filesize(
+                str(tmps[0].xpath("span/text()")[1]).strip()
+            )
+            self.download = StringUtils.num_filesize(
+                str(tmps[0].xpath("span/text()")[2]).strip()
+            )
             self.seeding = StringUtils.str_int(tmps[0].xpath("a")[2].xpath("text()")[0])
-            self.leeching = StringUtils.str_int(tmps[0].xpath("a")[2].xpath("text()")[1])
+            self.leeching = StringUtils.str_int(
+                tmps[0].xpath("a")[2].xpath("text()")[1]
+            )
             self.ratio = StringUtils.str_float(
                 str(tmps[0].xpath("span/text()")[0]).strip().replace("-", "0")
             )
@@ -50,14 +56,20 @@ class IptSiteUserInfo(_ISiteUserInfo):
         if not html:
             return
 
-        user_levels_text = html.xpath('//tr/th[text()="Class"]/following-sibling::td[1]/text()')
+        user_levels_text = html.xpath(
+            '//tr/th[text()="Class"]/following-sibling::td[1]/text()'
+        )
         if user_levels_text:
             self.user_level = user_levels_text[0].strip()
 
         # 加入日期
-        join_at_text = html.xpath('//tr/th[text()="Join date"]/following-sibling::td[1]/text()')
+        join_at_text = html.xpath(
+            '//tr/th[text()="Join date"]/following-sibling::td[1]/text()'
+        )
         if join_at_text:
-            self.join_at = StringUtils.unify_datetime_str(join_at_text[0].split(" (")[0])
+            self.join_at = StringUtils.unify_datetime_str(
+                join_at_text[0].split(" (")[0]
+            )
 
     def _parse_user_torrent_seeding_info(self, html_text, multi_page=False):
         html = etree.HTML(html_text)
@@ -67,7 +79,8 @@ class IptSiteUserInfo(_ISiteUserInfo):
         seeding_end_pos = 3
         if html.xpath('//tr/td[text() = "Leechers"]'):
             seeding_end_pos = (
-                len(html.xpath('//tr/td[text() = "Leechers"]/../preceding-sibling::tr')) + 1
+                len(html.xpath('//tr/td[text() = "Leechers"]/../preceding-sibling::tr'))
+                + 1
             )
             seeding_end_pos = seeding_end_pos - 3
 

@@ -1,6 +1,7 @@
 import re
 
 import log
+
 from app.utils import RequestUtils, StringUtils
 from config import Config
 
@@ -41,7 +42,9 @@ class TNodeSpider(object):
             headers=self._ua, cookies=self._cookie, proxies=self._proxy, timeout=15
         ).get_res(url=self._domain)
         if res and res.status_code == 200:
-            csrf_token = re.search(r'<meta name="x-csrf-token" content="(.+?)">', res.text)
+            csrf_token = re.search(
+                r'<meta name="x-csrf-token" content="(.+?)">', res.text
+            )
             if csrf_token:
                 self._token = csrf_token.group(1)
 

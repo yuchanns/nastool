@@ -79,25 +79,25 @@ def check_config():
                 if not Config().get_config("jellyfin"):
                     print("jellyfin未配置")
                 else:
-                    if not Config().get_config("jellyfin").get("host") or not Config().get_config(
-                        "jellyfin"
-                    ).get("api_key"):
+                    if not Config().get_config("jellyfin").get(
+                        "host"
+                    ) or not Config().get_config("jellyfin").get("api_key"):
                         print("jellyfin配置不完整")
             elif media_server == "plex":
                 if not Config().get_config("plex"):
                     print("plex未配置")
                 else:
-                    if not Config().get_config("plex").get("token") and not Config().get_config(
-                        "plex"
-                    ).get("username"):
+                    if not Config().get_config("plex").get(
+                        "token"
+                    ) and not Config().get_config("plex").get("username"):
                         print("plex配置不完整")
             else:
                 if not Config().get_config("emby"):
                     print("emby未配置")
                 else:
-                    if not Config().get_config("emby").get("host") or not Config().get_config(
-                        "emby"
-                    ).get("api_key"):
+                    if not Config().get_config("emby").get(
+                        "host"
+                    ) or not Config().get_config("emby").get("api_key"):
                         print("emby配置不完整")
 
         movie_paths = Config().get_config("media").get("movie_path")
@@ -198,7 +198,9 @@ def update_config():
     # 密码初始化
     login_password = _config.get("app", {}).get("login_password") or "password"
     if login_password and not login_password.startswith("[hash]"):
-        _config["app"]["login_password"] = "[hash]%s" % generate_password_hash(login_password)
+        _config["app"]["login_password"] = "[hash]%s" % generate_password_hash(
+            login_password
+        )
         overwrite_cofig = True
 
     # 实验室配置初始化
@@ -222,13 +224,17 @@ def update_config():
 
     # Synology Chat安全配置初始化
     if not _config.get("security", {}).get("synology_webhook_allow_ip"):
-        _config["security"]["synology_webhook_allow_ip"] = {"ipv4": "127.0.0.1", "ipv6": "::/0"}
+        _config["security"]["synology_webhook_allow_ip"] = {
+            "ipv4": "127.0.0.1",
+            "ipv6": "::/0",
+        }
         overwrite_cofig = True
 
     # API密钥初始化
     if not _config.get("security", {}).get("api_key"):
         _config["security"]["api_key"] = (
-            _config.get("security", {}).get("subscribe_token") or StringUtils.generate_random_str()
+            _config.get("security", {}).get("subscribe_token")
+            or StringUtils.generate_random_str()
         )
         if _config.get("security", {}).get("subscribe_token"):
             _config["security"].pop("subscribe_token")
@@ -396,7 +402,9 @@ def update_config():
             offset_words = offset_words.split("||")
             for offset_word in offset_words:
                 offset_word = offset_word.split("@")
-                if not _dbhelper.is_custom_words_existed(front=offset_word[0], back=offset_word[1]):
+                if not _dbhelper.is_custom_words_existed(
+                    front=offset_word[0], back=offset_word[1]
+                ):
                     _dbhelper.insert_custom_word(
                         replaced="",
                         replace="",
@@ -462,7 +470,9 @@ def update_config():
                         SyncPath["unknown"] = os.path.normpath(paths[2])
                     # 相同from的同步目录不能同时开启
                     if SyncPath["enabled"] == 1:
-                        _dbhelper.check_config_sync_paths(source=SyncPath["from"], enabled=0)
+                        _dbhelper.check_config_sync_paths(
+                            source=SyncPath["from"], enabled=0
+                        )
                     _dbhelper.insert_config_sync_path(
                         source=SyncPath["from"],
                         dest=SyncPath["to"],
@@ -473,7 +483,12 @@ def update_config():
                     )
             else:
                 _dbhelper.insert_config_sync_path(
-                    source=sync_paths, dest="", unknown="", mode=rmt_mode, rename=1, enabled=0
+                    source=sync_paths,
+                    dest="",
+                    unknown="",
+                    mode=rmt_mode,
+                    rename=1,
+                    enabled=0,
                 )
             _config["sync"].pop("sync_path")
             overwrite_cofig = True
@@ -606,7 +621,12 @@ def update_config():
                     interactive = 0
                     enabled = 1 if msg_channel == ctype else 0
                     client_config = json.dumps(
-                        {"token": token, "topic": topic, "channel": channel, "webhook": webhook}
+                        {
+                            "token": token,
+                            "topic": topic,
+                            "channel": channel,
+                            "webhook": webhook,
+                        }
                     )
                     _dbhelper.insert_message_client(
                         name=name,
@@ -725,7 +745,9 @@ def update_config():
             # 订阅站点
             if len(notes) > 0:
                 if notes[0]:
-                    rss_sites = [s for s in str(notes[0]).split("|") if s and len(s) < 20]
+                    rss_sites = [
+                        s for s in str(notes[0]).split("|") if s and len(s) < 20
+                    ]
             # 搜索站点
             if len(notes) > 1:
                 if notes[1]:
@@ -780,7 +802,9 @@ def update_config():
             if not tv.DESC or str(tv.DESC).find("#") == -1:
                 continue
             # 更新到具体字段
-            _dbhelper.update_rss_tv_desc(rid=tv.ID, desc=json.dumps(__parse_rss_desc(tv.DESC)))
+            _dbhelper.update_rss_tv_desc(
+                rid=tv.ID, desc=json.dumps(__parse_rss_desc(tv.DESC))
+            )
 
     except Exception as e:
         ExceptionUtils.exception_traceback(e)

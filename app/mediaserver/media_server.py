@@ -1,6 +1,7 @@
 import threading
 
 import log
+
 from app.conf import ModuleConf
 from app.db import MediaDb
 from app.helper import ProgressHelper, SubmoduleHelper
@@ -8,6 +9,7 @@ from app.utils import ExceptionUtils
 from app.utils.commons import singleton
 from app.utils.types import MediaServerType
 from config import Config
+
 
 lock = threading.Lock()
 server_lock = threading.Lock()
@@ -116,7 +118,9 @@ class MediaServer:
         """
         if not self.server:
             return None
-        return self.server.get_no_exists_episodes(meta_info, season_number, episode_count)
+        return self.server.get_no_exists_episodes(
+            meta_info, season_number, episode_count
+        )
 
     def get_movies(self, title, year=None):
         """
@@ -168,7 +172,9 @@ class MediaServer:
             self.progress.update(ptype="mediasync", text="请稍候...")
             # 汇总统计
             medias_count = self.get_medias_count()
-            total_media_count = medias_count.get("MovieCount") + medias_count.get("SeriesCount")
+            total_media_count = medias_count.get("MovieCount") + medias_count.get(
+                "SeriesCount"
+            )
             total_count = 0
             movie_count = 0
             tv_count = 0
@@ -177,7 +183,8 @@ class MediaServer:
             for library in self.get_libraries():
                 # 获取媒体库所有项目
                 self.progress.update(
-                    ptype="mediasync", text="正在获取 %s 数据..." % (library.get("name"))
+                    ptype="mediasync",
+                    text="正在获取 %s 数据..." % (library.get("name")),
                 )
                 for item in self.get_items(library.get("id")):
                     if not item:
@@ -203,7 +210,9 @@ class MediaServer:
             )
             # 结束进度条
             self.progress.update(
-                ptype="mediasync", value=100, text="媒体库数据同步完成，同步数量：%s" % total_count
+                ptype="mediasync",
+                value=100,
+                text="媒体库数据同步完成，同步数量：%s" % total_count,
             )
             self.progress.end("mediasync")
             log.info("【MediaServer】媒体库数据同步完成，同步数量：%s" % total_count)

@@ -1,6 +1,7 @@
 from app.media.tmdbv3api.as_obj import AsObj
 from app.media.tmdbv3api.tmdb import TMDb
 
+
 try:
     from urllib import quote
 except ImportError:
@@ -40,7 +41,9 @@ class TV(TMDb):
         :return:
         """
         if append_to_response == "all":
-            append_to_response = "images,credits,alternative_titles,translations,external_ids"
+            append_to_response = (
+                "images,credits,alternative_titles,translations,external_ids"
+            )
         elif append_to_response is None:
             append_to_response = "alternative_titles,translations,external_ids"
         return AsObj(
@@ -65,7 +68,9 @@ class TV(TMDb):
         :return:
         """
         return self._get_obj(
-            self._call(self._urls["search_tv"], "query=" + quote(term) + "&page=" + str(page))
+            self._call(
+                self._urls["search_tv"], "query=" + quote(term) + "&page=" + str(page)
+            )
         )
 
     def similar(self, tv_id, page=1):
@@ -75,7 +80,9 @@ class TV(TMDb):
         :param page:
         :return:
         """
-        return self._get_obj(self._call(self._urls["similar"] % str(tv_id), "page=" + str(page)))
+        return self._get_obj(
+            self._call(self._urls["similar"] % str(tv_id), "page=" + str(page))
+        )
 
     def popular(self, page=1):
         """
@@ -100,7 +107,9 @@ class TV(TMDb):
         :param page:
         :return:
         """
-        return self._get_obj(self._call(self._urls["recommendations"] % tv_id, "page=" + str(page)))
+        return self._get_obj(
+            self._call(self._urls["recommendations"] % tv_id, "page=" + str(page))
+        )
 
     def videos(self, tv_id, page=1):
         """
@@ -109,7 +118,9 @@ class TV(TMDb):
         :param page:
         :return:
         """
-        return self._get_obj(self._call(self._urls["videos"] % tv_id, "page=" + str(page)))
+        return self._get_obj(
+            self._call(self._urls["videos"] % tv_id, "page=" + str(page))
+        )
 
     def airing_today(self, page=1):
         """
@@ -118,7 +129,9 @@ class TV(TMDb):
         :param page:
         :return:
         """
-        return self._get_obj(self._call(self._urls["airing_today"], "page=" + str(page)))
+        return self._get_obj(
+            self._call(self._urls["airing_today"], "page=" + str(page))
+        )
 
     def on_the_air(self, page=1):
         """
@@ -134,7 +147,9 @@ class TV(TMDb):
         :param tv_id:
         :return:
         """
-        return self._get_obj(self._call(self._urls["screened_theatrically"] % tv_id, ""))
+        return self._get_obj(
+            self._call(self._urls["screened_theatrically"] % tv_id, "")
+        )
 
     def external_ids(self, vid):
         """
@@ -142,7 +157,9 @@ class TV(TMDb):
         :param vid:
         :return:
         """
-        return self._get_obj(self._call(self._urls["external_ids"] % (str(vid)), ""), None)
+        return self._get_obj(
+            self._call(self._urls["external_ids"] % (str(vid)), ""), None
+        )
 
     def keywords(self, tv_id):
         """
@@ -159,7 +176,9 @@ class TV(TMDb):
         :param tv_id: int
         :return:
         """
-        return self._get_obj(self._call(self._urls["reviews"] % tv_id, "page=" + str(page)))
+        return self._get_obj(
+            self._call(self._urls["reviews"] % tv_id, "page=" + str(page))
+        )
 
     def watch_providers(self, tv_id):
         """
@@ -184,7 +203,9 @@ class TV(TMDb):
         :param season_number: season number
         :return:
         """
-        return AsObj(**self._call(self._urls["season_details"] % (tv_id, season_number), ""))
+        return AsObj(
+            **self._call(self._urls["season_details"] % (tv_id, season_number), "")
+        )
 
     def alternative_titles(self, tv_id):
         """
@@ -222,6 +243,7 @@ class TV(TMDb):
         """
         return AsObj(
             **self._call(
-                self._urls["images"] % tv_id, "include_image_language=" + include_image_language
+                self._urls["images"] % tv_id,
+                "include_image_language=" + include_image_language,
             )
         )

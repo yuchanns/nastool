@@ -1,4 +1,5 @@
 import log
+
 from app.downloader import Downloader
 from app.helper import DbHelper, ProgressHelper
 from app.indexer import Indexer
@@ -31,7 +32,11 @@ class Searcher:
         self._search_auto = Config().get_config("pt").get("search_auto", True)
 
     def search_medias(
-        self, key_word: [str, list], filter_args: dict, match_media=None, in_from: SearchType = None
+        self,
+        key_word: [str, list],
+        filter_args: dict,
+        match_media=None,
+        in_from: SearchType = None,
     ):
         """
         根据关键字调用索引器检查媒体
@@ -46,7 +51,10 @@ class Searcher:
         if not self.indexer:
             return []
         return self.indexer.search_by_keyword(
-            key_word=key_word, filter_args=filter_args, match_media=match_media, in_from=in_from
+            key_word=key_word,
+            filter_args=filter_args,
+            match_media=match_media,
+            in_from=in_from,
         )
 
     def search_one_media(
@@ -138,7 +146,11 @@ class Searcher:
             in_from=in_from,
         )
         # 使用名称重新搜索
-        if len(media_list) == 0 and second_search_name and second_search_name != first_search_name:
+        if (
+            len(media_list) == 0
+            and second_search_name
+            and second_search_name != first_search_name
+        ):
             log.info(
                 "【Searcher】%s 未检索到资源,尝试通过 %s 重新检索 ..."
                 % (first_search_name, second_search_name)
@@ -176,7 +188,10 @@ class Searcher:
                     return None, no_exists, len(media_list), None
             # 择优下载
             download_items, left_medias = self.downloader.batch_download(
-                in_from=in_from, media_list=media_list, need_tvs=no_exists, user_name=user_name
+                in_from=in_from,
+                media_list=media_list,
+                need_tvs=no_exists,
+                user_name=user_name,
             )
             # 统计下载情况，下全了返回True，没下全返回False
             if not download_items:
@@ -189,4 +204,9 @@ class Searcher:
                     return None, left_medias, len(media_list), len(download_items)
                 # 全部下完了
                 else:
-                    return download_items[0], no_exists, len(media_list), len(download_items)
+                    return (
+                        download_items[0],
+                        no_exists,
+                        len(media_list),
+                        len(download_items),
+                    )

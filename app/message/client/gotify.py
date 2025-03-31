@@ -52,7 +52,9 @@ class Gotify(_IMessageClient):
                     "client::notification": {"click": {"url": url}},
                 },
             }
-            res = RequestUtils(content_type="application/json").post_res(sc_url, json=sc_data)
+            res = RequestUtils(content_type="application/json").post_res(
+                sc_url, json=sc_data
+            )
             if res and res.status_code == 200:
                 return True, "发送成功"
             elif res:

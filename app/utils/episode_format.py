@@ -20,7 +20,9 @@ class EpisodeFormat(object):
                 tmp = details.split(",")
                 if len(tmp) > 1:
                     self._start_ep = int(tmp[0])
-                    self._end_ep = int(tmp[0]) if int(tmp[0]) > int(tmp[1]) else int(tmp[1])
+                    self._end_ep = (
+                        int(tmp[0]) if int(tmp[0]) > int(tmp[1]) else int(tmp[1])
+                    )
                 else:
                     self._start_ep = self._end_ep = int(tmp[0])
         self.__offset = int(offset) if offset else 0
@@ -77,7 +79,9 @@ class EpisodeFormat(object):
         if not ret or not ret.__contains__(self._key):
             return None, None
         episodes = ret.__getitem__(self._key)
-        if not re.compile(r"^(EP)?(\d{1,4})(-(EP)?(\d{1,4}))?$", re.IGNORECASE).match(episodes):
+        if not re.compile(r"^(EP)?(\d{1,4})(-(EP)?(\d{1,4}))?$", re.IGNORECASE).match(
+            episodes
+        ):
             return None, None
         episode_splits = list(
             filter(
@@ -86,8 +90,10 @@ class EpisodeFormat(object):
             )
         )
         if len(episode_splits) == 1:
-            return int(re.compile(r"[a-zA-Z]*", re.IGNORECASE).sub("", episode_splits[0])), None
+            return int(
+                re.compile(r"[a-zA-Z]*", re.IGNORECASE).sub("", episode_splits[0])
+            ), None
         else:
-            return int(re.compile(r"[a-zA-Z]*", re.IGNORECASE).sub("", episode_splits[0])), int(
-                re.compile(r"[a-zA-Z]*", re.IGNORECASE).sub("", episode_splits[1])
-            )
+            return int(
+                re.compile(r"[a-zA-Z]*", re.IGNORECASE).sub("", episode_splits[0])
+            ), int(re.compile(r"[a-zA-Z]*", re.IGNORECASE).sub("", episode_splits[1]))

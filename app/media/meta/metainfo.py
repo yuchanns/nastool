@@ -3,6 +3,7 @@ import os.path
 import regex as re
 
 import log
+
 from app.helper import WordsHelper
 from app.media.meta.metaanime import MetaAnime
 from app.media.meta.metavideo import MetaVideo

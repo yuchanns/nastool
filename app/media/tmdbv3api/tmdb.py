@@ -3,6 +3,7 @@
 import logging
 import os
 import time
+
 from functools import lru_cache
 
 import requests
@@ -10,6 +11,7 @@ import requests.exceptions
 
 from .as_obj import AsObj
 from .exceptions import TMDbException
+
 
 logger = logging.getLogger(__name__)
 
@@ -146,7 +148,9 @@ class TMDb(object):
     def cache_clear(self):
         return self.cached_request.cache_clear()
 
-    def _call(self, action, append_to_response, call_cached=True, method="GET", data=None):
+    def _call(
+        self, action, append_to_response, call_cached=True, method="GET", data=None
+    ):
         if self.api_key is None or self.api_key == "":
             raise TMDbException("No API key found.")
 
@@ -162,7 +166,12 @@ class TMDb(object):
             req = self.cached_request(method, url, data, self.proxies)
         else:
             req = self._session.request(
-                method, url, data=data, proxies=eval(self.proxies), timeout=10, verify=False
+                method,
+                url,
+                data=data,
+                proxies=eval(self.proxies),
+                timeout=10,
+                verify=False,
             )
 
         headers = req.headers
@@ -182,7 +191,9 @@ class TMDb(object):
                 time.sleep(abs(sleep_time))
                 self._call(action, append_to_response, call_cached, method, data)
             else:
-                raise TMDbException("Rate limit reached. Try again in %d seconds." % sleep_time)
+                raise TMDbException(
+                    "Rate limit reached. Try again in %d seconds." % sleep_time
+                )
 
         json = req.json()
 

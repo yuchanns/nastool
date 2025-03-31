@@ -73,12 +73,16 @@ class DiscuzUserInfo(_ISiteUserInfo):
         # 上传
         upload_text = html.xpath('//li[em[contains(text(),"上传量")]]/text()')
         if upload_text:
-            self.upload = StringUtils.num_filesize(upload_text[0].strip().split("/")[-1])
+            self.upload = StringUtils.num_filesize(
+                upload_text[0].strip().split("/")[-1]
+            )
 
         # 下载
         download_text = html.xpath('//li[em[contains(text(),"下载量")]]/text()')
         if download_text:
-            self.download = StringUtils.num_filesize(download_text[0].strip().split("/")[-1])
+            self.download = StringUtils.num_filesize(
+                download_text[0].strip().split("/")[-1]
+            )
 
     def _parse_user_torrent_seeding_info(self, html_text, multi_page=False):
         """
@@ -94,7 +98,9 @@ class DiscuzUserInfo(_ISiteUserInfo):
         size_col = 3
         seeders_col = 4
         # 搜索size列
-        if html.xpath('//tr[position()=1]/td[.//img[@class="size"] and .//img[@alt="size"]]'):
+        if html.xpath(
+            '//tr[position()=1]/td[.//img[@class="size"] and .//img[@alt="size"]]'
+        ):
             size_col = (
                 len(
                     html.xpath(
@@ -105,7 +111,9 @@ class DiscuzUserInfo(_ISiteUserInfo):
                 + 1
             )
         # 搜索seeders列
-        if html.xpath('//tr[position()=1]/td[.//img[@class="seeders"] and .//img[@alt="seeders"]]'):
+        if html.xpath(
+            '//tr[position()=1]/td[.//img[@class="seeders"] and .//img[@alt="seeders"]]'
+        ):
             seeders_col = (
                 len(
                     html.xpath(
@@ -125,7 +133,9 @@ class DiscuzUserInfo(_ISiteUserInfo):
             page_seeding = len(seeding_sizes)
 
             for i in range(0, len(seeding_sizes)):
-                size = StringUtils.num_filesize(seeding_sizes[i].xpath("string(.)").strip())
+                size = StringUtils.num_filesize(
+                    seeding_sizes[i].xpath("string(.)").strip()
+                )
                 seeders = StringUtils.str_int(seeding_seeders[i])
 
                 page_seeding_size += size

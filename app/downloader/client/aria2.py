@@ -9,7 +9,6 @@ from config import Config
 
 
 class Aria2(_IDownloadClient):
-
     schema = "aria2"
     client_type = DownloaderType.Aria2.value
     _client_config = {}
@@ -38,7 +37,9 @@ class Aria2(_IDownloadClient):
             self.port = self._client_config.get("port")
             self.secret = self._client_config.get("secret")
             if self.host and self.port:
-                self._client = PyAria2(secret=self.secret, host=self.host, port=self.port)
+                self._client = PyAria2(
+                    secret=self.secret, host=self.host, port=self.port
+                )
 
     @classmethod
     def match(cls, ctype):
@@ -96,7 +97,9 @@ class Aria2(_IDownloadClient):
             if not path:
                 continue
             true_path = self.get_replace_path(path)
-            trans_tasks.append({"path": os.path.join(true_path, name), "id": torrent.get("gid")})
+            trans_tasks.append(
+                {"path": os.path.join(true_path, name), "id": torrent.get("gid")}
+            )
         return trans_tasks
 
     def get_remove_torrents(self, **kwargs):
@@ -116,7 +119,9 @@ class Aria2(_IDownloadClient):
                     ExceptionUtils.exception_traceback(result)
             return self._client.addUri(uris=[content], options=dict(dir=download_dir))
         else:
-            return self._client.addTorrent(torrent=content, uris=[], options=dict(dir=download_dir))
+            return self._client.addTorrent(
+                torrent=content, uris=[], options=dict(dir=download_dir)
+            )
 
     def start_torrents(self, ids):
         if not self._client:
@@ -149,7 +154,11 @@ class Aria2(_IDownloadClient):
             # 进度
             try:
                 progress = (
-                    round(int(torrent.get("completedLength")) / int(torrent.get("totalLength")), 1)
+                    round(
+                        int(torrent.get("completedLength"))
+                        / int(torrent.get("totalLength")),
+                        1,
+                    )
                     * 100
                 )
             except ZeroDivisionError:

@@ -4,6 +4,7 @@ from alembic.command import upgrade as alembic_upgrade
 from alembic.config import Config as AlembicConfig
 
 import log
+
 from config import Config
 
 from .main_db import DbPersist, MainDb

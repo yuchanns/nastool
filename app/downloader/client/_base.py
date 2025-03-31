@@ -1,11 +1,11 @@
 import os.path
+
 from abc import ABCMeta, abstractmethod
 
 from config import Config
 
 
 class _IDownloadClient(metaclass=ABCMeta):
-
     @abstractmethod
     def match(self, ctype):
         """

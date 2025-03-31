@@ -2,6 +2,7 @@
 import base64
 import hashlib
 import hmac
+
 from datetime import datetime
 from functools import lru_cache
 from random import choice
@@ -142,7 +143,9 @@ class DoubanApi(object):
         url_path = parse.urlparse(url).path
         raw_sign = "&".join([method.upper(), parse.quote(url_path, safe=""), str(ts)])
         return base64.b64encode(
-            hmac.new(cls._api_secret_key.encode(), raw_sign.encode(), hashlib.sha1).digest()
+            hmac.new(
+                cls._api_secret_key.encode(), raw_sign.encode(), hashlib.sha1
+            ).digest()
         ).decode()
 
     @classmethod
@@ -171,53 +174,89 @@ class DoubanApi(object):
 
         return resp.json() if resp else None
 
-    def search(self, keyword, start=0, count=20, ts=datetime.strftime(datetime.now(), "%Y%m%d")):
-        return self.__invoke(self._urls["search"], q=keyword, start=start, count=count, _ts=ts)
+    def search(self, keyword, start=0, count=20, ts=None):
+        if ts is None:
+            ts = datetime.strftime(datetime.now(), "%Y%m%d")
+        return self.__invoke(
+            self._urls["search"], q=keyword, start=start, count=count, _ts=ts
+        )
 
-    def movie_search(
-        self, keyword, start=0, count=20, ts=datetime.strftime(datetime.now(), "%Y%m%d")
-    ):
+    def movie_search(self, keyword, start=0, count=20, ts=None):
+        if ts is None:
+            ts = datetime.strftime(datetime.now(), "%Y%m%d")
         return self.__invoke(
             self._urls["movie_search"], q=keyword, start=start, count=count, _ts=ts
         )
 
-    def tv_search(self, keyword, start=0, count=20, ts=datetime.strftime(datetime.now(), "%Y%m%d")):
-        return self.__invoke(self._urls["tv_search"], q=keyword, start=start, count=count, _ts=ts)
+    def tv_search(self, keyword, start=0, count=20, ts=None):
+        if ts is None:
+            ts = datetime.strftime(datetime.now(), "%Y%m%d")
+        return self.__invoke(
+            self._urls["tv_search"], q=keyword, start=start, count=count, _ts=ts
+        )
 
-    def book_search(
-        self, keyword, start=0, count=20, ts=datetime.strftime(datetime.now(), "%Y%m%d")
-    ):
-        return self.__invoke(self._urls["book_search"], q=keyword, start=start, count=count, _ts=ts)
+    def book_search(self, keyword, start=0, count=20, ts=None):
+        if ts is None:
+            ts = datetime.strftime(datetime.now(), "%Y%m%d")
+        return self.__invoke(
+            self._urls["book_search"], q=keyword, start=start, count=count, _ts=ts
+        )
 
-    def group_search(
-        self, keyword, start=0, count=20, ts=datetime.strftime(datetime.now(), "%Y%m%d")
-    ):
+    def group_search(self, keyword, start=0, count=20, ts=None):
+        if ts is None:
+            ts = datetime.strftime(datetime.now(), "%Y%m%d")
         return self.__invoke(
             self._urls["group_search"], q=keyword, start=start, count=count, _ts=ts
         )
 
-    def movie_showing(self, start=0, count=20, ts=datetime.strftime(datetime.now(), "%Y%m%d")):
-        return self.__invoke(self._urls["movie_showing"], start=start, count=count, _ts=ts)
+    def movie_showing(self, start=0, count=20, ts=None):
+        if ts is None:
+            ts = datetime.strftime(datetime.now(), "%Y%m%d")
+        return self.__invoke(
+            self._urls["movie_showing"], start=start, count=count, _ts=ts
+        )
 
-    def movie_soon(self, start=0, count=20, ts=datetime.strftime(datetime.now(), "%Y%m%d")):
+    def movie_soon(self, start=0, count=20, ts=None):
+        if ts is None:
+            ts = datetime.strftime(datetime.now(), "%Y%m%d")
         return self.__invoke(self._urls["movie_soon"], start=start, count=count, _ts=ts)
 
-    def movie_hot_gaia(self, start=0, count=20, ts=datetime.strftime(datetime.now(), "%Y%m%d")):
-        return self.__invoke(self._urls["movie_hot_gaia"], start=start, count=count, _ts=ts)
+    def movie_hot_gaia(self, start=0, count=20, ts=None):
+        if ts is None:
+            ts = datetime.strftime(datetime.now(), "%Y%m%d")
+        return self.__invoke(
+            self._urls["movie_hot_gaia"], start=start, count=count, _ts=ts
+        )
 
-    def tv_hot(self, start=0, count=20, ts=datetime.strftime(datetime.now(), "%Y%m%d")):
+    def tv_hot(self, start=0, count=20, ts=None):
+        if ts is None:
+            ts = datetime.strftime(datetime.now(), "%Y%m%d")
         return self.__invoke(self._urls["tv_hot"], start=start, count=count, _ts=ts)
 
-    def tv_animation(self, start=0, count=20, ts=datetime.strftime(datetime.now(), "%Y%m%d")):
-        return self.__invoke(self._urls["tv_animation"], start=start, count=count, _ts=ts)
+    def tv_animation(self, start=0, count=20, ts=None):
+        if ts is None:
+            ts = datetime.strftime(datetime.now(), "%Y%m%d")
+        return self.__invoke(
+            self._urls["tv_animation"], start=start, count=count, _ts=ts
+        )
 
-    def tv_variety_show(self, start=0, count=20, ts=datetime.strftime(datetime.now(), "%Y%m%d")):
-        return self.__invoke(self._urls["tv_variety_show"], start=start, count=count, _ts=ts)
+    def tv_variety_show(self, start=0, count=20, ts=None):
+        if ts is None:
+            ts = datetime.strftime(datetime.now(), "%Y%m%d")
+        return self.__invoke(
+            self._urls["tv_variety_show"], start=start, count=count, _ts=ts
+        )
 
-    def tv_rank_list(self, start=0, count=20, ts=datetime.strftime(datetime.now(), "%Y%m%d")):
-        return self.__invoke(self._urls["tv_rank_list"], start=start, count=count, _ts=ts)
+    def tv_rank_list(self, start=0, count=20, ts=None):
+        if ts is None:
+            ts = datetime.strftime(datetime.now(), "%Y%m%d")
+        return self.__invoke(
+            self._urls["tv_rank_list"], start=start, count=count, _ts=ts
+        )
 
-    def show_hot(self, start=0, count=20, ts=datetime.strftime(datetime.now(), "%Y%m%d")):
+    def show_hot(self, start=0, count=20, ts=None):
+        if ts is None:
+            ts = datetime.strftime(datetime.now(), "%Y%m%d")
         return self.__invoke(self._urls["show_hot"], start=start, count=count, _ts=ts)
 
     def movie_detail(self, subject_id):
@@ -235,29 +274,47 @@ class DoubanApi(object):
     def book_detail(self, subject_id):
         return self.__invoke(self._urls["book_detail"] + subject_id)
 
-    def movie_top250(self, start=0, count=20, ts=datetime.strftime(datetime.now(), "%Y%m%d")):
-        return self.__invoke(self._urls["movie_top250"], start=start, count=count, _ts=ts)
-
-    def movie_recommend(
-        self, tags="", sort="T", start=0, count=20, ts=datetime.strftime(datetime.now(), "%Y%m%d")
-    ):
+    def movie_top250(self, start=0, count=20, ts=None):
+        if ts is None:
+            ts = datetime.strftime(datetime.now(), "%Y%m%d")
         return self.__invoke(
-            self._urls["movie_recommend"], tags=tags, sort=sort, start=start, count=count, _ts=ts
+            self._urls["movie_top250"], start=start, count=count, _ts=ts
         )
 
-    def tv_recommend(
-        self, tags="", sort="T", start=0, count=20, ts=datetime.strftime(datetime.now(), "%Y%m%d")
-    ):
+    def movie_recommend(self, tags="", sort="T", start=0, count=20, ts=None):
+        if ts is None:
+            ts = datetime.strftime(datetime.now(), "%Y%m%d")
         return self.__invoke(
-            self._urls["tv_recommend"], tags=tags, sort=sort, start=start, count=count, _ts=ts
+            self._urls["movie_recommend"],
+            tags=tags,
+            sort=sort,
+            start=start,
+            count=count,
+            _ts=ts,
         )
 
-    def tv_chinese_best_weekly(
-        self, start=0, count=20, ts=datetime.strftime(datetime.now(), "%Y%m%d")
-    ):
-        return self.__invoke(self._urls["tv_chinese_best_weekly"], start=start, count=count, _ts=ts)
+    def tv_recommend(self, tags="", sort="T", start=0, count=20, ts=None):
+        if ts is None:
+            ts = datetime.strftime(datetime.now(), "%Y%m%d")
+        return self.__invoke(
+            self._urls["tv_recommend"],
+            tags=tags,
+            sort=sort,
+            start=start,
+            count=count,
+            _ts=ts,
+        )
 
-    def tv_global_best_weekly(
-        self, start=0, count=20, ts=datetime.strftime(datetime.now(), "%Y%m%d")
-    ):
-        return self.__invoke(self._urls["tv_global_best_weekly"], start=start, count=count, _ts=ts)
+    def tv_chinese_best_weekly(self, start=0, count=20, ts=None):
+        if ts is None:
+            ts = datetime.strftime(datetime.now(), "%Y%m%d")
+        return self.__invoke(
+            self._urls["tv_chinese_best_weekly"], start=start, count=count, _ts=ts
+        )
+
+    def tv_global_best_weekly(self, start=0, count=20, ts=None):
+        if ts is None:
+            ts = datetime.strftime(datetime.now(), "%Y%m%d")
+        return self.__invoke(
+            self._urls["tv_global_best_weekly"], start=start, count=count, _ts=ts
+        )

@@ -2,6 +2,7 @@
 from sqlalchemy import Column, Float, Index, Integer, Sequence, Text, text
 from sqlalchemy.ext.declarative import declarative_base
 
+
 Base = declarative_base()
 BaseMedia = declarative_base()
 
@@ -251,7 +252,9 @@ class RSSMOVIES(Base):
 
 class RSSTORRENTS(Base):
     __tablename__ = "RSS_TORRENTS"
-    __table_args__ = (Index("INDX_RSS_TORRENTS_NAME", "TITLE", "YEAR", "SEASON", "EPISODE"),)
+    __table_args__ = (
+        Index("INDX_RSS_TORRENTS_NAME", "TITLE", "YEAR", "SEASON", "EPISODE"),
+    )
 
     ID = Column(Integer, Sequence("ID"), primary_key=True)
     TORRENT_NAME = Column(Text)

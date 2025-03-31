@@ -26,13 +26,11 @@ class MetaVideo(MetaBase):
     # 正则式区
     _season_re = r"S(\d{2})|^S(\d{1,2})$|S(\d{1,2})E"
     _episode_re = r"EP?(\d{2,4})|^EP?(\d{1,4})$|S\d{1,2}EP?(\d{1,4})$"
-    _part_re = (
-        r"(^PART[0-9ABI]{0,2}$|^CD[0-9]{0,2}$|^DVD[0-9]{0,2}$|^DISK[0-9]{0,2}$|^DISC[0-9]{0,2}$)"
+    _part_re = r"(^PART[0-9ABI]{0,2}$|^CD[0-9]{0,2}$|^DVD[0-9]{0,2}$|^DISK[0-9]{0,2}$|^DISC[0-9]{0,2}$)"
+    _roman_numerals = (
+        r"^(?=[MDCLXVI])M*(C[MD]|D?C{0,3})(X[CL]|L?X{0,3})(I[XV]|V?I{0,3})$"
     )
-    _roman_numerals = r"^(?=[MDCLXVI])M*(C[MD]|D?C{0,3})(X[CL]|L?X{0,3})(I[XV]|V?I{0,3})$"
-    _source_re = (
-        r"^BLURAY$|^HDTV$|^UHDTV$|^HDDVD$|^WEBRIP$|^DVDRIP$|^BDRIP$|^BLU$|^WEB$|^BD$|^HDRip$"
-    )
+    _source_re = r"^BLURAY$|^HDTV$|^UHDTV$|^HDDVD$|^WEBRIP$|^DVDRIP$|^BDRIP$|^BLU$|^WEB$|^BD$|^HDRip$"
     _effect_re = r"^REMUX$|^UHD$|^SDR$|^HDR\d*$|^DOLBY$|^DOVI$|^DV$|^3D$|^REPACK$"
     _resources_type_re = r"%s|%s" % (_source_re, _effect_re)
     _name_no_begin_re = r"^\[.+?]"
@@ -53,7 +51,9 @@ class MetaVideo(MetaBase):
     )
     _resources_pix_re = r"^[SBUHD]*(\d{3,4}[PI]+)|\d{3,4}X(\d{3,4})"
     _resources_pix_re2 = r"(^[248]+K)"
-    _video_encode_re = r"^[HX]26[45]$|^AVC$|^HEVC$|^VC\d?$|^MPEG\d?$|^Xvid$|^DivX$|^HDR\d*$"
+    _video_encode_re = (
+        r"^[HX]26[45]$|^AVC$|^HEVC$|^VC\d?$|^MPEG\d?$|^Xvid$|^DivX$|^HDR\d*$"
+    )
     _audio_encode_re = r"^DTS\d?$|^DTSHD$|^DTSHDMA$|^Atmos$|^TrueHD\d?$|^AC3$|^\dAudios?$|^DDP\d?$|^DD\d?$|^LPCM\d?$|^AAC\d?$|^FLAC\d?$|^HD\d?$|^MA\d?$"
 
     def __init__(self, title, subtitle=None, fileflag=False):
@@ -146,7 +146,9 @@ class MetaVideo(MetaBase):
     def __fix_name(self, name):
         if not name:
             return name
-        name = re.sub(r"%s" % self._name_nostring_re, "", name, flags=re.IGNORECASE).strip()
+        name = re.sub(
+            r"%s" % self._name_nostring_re, "", name, flags=re.IGNORECASE
+        ).strip()
         name = re.sub(r"\s+", " ", name)
         if (
             name.isdigit()
@@ -194,7 +196,9 @@ class MetaVideo(MetaBase):
             elif not self._stop_cnname_flag:
                 if not re.search(
                     "%s" % self._name_no_chinese_re, token, flags=re.IGNORECASE
-                ) and not re.search("%s" % self._name_se_words, token, flags=re.IGNORECASE):
+                ) and not re.search(
+                    "%s" % self._name_se_words, token, flags=re.IGNORECASE
+                ):
                     self.cn_name = "%s %s" % (self.cn_name, token)
                 self._stop_cnname_flag = True
         else:
@@ -273,7 +277,10 @@ class MetaVideo(MetaBase):
                 self.part = re_res.group(1)
             nextv = self.tokens.cur()
             if nextv and (
-                (nextv.isdigit() and (len(nextv) == 1 or len(nextv) == 2 and nextv.startswith("0")))
+                (
+                    nextv.isdigit()
+                    and (len(nextv) == 1 or len(nextv) == 2 and nextv.startswith("0"))
+                )
                 or nextv.upper() in ["A", "B", "C", "I", "II", "III"]
             ):
                 self.part = "%s%s" % (self.part, nextv)
@@ -374,7 +381,11 @@ class MetaVideo(MetaBase):
                 int(token)
             except ValueError:
                 return
-            if self._last_token_type == "SEASON" and self.begin_season is None and len(token) < 3:
+            if (
+                self._last_token_type == "SEASON"
+                and self.begin_season is None
+                and len(token) < 3
+            ):
                 self.begin_season = int(token)
                 self.total_seasons = 1
                 self._last_token_type = "season"
@@ -410,7 +421,9 @@ class MetaVideo(MetaBase):
                 else:
                     if se > self.begin_episode:
                         self.end_episode = se
-                        self.total_episodes = (self.end_episode - self.begin_episode) + 1
+                        self.total_episodes = (
+                            self.end_episode - self.begin_episode
+                        ) + 1
                         if self.fileflag and self.total_episodes > 2:
                             self.end_episode = None
                             self.total_episodes = 1
@@ -447,7 +460,9 @@ class MetaVideo(MetaBase):
                 self._stop_name_flag = True
                 self.type = MediaType.TV
             elif (
-                self._last_token_type == "EPISODE" and self.begin_episode is None and len(token) < 5
+                self._last_token_type == "EPISODE"
+                and self.begin_episode is None
+                and len(token) < 5
             ):
                 self.begin_episode = int(token)
                 self.total_episodes = 1

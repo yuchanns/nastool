@@ -1,9 +1,11 @@
 import os
 import shutil
 import sys
+
 from threading import Lock
 
 import ruamel.yaml
+
 
 # 种子名/文件名要素分隔字符
 SPLIT_CHARS = r"\.|\s+|\(|\)|\[|]|-|\+|【|】|/|～|;|&|\||#|_|「|」|（|）|~"
@@ -60,7 +62,9 @@ REFRESH_WALLPAPER_INTERVAL = 1
 FANART_MOVIE_API_URL = (
     "https://webservice.fanart.tv/v3/movies/%s?api_key=d2d31f9ecabea050fc7d68aa3146015f"
 )
-FANART_TV_API_URL = "https://webservice.fanart.tv/v3/tv/%s?api_key=d2d31f9ecabea050fc7d68aa3146015f"
+FANART_TV_API_URL = (
+    "https://webservice.fanart.tv/v3/tv/%s?api_key=d2d31f9ecabea050fc7d68aa3146015f"
+)
 # 默认背景图地址
 DEFAULT_TMDB_IMAGE = "https://s3.bmp.ovh/imgs/2022/07/10/77ef9500c851935b.webp"
 # 默认微信消息代理服务器地址
@@ -81,9 +85,7 @@ PT_TAG = "NASTOOL"
 # 电影默认命名格式
 DEFAULT_MOVIE_FORMAT = "{title} ({year})/{title} ({year})-{part} - {videoFormat}"
 # 电视剧默认命名格式
-DEFAULT_TV_FORMAT = (
-    "{title} ({year})/Season {season}/{title} - {season_episode}-{part} - 第 {episode} 集"
-)
+DEFAULT_TV_FORMAT = "{title} ({year})/Season {season}/{title} - {season_episode}-{part} - 第 {episode} 集"
 # 辅助识别参数
 KEYWORD_SEARCH_WEIGHT_1 = [10, 3, 2, 0.5, 0.5]
 KEYWORD_SEARCH_WEIGHT_2 = [10, 2, 1]
@@ -162,20 +164,27 @@ class Config(object):
     def init_config(self):
         try:
             if not self._config_path:
-                print("【Config】NASTOOL_CONFIG 环境变量未设置，程序无法工作，正在退出...")
+                print(
+                    "【Config】NASTOOL_CONFIG 环境变量未设置，程序无法工作，正在退出..."
+                )
                 quit()
             if not os.path.exists(self._config_path):
                 cfg_tp_path = os.path.join(self.get_inner_config_path(), "config.yaml")
                 cfg_tp_path = cfg_tp_path.replace("\\", "/")
                 shutil.copy(cfg_tp_path, self._config_path)
-                print("【Config】config.yaml 配置文件不存在，已将配置文件模板复制到配置目录...")
+                print(
+                    "【Config】config.yaml 配置文件不存在，已将配置文件模板复制到配置目录..."
+                )
             with open(self._config_path, mode="r", encoding="utf-8") as cf:
                 try:
                     # 读取配置
                     print("正在加载配置：%s" % self._config_path)
                     self._config = ruamel.yaml.YAML().load(cf)
                 except Exception as e:
-                    print("【Config】配置文件 config.yaml 格式出现严重错误！请检查：%s" % str(e))
+                    print(
+                        "【Config】配置文件 config.yaml 格式出现严重错误！请检查：%s"
+                        % str(e)
+                    )
                     self._config = {}
         except Exception as err:
             print("【Config】加载 config.yaml 配置出错：%s" % str(err))

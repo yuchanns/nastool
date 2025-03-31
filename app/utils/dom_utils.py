@@ -1,5 +1,4 @@
 class DomUtils:
-
     @staticmethod
     def tag_value(tag_item, tag_name, attname="", default=None):
         """

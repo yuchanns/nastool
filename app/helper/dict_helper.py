@@ -3,7 +3,6 @@ from app.db.models import SYSTEMDICT
 
 
 class DictHelper:
-
     _db = MainDb()
 
     @DbPersist(_db)
@@ -25,7 +24,9 @@ class DictHelper:
                 .update({"VALUE": value})
             )
         else:
-            return self._db.insert(SYSTEMDICT(TYPE=dtype, KEY=key, VALUE=value, NOTE=note))
+            return self._db.insert(
+                SYSTEMDICT(TYPE=dtype, KEY=key, VALUE=value, NOTE=note)
+            )
 
     def get(self, dtype, key):
         """

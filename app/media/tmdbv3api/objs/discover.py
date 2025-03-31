@@ -1,5 +1,6 @@
 from app.media.tmdbv3api.tmdb import TMDb
 
+
 try:
     from urllib import urlencode
 except ImportError:
@@ -20,7 +21,9 @@ class Discover(TMDb):
             params = {}
         if page:
             params.update({"page": page})
-        return self._get_obj(self._call(self._urls["movies"], urlencode(params)), "results")
+        return self._get_obj(
+            self._call(self._urls["movies"], urlencode(params)), "results"
+        )
 
     def discover_tv_shows(self, params, page=1):
         """
@@ -34,4 +37,6 @@ class Discover(TMDb):
             params = {}
         if page:
             params.update({"page": page})
-        return self._get_obj(self._call(self._urls["tvs"], urlencode(params)), "results")
+        return self._get_obj(
+            self._call(self._urls["tvs"], urlencode(params)), "results"
+        )

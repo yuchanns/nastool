@@ -2,6 +2,7 @@ import os
 import re
 
 import log
+
 from app.mediaserver.client._base import _IMediaClient
 from app.utils import ExceptionUtils, RequestUtils, SystemUtils
 from app.utils.types import MediaServerType, MediaType
@@ -54,17 +55,25 @@ class Emby(_IMediaClient):
         """
         if not self._host or not self._apikey:
             return []
-        req_url = "%semby/Library/SelectableMediaFolders?api_key=%s" % (self._host, self._apikey)
+        req_url = "%semby/Library/SelectableMediaFolders?api_key=%s" % (
+            self._host,
+            self._apikey,
+        )
         try:
             res = RequestUtils().get_res(req_url)
             if res:
                 return res.json()
             else:
-                log.error(f"【{self.server_type}】Library/SelectableMediaFolders 未获取到返回数据")
+                log.error(
+                    f"【{self.server_type}】Library/SelectableMediaFolders 未获取到返回数据"
+                )
                 return []
         except Exception as e:
             ExceptionUtils.exception_traceback(e)
-            log.error(f"【{self.server_type}】连接Library/SelectableMediaFolders 出错：" + str(e))
+            log.error(
+                f"【{self.server_type}】连接Library/SelectableMediaFolders 出错："
+                + str(e)
+            )
             return []
 
     def get_admin_user(self):
@@ -113,7 +122,10 @@ class Emby(_IMediaClient):
         """
         if not self._host or not self._apikey:
             return []
-        req_url = "%semby/System/ActivityLog/Entries?api_key=%s&" % (self._host, self._apikey)
+        req_url = "%semby/System/ActivityLog/Entries?api_key=%s&" % (
+            self._host,
+            self._apikey,
+        )
         ret_array = []
         try:
             res = RequestUtils().get_res(req_url)
@@ -124,21 +136,36 @@ class Emby(_IMediaClient):
                     if item.get("Type") == "AuthenticationSucceeded":
                         event_type = "LG"
                         event_date = SystemUtils.get_local_time(item.get("Date"))
-                        event_str = "%s, %s" % (item.get("Name"), item.get("ShortOverview"))
-                        activity = {"type": event_type, "event": event_str, "date": event_date}
+                        event_str = "%s, %s" % (
+                            item.get("Name"),
+                            item.get("ShortOverview"),
+                        )
+                        activity = {
+                            "type": event_type,
+                            "event": event_str,
+                            "date": event_date,
+                        }
                         ret_array.append(activity)
                     if item.get("Type") == "VideoPlayback":
                         event_type = "PL"
                         event_date = SystemUtils.get_local_time(item.get("Date"))
                         event_str = item.get("Name")
-                        activity = {"type": event_type, "event": event_str, "date": event_date}
+                        activity = {
+                            "type": event_type,
+                            "event": event_str,
+                            "date": event_date,
+                        }
                         ret_array.append(activity)
             else:
-                log.error(f"【{self.server_type}】System/ActivityLog/Entries 未获取到返回数据")
+                log.error(
+                    f"【{self.server_type}】System/ActivityLog/Entries 未获取到返回数据"
+                )
                 return []
         except Exception as e:
             ExceptionUtils.exception_traceback(e)
-            log.error(f"【{self.server_type}】连接System/ActivityLog/Entries出错：" + str(e))
+            log.error(
+                f"【{self.server_type}】连接System/ActivityLog/Entries出错：" + str(e)
+            )
             return []
         return ret_array[:num]
 
@@ -299,7 +326,11 @@ class Emby(_IMediaClient):
         """
         if not self._host or not self._apikey:
             return None
-        req_url = "%semby/Items/%s/RemoteImages?api_key=%s" % (self._host, item_id, self._apikey)
+        req_url = "%semby/Items/%s/RemoteImages?api_key=%s" % (
+            self._host,
+            item_id,
+            self._apikey,
+        )
         try:
             res = RequestUtils().get_res(req_url)
             if res:
@@ -335,7 +366,9 @@ class Emby(_IMediaClient):
             if res:
                 return True
             else:
-                log.info(f"【{self.server_type}】刷新媒体库对象 {item_id} 失败，无法连接Emby！")
+                log.info(
+                    f"【{self.server_type}】刷新媒体库对象 {item_id} 失败，无法连接Emby！"
+                )
         except Exception as e:
             ExceptionUtils.exception_traceback(e)
             log.error(f"【{self.server_type}】连接Items/Id/Refresh出错：" + str(e))
@@ -394,7 +427,9 @@ class Emby(_IMediaClient):
         if not item.get("title") or not item.get("year") or not item.get("type"):
             return None
         if item.get("type") == MediaType.TV:
-            item_id = self.__get_emby_series_id_by_name(item.get("title"), item.get("year"))
+            item_id = self.__get_emby_series_id_by_name(
+                item.get("title"), item.get("year")
+            )
             if item_id:
                 # 存在电视剧，则直接刷新这个电视剧就行
                 return item_id
@@ -414,7 +449,9 @@ class Emby(_IMediaClient):
                     continue
                 try:
                     path_len = len(
-                        os.path.commonpath([item.get("target_path"), folder.get("Path")])
+                        os.path.commonpath(
+                            [item.get("target_path"), folder.get("Path")]
+                        )
                     )
                     if path_len >= max_path_len:
                         max_path_len = path_len

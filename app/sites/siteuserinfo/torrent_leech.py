@@ -37,10 +37,14 @@ class TorrentLeechSiteUserInfo(_ISiteUserInfo):
         """
         html_text = self._prepare_html_text(html_text)
         html = etree.HTML(html_text)
-        upload_html = html.xpath('//div[contains(@class,"profile-uploaded")]//span/text()')
+        upload_html = html.xpath(
+            '//div[contains(@class,"profile-uploaded")]//span/text()'
+        )
         if upload_html:
             self.upload = StringUtils.num_filesize(upload_html[0])
-        download_html = html.xpath('//div[contains(@class,"profile-downloaded")]//span/text()')
+        download_html = html.xpath(
+            '//div[contains(@class,"profile-downloaded")]//span/text()'
+        )
         if download_html:
             self.download = StringUtils.num_filesize(download_html[0])
         ratio_html = html.xpath('//div[contains(@class,"profile-ratio")]//span/text()')
@@ -91,7 +95,9 @@ class TorrentLeechSiteUserInfo(_ISiteUserInfo):
             page_seeding = len(seeding_sizes)
 
             for i in range(0, len(seeding_sizes)):
-                size = StringUtils.num_filesize(seeding_sizes[i].xpath("string(.)").strip())
+                size = StringUtils.num_filesize(
+                    seeding_sizes[i].xpath("string(.)").strip()
+                )
                 seeders = StringUtils.str_int(seeding_seeders[i])
 
                 page_seeding_size += size

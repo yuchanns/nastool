@@ -2,7 +2,6 @@ from abc import ABCMeta, abstractmethod
 
 
 class _IMediaClient(metaclass=ABCMeta):
-
     @abstractmethod
     def match(self, ctype):
         """

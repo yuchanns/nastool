@@ -3,6 +3,7 @@ import time
 
 from cacheout import Cache, CacheManager, LRUCache
 
+
 CACHES = {"tmdb_supply": {"maxsize": 200}}
 
 cacheman = CacheManager(CACHES, cache_class=LRUCache)

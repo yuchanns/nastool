@@ -1,7 +1,9 @@
 import datetime
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import log
+
 from app.conf import ModuleConf
 from app.helper import ProgressHelper, SubmoduleHelper
 from app.indexer.client import BuiltinIndexer
@@ -80,7 +82,9 @@ class Indexer(object):
         """
         获取内置索引器的索引站点
         """
-        return BuiltinIndexer().get_indexers(check=check, public=public, indexer_id=indexer_id)
+        return BuiltinIndexer().get_indexers(
+            check=check, public=public, indexer_id=indexer_id
+        )
 
     @staticmethod
     def list_builtin_resources(index_id, page=0, keyword=None):
@@ -108,7 +112,11 @@ class Indexer(object):
         return self._client_type
 
     def search_by_keyword(
-        self, key_word: [str, list], filter_args: dict, match_media=None, in_from: SearchType = None
+        self,
+        key_word: [str, list],
+        filter_args: dict,
+        match_media=None,
+        in_from: SearchType = None,
     ):
         """
         根据关键字调用 Index API 检索
@@ -144,7 +152,8 @@ class Indexer(object):
                 % (key_word, len(indexers))
             )
             self.progress.update(
-                ptype="search", text="开始并行检索 %s，线程数：%s ..." % (key_word, len(indexers))
+                ptype="search",
+                text="开始并行检索 %s，线程数：%s ..." % (key_word, len(indexers)),
             )
         # 多线程
         executor = ThreadPoolExecutor(max_workers=len(indexers))
@@ -152,7 +161,13 @@ class Indexer(object):
         for index in indexers:
             order_seq = 100 - int(index.pri)
             task = executor.submit(
-                self._client.search, order_seq, index, key_word, filter_args, match_media, in_from
+                self._client.search,
+                order_seq,
+                index,
+                key_word,
+                filter_args,
+                match_media,
+                in_from,
             )
             all_task.append(task)
         ret_array = []
@@ -160,7 +175,9 @@ class Indexer(object):
         for future in as_completed(all_task):
             result = future.result()
             finish_count += 1
-            self.progress.update(ptype="search", value=round(100 * (finish_count / len(all_task))))
+            self.progress.update(
+                ptype="search", value=round(100 * (finish_count / len(all_task)))
+            )
             if result:
                 ret_array = ret_array + result
         # 计算耗时

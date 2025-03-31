@@ -19,7 +19,13 @@ class ReleaseGroupsMatcher(object):
         "beitai": ["BeiTai"],
         "btschool": ["Bts(?:CHOOL|HD|PAD|TV)", "Zone"],
         "carpt": ["CarPT"],
-        "chdbits": ["CHD(?:|Bits|PAD|(?:|HK)TV|WEB)", "StBOX", "OneHD", "Lee", "xiaopie"],
+        "chdbits": [
+            "CHD(?:|Bits|PAD|(?:|HK)TV|WEB)",
+            "StBOX",
+            "OneHD",
+            "Lee",
+            "xiaopie",
+        ],
         "discfan": [],
         "dragonhd": [],
         "eastgame": ["(?:(?:iNT|(?:HALFC|Mini(?:S|H|FH)D))-|)TLF"],
@@ -57,7 +63,12 @@ class ReleaseGroupsMatcher(object):
         "pterclub": ["PTer(?:|DIY|Game|(?:M|T)V|WEB)"],
         "pthome": ["PTH(?:|Audio|eBook|music|ome|tv|WEB)"],
         "ptmsg": [],
-        "ptsbao": ["PTsbao", "OPS", "F(?:Fans(?:AIeNcE|BD|D(?:VD|IY)|TV|WEB)|HDMv)", "SGXT"],
+        "ptsbao": [
+            "PTsbao",
+            "OPS",
+            "F(?:Fans(?:AIeNcE|BD|D(?:VD|IY)|TV|WEB)|HDMv)",
+            "SGXT",
+        ],
         "pttime": [],
         "putao": ["PuTao"],
         "soulvoice": [],
@@ -98,14 +109,18 @@ class ReleaseGroupsMatcher(object):
         for site_groups in self.RELEASE_GROUPS.values():
             for release_group in site_groups:
                 release_groups.append(release_group)
-        custom_release_groups = (self.__config.get_config("laboratory") or {}).get("release_groups")
+        custom_release_groups = (self.__config.get_config("laboratory") or {}).get(
+            "release_groups"
+        )
         if custom_release_groups:
             if custom_release_groups.startswith(";"):
                 custom_release_groups = custom_release_groups[1:]
             if custom_release_groups.endswith(";"):
                 custom_release_groups = custom_release_groups[:-1]
             custom_release_groups = custom_release_groups.replace(";", "|")
-            self.__release_groups = f"{'|'.join(release_groups)}|{custom_release_groups}"
+            self.__release_groups = (
+                f"{'|'.join(release_groups)}|{custom_release_groups}"
+            )
         else:
             self.__release_groups = "|".join(release_groups)
 

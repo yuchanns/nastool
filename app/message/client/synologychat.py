@@ -1,10 +1,12 @@
 import json
+
 from threading import Lock
 from urllib.parse import quote
 
 from app.message.client._base import _IMessageClient
 from app.utils import ExceptionUtils, RequestUtils, StringUtils
 from config import Config
+
 
 lock = Lock()
 
@@ -125,7 +127,11 @@ class SynologyChat(_IMessageClient):
                 user_ids = [int(user_id)]
             else:
                 user_ids = self.__get_bot_users()
-            payload_data = {"text": quote(caption), "file_url": quote(image), "user_ids": user_ids}
+            payload_data = {
+                "text": quote(caption),
+                "file_url": quote(image),
+                "user_ids": user_ids,
+            }
             return self.__send_request(payload_data)
         except Exception as msg_e:
             ExceptionUtils.exception_traceback(msg_e)

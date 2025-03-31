@@ -4,6 +4,7 @@ import shutil
 import ruamel.yaml
 
 import log
+
 from app.utils import ExceptionUtils
 from app.utils.commons import singleton
 from config import Config
@@ -26,11 +27,15 @@ class Category:
             category = media.get("category")
             if not category:
                 return
-            self._category_path = os.path.join(Config().get_config_path(), "%s.yaml" % category)
+            self._category_path = os.path.join(
+                Config().get_config_path(), "%s.yaml" % category
+            )
             try:
                 if not os.path.exists(self._category_path):
                     shutil.copy(
-                        os.path.join(Config().get_inner_config_path(), "default-category.yaml"),
+                        os.path.join(
+                            Config().get_inner_config_path(), "default-category.yaml"
+                        ),
                         self._category_path,
                     )
                     log.console(
@@ -50,7 +55,9 @@ class Category:
                         self._categorys = {}
             except Exception as err:
                 ExceptionUtils.exception_traceback(err)
-                log.console("【Config】加载 %s.yaml 配置出错：%s" % (category, str(err)))
+                log.console(
+                    "【Config】加载 %s.yaml 配置出错：%s" % (category, str(err))
+                )
                 return False
 
             if self._categorys:
@@ -154,7 +161,9 @@ class Category:
                     match_flag = False
                     continue
                 elif attr == "production_countries":
-                    info_values = [str(val.get("iso_3166_1")).upper() for val in info_value]
+                    info_values = [
+                        str(val.get("iso_3166_1")).upper() for val in info_value
+                    ]
                 else:
                     if isinstance(info_value, list):
                         info_values = [str(val).upper() for val in info_value]

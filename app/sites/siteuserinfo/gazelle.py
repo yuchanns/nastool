@@ -31,7 +31,9 @@ class GazelleSiteUserInfo(_ISiteUserInfo):
             user_id_match = re.search(r"user.php\?id=(\d+)", tmps[0].attrib["href"])
             if user_id_match and user_id_match.group().strip():
                 self.userid = user_id_match.group(1)
-                self._torrent_seeding_page = f"torrents.php?type=seeding&userid={self.userid}"
+                self._torrent_seeding_page = (
+                    f"torrents.php?type=seeding&userid={self.userid}"
+                )
                 self._user_detail_page = f"user.php?id={self.userid}"
                 self.username = tmps[0].text.strip()
 
@@ -51,7 +53,9 @@ class GazelleSiteUserInfo(_ISiteUserInfo):
             if tmps:
                 self.download = StringUtils.num_filesize(tmps[0])
 
-        self.ratio = 0.0 if self.download <= 0.0 else round(self.upload / self.download, 3)
+        self.ratio = (
+            0.0 if self.download <= 0.0 else round(self.upload / self.download, 3)
+        )
 
         tmps = html.xpath('//a[contains(@href, "bonus.php")]/@data-tooltip')
         if tmps:
@@ -114,7 +118,9 @@ class GazelleSiteUserInfo(_ISiteUserInfo):
         size_col = 3
         # 搜索size列
         if html.xpath('//table[contains(@id, "torrent")]//tr[1]/td'):
-            size_col = len(html.xpath('//table[contains(@id, "torrent")]//tr[1]/td')) - 3
+            size_col = (
+                len(html.xpath('//table[contains(@id, "torrent")]//tr[1]/td')) - 3
+            )
         # 搜索seeders列
         seeders_col = size_col + 2
 
@@ -131,7 +137,9 @@ class GazelleSiteUserInfo(_ISiteUserInfo):
             page_seeding = len(seeding_sizes)
 
             for i in range(0, len(seeding_sizes)):
-                size = StringUtils.num_filesize(seeding_sizes[i].xpath("string(.)").strip())
+                size = StringUtils.num_filesize(
+                    seeding_sizes[i].xpath("string(.)").strip()
+                )
                 seeders = int(seeding_seeders[i])
 
                 page_seeding_size += size

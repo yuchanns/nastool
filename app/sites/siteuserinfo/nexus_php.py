@@ -4,6 +4,7 @@ import re
 from lxml import etree
 
 import log
+
 from app.sites.siteuserinfo._base import SITE_BASE_ORDER, _ISiteUserInfo
 from app.utils import StringUtils
 from app.utils.exception_utils import ExceptionUtils
@@ -55,7 +56,9 @@ class NexusPhpSiteUserInfo(_ISiteUserInfo):
             message_text = message_labels[0].xpath("string(.)")
 
             log.debug(f"【Sites】{self.site_name} 消息原始信息 {message_text}")
-            message_unread_match = re.findall(r"[^Date](信息箱\s*|\(|你有\xa0)(\d+)", message_text)
+            message_unread_match = re.findall(
+                r"[^Date](信息箱\s*|\(|你有\xa0)(\d+)", message_text
+            )
 
             if message_unread_match and len(message_unread_match[-1]) == 2:
                 self.message_unread = StringUtils.str_int(message_unread_match[-1][1])
@@ -95,16 +98,24 @@ class NexusPhpSiteUserInfo(_ISiteUserInfo):
             html_text,
             re.IGNORECASE,
         )
-        self.upload = StringUtils.num_filesize(upload_match.group(1).strip()) if upload_match else 0
+        self.upload = (
+            StringUtils.num_filesize(upload_match.group(1).strip())
+            if upload_match
+            else 0
+        )
         download_match = re.search(
             r"[^总子影力]下[载載]量?[:：_<>/a-zA-Z-=\"'\s#;]+([\d,.\s]+[KMGTPI]*B)",
             html_text,
             re.IGNORECASE,
         )
         self.download = (
-            StringUtils.num_filesize(download_match.group(1).strip()) if download_match else 0
+            StringUtils.num_filesize(download_match.group(1).strip())
+            if download_match
+            else 0
         )
-        ratio_match = re.search(r"分享率[:：_<>/a-zA-Z-=\"'\s#;]+([\d,.\s]+)", html_text)
+        ratio_match = re.search(
+            r"分享率[:：_<>/a-zA-Z-=\"'\s#;]+([\d,.\s]+)", html_text
+        )
         self.ratio = (
             StringUtils.str_float(ratio_match.group(1))
             if (ratio_match and ratio_match.group(1).strip())
@@ -119,7 +130,11 @@ class NexusPhpSiteUserInfo(_ISiteUserInfo):
             else 0
         )
         html = etree.HTML(html_text)
-        tmps = html.xpath('//span[@class = "ucoin-symbol ucoin-gold"]//text()') if html else None
+        tmps = (
+            html.xpath('//span[@class = "ucoin-symbol ucoin-gold"]//text()')
+            if html
+            else None
+        )
         if tmps:
             self.bonus = StringUtils.str_float(str(tmps[-1]))
             return
@@ -131,7 +146,8 @@ class NexusPhpSiteUserInfo(_ISiteUserInfo):
                 self.bonus = StringUtils.str_float(bonus_match.group(1))
                 return
         bonus_match = re.search(
-            r"mybonus.[\[\]:：<>/a-zA-Z_\-=\"'\s#;.(使用魔力值豆]+\s*([\d,.]+)[<()&\s]", html_text
+            r"mybonus.[\[\]:：<>/a-zA-Z_\-=\"'\s#;.(使用魔力值豆]+\s*([\d,.]+)[<()&\s]",
+            html_text,
         )
         try:
             if bonus_match and bonus_match.group(1).strip():
@@ -169,15 +185,15 @@ class NexusPhpSiteUserInfo(_ISiteUserInfo):
         size_col = 3
         seeders_col = 4
         # 搜索size列
-        size_col_xpath = (
-            '//tr[position()=1]/td[(img[@class="size"] and img[@alt="size"]) or (text() = "大小")]'
-        )
+        size_col_xpath = '//tr[position()=1]/td[(img[@class="size"] and img[@alt="size"]) or (text() = "大小")]'
         if html.xpath(size_col_xpath):
             size_col = len(html.xpath(f"{size_col_xpath}/preceding-sibling::td")) + 1
         # 搜索seeders列
         seeders_col_xpath = '//tr[position()=1]/td[(img[@class="seeders"] and img[@alt="seeders"]) or (text() = "在做种")]'
         if html.xpath(seeders_col_xpath):
-            seeders_col = len(html.xpath(f"{seeders_col_xpath}/preceding-sibling::td")) + 1
+            seeders_col = (
+                len(html.xpath(f"{seeders_col_xpath}/preceding-sibling::td")) + 1
+            )
 
         page_seeding = 0
         page_seeding_size = 0
@@ -188,7 +204,9 @@ class NexusPhpSiteUserInfo(_ISiteUserInfo):
             page_seeding = len(seeding_sizes)
 
             for i in range(0, len(seeding_sizes)):
-                size = StringUtils.num_filesize(seeding_sizes[i].xpath("string(.)").strip())
+                size = StringUtils.num_filesize(
+                    seeding_sizes[i].xpath("string(.)").strip()
+                )
                 seeders = StringUtils.str_int(seeding_seeders[i])
 
                 page_seeding_size += size
@@ -229,7 +247,9 @@ class NexusPhpSiteUserInfo(_ISiteUserInfo):
             '|//div/b[text()="加入日期"]/../text()'
         )
         if join_at_text:
-            self.join_at = StringUtils.unify_datetime_str(join_at_text[0].split(" (")[0].strip())
+            self.join_at = StringUtils.unify_datetime_str(
+                join_at_text[0].split(" (")[0].strip()
+            )
 
         # 做种体积 & 做种数
         # seeding 页面获取不到的话，此处再获取一次
@@ -258,9 +278,13 @@ class NexusPhpSiteUserInfo(_ISiteUserInfo):
         if not self.seeding_info:
             self.seeding_info = tmp_seeding_info
 
-        seeding_sizes = html.xpath('//tr/td[text()="做种统计"]/following-sibling::td[1]//text()')
+        seeding_sizes = html.xpath(
+            '//tr/td[text()="做种统计"]/following-sibling::td[1]//text()'
+        )
         if seeding_sizes:
-            seeding_match = re.search(r"总做种数:\s+(\d+)", seeding_sizes[0], re.IGNORECASE)
+            seeding_match = re.search(
+                r"总做种数:\s+(\d+)", seeding_sizes[0], re.IGNORECASE
+            )
             seeding_size_match = re.search(
                 r"总做种体积:\s+([\d,.\s]+[KMGTPI]*B)", seeding_sizes[0], re.IGNORECASE
             )
@@ -289,7 +313,8 @@ class NexusPhpSiteUserInfo(_ISiteUserInfo):
         """
         # 单独的种子页面
         seeding_url_text = html.xpath(
-            '//a[contains(@href,"getusertorrentlist.php") ' 'and contains(@href,"seeding")]/@href'
+            '//a[contains(@href,"getusertorrentlist.php") '
+            'and contains(@href,"seeding")]/@href'
         )
         if seeding_url_text:
             self._torrent_seeding_page = seeding_url_text[0].strip()
@@ -345,7 +370,7 @@ class NexusPhpSiteUserInfo(_ISiteUserInfo):
             return
 
         user_levels_text = html.xpath(
-            '//tr/td[text()="等級" or text()="等级"]/' "following-sibling::td[1]"
+            '//tr/td[text()="等級" or text()="等级"]/following-sibling::td[1]'
         )
         if user_levels_text:
             self.user_level = user_levels_text[0].xpath("string(.)").strip()
@@ -384,7 +409,9 @@ class NexusPhpSiteUserInfo(_ISiteUserInfo):
             return None, None, None
         # 标题
         message_head_text = None
-        message_head = html.xpath("//h1/text()" '|//div[@class="layui-card-header"]/span[1]/text()')
+        message_head = html.xpath(
+            '//h1/text()|//div[@class="layui-card-header"]/span[1]/text()'
+        )
         if message_head:
             message_head_text = message_head[-1].strip()
 

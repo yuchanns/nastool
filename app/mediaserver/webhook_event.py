@@ -56,9 +56,13 @@ class WebhookEvent:
                     message.get("Item", {}).get("Name"),
                 )
                 eventItem["item_id"] = message.get("Item", {}).get("SeriesId")
-                eventItem["season_id"] = message.get("Item", {}).get("ParentIndexNumber")
+                eventItem["season_id"] = message.get("Item", {}).get(
+                    "ParentIndexNumber"
+                )
                 eventItem["episode_id"] = message.get("Item", {}).get("IndexNumber")
-                eventItem["tmdb_id"] = message.get("Item", {}).get("ProviderIds", {}).get("Tmdb")
+                eventItem["tmdb_id"] = (
+                    message.get("Item", {}).get("ProviderIds", {}).get("Tmdb")
+                )
                 if (
                     message.get("Item", {}).get("Overview")
                     and len(message.get("Item", {}).get("Overview")) > 100
@@ -79,7 +83,9 @@ class WebhookEvent:
                 )
                 eventItem["item_path"] = message.get("Item", {}).get("Path")
                 eventItem["item_id"] = message.get("Item", {}).get("Id")
-                eventItem["tmdb_id"] = message.get("Item", {}).get("ProviderIds", {}).get("Tmdb")
+                eventItem["tmdb_id"] = (
+                    message.get("Item", {}).get("ProviderIds", {}).get("Tmdb")
+                )
                 if len(message.get("Item", {}).get("Overview")) > 100:
                     eventItem["overview"] = (
                         str(message.get("Item", {}).get("Overview"))[:100] + "..."
@@ -160,13 +166,9 @@ class WebhookEvent:
 
         # 消息标题
         if event_info.get("item_type") == "TV":
-            message_title = (
-                f"{_webhook_actions.get(event_info.get('event'))}剧集 {event_info.get('item_name')}"
-            )
+            message_title = f"{_webhook_actions.get(event_info.get('event'))}剧集 {event_info.get('item_name')}"
         elif event_info.get("item_type") == "MOV":
-            message_title = (
-                f"{_webhook_actions.get(event_info.get('event'))}电影 {event_info.get('item_name')}"
-            )
+            message_title = f"{_webhook_actions.get(event_info.get('event'))}电影 {event_info.get('item_name')}"
         else:
             message_title = f"{_webhook_actions.get(event_info.get('event'))}"
 
@@ -199,7 +201,9 @@ class WebhookEvent:
                 try:
                     # 从tmdb获取剧集某季某集图片
                     image_url = self.media.get_episode_images(
-                        tmdb_id, event_info.get("season_id"), event_info.get("episode_id")
+                        tmdb_id,
+                        event_info.get("season_id"),
+                        event_info.get("episode_id"),
                     )
                 except IOError:
                     pass

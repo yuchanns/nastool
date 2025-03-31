@@ -3,6 +3,7 @@ import asyncio
 from pikpakapi import DownloadStatus, PikPakApi
 
 import log
+
 from app.downloader.client._base import _IDownloadClient
 from app.utils.types import DownloaderType
 from config import Config

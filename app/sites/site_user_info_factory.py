@@ -1,6 +1,7 @@
 import requests
 
 import log
+
 from app.helper import ChromeHelper, SubmoduleHelper
 from app.utils import ExceptionUtils, RequestUtils
 from app.utils.commons import singleton
@@ -9,7 +10,6 @@ from config import Config
 
 @singleton
 class SiteUserInfoFactory(object):
-
     def __init__(self):
         self._site_schema = SubmoduleHelper.import_submodules(
             "app.sites.siteuserinfo", filter_func=lambda _, obj: hasattr(obj, "schema")
@@ -27,10 +27,14 @@ class SiteUserInfoFactory(object):
 
         return None
 
-    def build(self, url, site_name, site_cookie=None, ua=None, emulate=None, proxy=False):
+    def build(
+        self, url, site_name, site_cookie=None, ua=None, emulate=None, proxy=False
+    ):
         if not site_cookie:
             return None
-        log.debug(f"【Sites】站点 {site_name} url={url} site_cookie={site_cookie} ua={ua}")
+        log.debug(
+            f"【Sites】站点 {site_name} url={url} site_cookie={site_cookie} ua={ua}"
+        )
         session = requests.Session()
         # 检测环境，有浏览器内核的优先使用仿真签到
         chrome = ChromeHelper()
@@ -61,11 +65,14 @@ class SiteUserInfoFactory(object):
                     i = html_text.find("window.location")
                     if i == -1:
                         return None
-                    tmp_url = url + html_text[i : html_text.find(";")].replace('"', "").replace(
-                        "+", ""
-                    ).replace(" ", "").replace("window.location=", "")
+                    tmp_url = url + html_text[i : html_text.find(";")].replace(
+                        '"', ""
+                    ).replace("+", "").replace(" ", "").replace("window.location=", "")
                     res = RequestUtils(
-                        cookies=site_cookie, session=session, headers=ua, proxies=proxies
+                        cookies=site_cookie,
+                        session=session,
+                        headers=ua,
+                        proxies=proxies,
                     ).get_res(url=tmp_url)
                     if res and res.status_code == 200:
                         if "charset=utf-8" in res.text or "charset=UTF-8" in res.text:
@@ -85,7 +92,10 @@ class SiteUserInfoFactory(object):
                 # 兼容假首页情况，假首页通常没有 <link rel="search" 属性
                 if '"search"' not in html_text and '"csrf-token"' not in html_text:
                     res = RequestUtils(
-                        cookies=site_cookie, session=session, headers=ua, proxies=proxies
+                        cookies=site_cookie,
+                        session=session,
+                        headers=ua,
+                        proxies=proxies,
                     ).get_res(url=url + "/index.php")
                     if res and res.status_code == 200:
                         if "charset=utf-8" in res.text or "charset=UTF-8" in res.text:
@@ -96,7 +106,9 @@ class SiteUserInfoFactory(object):
                         if not html_text:
                             return None
             elif res is not None:
-                log.error(f"【Sites】站点 {site_name} 连接失败，状态码：{res.status_code}")
+                log.error(
+                    f"【Sites】站点 {site_name} 连接失败，状态码：{res.status_code}"
+                )
                 return None
             else:
                 log.error(f"【Sites】站点 {site_name} 无法访问：{url}")
@@ -106,4 +118,6 @@ class SiteUserInfoFactory(object):
         if not site_schema:
             log.error("【Sites】站点 %s 无法识别站点类型" % site_name)
             return None
-        return site_schema(site_name, url, site_cookie, html_text, session=session, ua=ua)
+        return site_schema(
+            site_name, url, site_cookie, html_text, session=session, ua=ua
+        )

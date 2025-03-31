@@ -2,6 +2,7 @@
 
 import xmlrpc.client
 
+
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = 6800
 SERVER_URI_FORMAT = "%s:%s/rpc"
@@ -61,7 +62,10 @@ class PyAria2(object):
         return: This method returns list of GID of registered download.
         """
         return self.server.aria2.addMetalink(
-            self._secret, xmlrpc.client.Binary(open(metalink, "rb").read()), options, position
+            self._secret,
+            xmlrpc.client.Binary(open(metalink, "rb").read()),
+            options,
+            position,
         )
 
     def remove(self, gid):
@@ -250,7 +254,9 @@ class PyAria2(object):
 
         return: This method returns a list which contains 2 integers. The first integer is the number of URIs deleted. The second integer is the number of URIs added.
         """
-        return self.server.aria2.changeUri(self._secret, gid, fileIndex, delUris, addUris, position)
+        return self.server.aria2.changeUri(
+            self._secret, gid, fileIndex, delUris, addUris, position
+        )
 
     def getOption(self, gid):
         """

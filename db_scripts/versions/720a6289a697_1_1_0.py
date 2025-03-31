@@ -7,7 +7,9 @@ Create Date: 2023-01-22 08:18:00.723780
 """
 
 import sqlalchemy as sa
+
 from alembic import op
+
 
 # revision identifiers, used by Alembic.
 revision = "720a6289a697"
@@ -70,11 +72,15 @@ def upgrade() -> None:
     # 1.0.3
     try:
         with op.batch_alter_table("TRANSFER_HISTORY") as batch_op:
-            batch_op.alter_column("FILE_PATH", new_column_name="SOURCE_PATH", existing_type=sa.Text)
+            batch_op.alter_column(
+                "FILE_PATH", new_column_name="SOURCE_PATH", existing_type=sa.Text
+            )
             batch_op.alter_column(
                 "FILE_NAME", new_column_name="SOURCE_FILENAME", existing_type=sa.Text
             )
-            batch_op.alter_column("SE", new_column_name="SEASON_EPISODE", existing_type=sa.Text)
+            batch_op.alter_column(
+                "SE", new_column_name="SEASON_EPISODE", existing_type=sa.Text
+            )
             batch_op.add_column(sa.Column("TMDBID", sa.Integer))
             batch_op.add_column(sa.Column("DEST_PATH", sa.Text))
             batch_op.add_column(sa.Column("DEST_FILENAME", sa.Text))

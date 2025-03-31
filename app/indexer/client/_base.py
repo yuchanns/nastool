@@ -1,8 +1,10 @@
 import datetime
 import xml.dom.minidom
+
 from abc import ABCMeta, abstractmethod
 
 import log
+
 from app.filter import Filter
 from app.helper import ProgressHelper
 from app.media import Media
@@ -48,7 +50,13 @@ class _IIndexClient(metaclass=ABCMeta):
 
     @abstractmethod
     def search(
-        self, order_seq, indexer, key_word, filter_args: dict, match_media, in_from: SearchType
+        self,
+        order_seq,
+        indexer,
+        key_word,
+        filter_args: dict,
+        match_media,
+        in_from: SearchType,
     ):
         """
         根据关键字多线程检索
@@ -74,7 +82,9 @@ class _IIndexClient(metaclass=ABCMeta):
             self.progress.update(ptype="search", text=f"{indexer.name} 未检索到数据")
             return []
         else:
-            log.warn(f"【{self.index_type}】{indexer.name} 返回数据：{len(result_array)}")
+            log.warn(
+                f"【{self.index_type}】{indexer.name} 返回数据：{len(result_array)}"
+            )
             return self.filter_search_results(
                 result_array=result_array,
                 order_seq=order_seq,
@@ -197,7 +207,13 @@ class _IIndexClient(metaclass=ABCMeta):
         return torrents
 
     def filter_search_results(
-        self, result_array: list, order_seq, indexer, filter_args: dict, match_media, start_time
+        self,
+        result_array: list,
+        order_seq,
+        indexer,
+        filter_args: dict,
+        match_media,
+        start_time,
     ):
         """
         从检索结果中匹配符合资源条件的记录
@@ -235,7 +251,11 @@ class _IIndexClient(metaclass=ABCMeta):
             )
             imdbid = item.get("imdbid")
             # 全匹配模式下，非公开站点，过滤掉做种数为0的
-            if filter_args.get("seeders") and not indexer.public and str(seeders) == "0":
+            if (
+                filter_args.get("seeders")
+                and not indexer.public
+                and str(seeders) == "0"
+            ):
                 log.info(f"【{self.index_type}】{torrent_name} 做种数为0")
                 index_rule_fail += 1
                 continue
@@ -254,7 +274,10 @@ class _IIndexClient(metaclass=ABCMeta):
             )
 
             # 先过滤掉可以明确的类型
-            if meta_info.type == MediaType.TV and filter_args.get("type") == MediaType.MOVIE:
+            if (
+                meta_info.type == MediaType.TV
+                and filter_args.get("type") == MediaType.MOVIE
+            ):
                 log.info(
                     f"【{self.index_type}】{torrent_name} 是 {meta_info.type.value}，不匹配类型：{filter_args.get('type').value}"
                 )
@@ -287,7 +310,9 @@ class _IIndexClient(metaclass=ABCMeta):
                 else:
                     # 查询缓存
                     cache_info = self.media.get_cache_info(meta_info)
-                    if match_media and str(cache_info.get("id")) == str(match_media.tmdb_id):
+                    if match_media and str(cache_info.get("id")) == str(
+                        match_media.tmdb_id
+                    ):
                         # 缓存匹配，合并媒体数据
                         media_info = self.media.merge_media_info(meta_info, match_media)
                     else:
@@ -296,7 +321,9 @@ class _IIndexClient(metaclass=ABCMeta):
                             title=torrent_name, subtitle=description, chinese=False
                         )
                         if not media_info:
-                            log.warn(f"【{self.index_type}】{torrent_name} 识别媒体信息出错！")
+                            log.warn(
+                                f"【{self.index_type}】{torrent_name} 识别媒体信息出错！"
+                            )
                             index_error += 1
                             continue
                         elif not media_info.tmdb_info:
@@ -313,7 +340,9 @@ class _IIndexClient(metaclass=ABCMeta):
                             index_match_fail += 1
                             continue
                         # 合并媒体数据
-                        media_info = self.media.merge_media_info(media_info, match_media)
+                        media_info = self.media.merge_media_info(
+                            media_info, match_media
+                        )
                 # 过滤类型
                 if filter_args.get("type"):
                     if (
@@ -331,14 +360,19 @@ class _IIndexClient(metaclass=ABCMeta):
                 # 洗版
                 if match_media.over_edition:
                     # 季集不完整的资源不要
-                    if media_info.type != MediaType.MOVIE and media_info.get_episode_list():
+                    if (
+                        media_info.type != MediaType.MOVIE
+                        and media_info.get_episode_list()
+                    ):
                         log.info(
                             f"【{self.index_type}】{media_info.get_title_string()}{media_info.get_season_string()} "
                             f"正在洗版，过滤掉季集不完整的资源：{torrent_name} {description}"
                         )
                         continue
                     # 检查优先级是否更好
-                    if match_media.res_order and int(res_order) <= int(match_media.res_order):
+                    if match_media.res_order and int(res_order) <= int(
+                        match_media.res_order
+                    ):
                         log.info(
                             f"【{self.index_type}】{media_info.get_title_string()}{media_info.get_season_string()} "
                             f"正在洗版，已洗版优先级：{100 - int(match_media.res_order)}，"

@@ -1,7 +1,9 @@
 import datetime
+
 from functools import wraps
 
 import jwt
+
 from flask import request
 
 from app.utils import TokenCache
@@ -20,7 +22,11 @@ def require_auth(func):
             auth = str(auth).split()[-1]
             if auth == Config().get_config("security").get("api_key"):
                 return func(*args, **kwargs)
-        return {"code": 401, "success": False, "message": "安全认证未通过，请检查ApiKey"}
+        return {
+            "code": 401,
+            "success": False,
+            "message": "安全认证未通过，请检查ApiKey",
+        }
 
     return wrapper
 
@@ -38,7 +44,9 @@ def generate_access_token(username: str, algorithm: str = "HS256", exp: float = 
     exp_datetime = now + datetime.timedelta(hours=exp)
     access_payload = {"exp": exp_datetime, "iat": now, "username": username}
     access_token = jwt.encode(
-        access_payload, Config().get_config("security").get("api_key"), algorithm=algorithm
+        access_payload,
+        Config().get_config("security").get("api_key"),
+        algorithm=algorithm,
     )
     return access_token
 
@@ -83,9 +91,12 @@ def login_required(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-
         def auth_failed():
-            return {"code": 403, "success": False, "message": "安全认证未通过，请检查Token"}
+            return {
+                "code": 403,
+                "success": False,
+                "message": "安全认证未通过，请检查Token",
+            }
 
         token = request.headers.get("Authorization", default=None)
         if not token:

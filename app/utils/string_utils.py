@@ -3,6 +3,7 @@ import datetime
 import hashlib
 import random
 import re
+
 from urllib import parse
 
 import cn2an
@@ -14,7 +15,6 @@ from app.utils.types import MediaType
 
 
 class StringUtils:
-
     @staticmethod
     def num_filesize(text):
         """
@@ -157,7 +157,9 @@ class StringUtils:
         忽略特殊字符
         """
         # 需要忽略的特殊字符
-        CONVERT_EMPTY_CHARS = r"[、.。,，·:：;；!！'’\"“”()（）\[\]【】「」\-——\+\|\\_/&#～~]"
+        CONVERT_EMPTY_CHARS = (
+            r"[、.。,，·:：;；!！'’\"“”()（）\[\]【】「」\-——\+\|\\_/&#～~]"
+        )
         if not text:
             return text
         if not isinstance(text, list):
@@ -181,11 +183,16 @@ class StringUtils:
         """
         if not size:
             return size
-        size = re.sub(r"\s|B|iB", "", str(size), re.I)
+        size = re.sub(r"\s|B|iB", "", str(size), count=re.I)
         if size.replace(".", "").isdigit():
             try:
                 size = float(size)
-                d = [(1024 - 1, "K"), (1024**2 - 1, "M"), (1024**3 - 1, "G"), (1024**4 - 1, "T")]
+                d = [
+                    (1024 - 1, "K"),
+                    (1024**2 - 1, "M"),
+                    (1024**3 - 1, "G"),
+                    (1024**4 - 1, "T"),
+                ]
                 s = [x[0] for x in d]
                 index = bisect.bisect_left(s, size) - 1
                 if index == -1:
@@ -266,16 +273,22 @@ class StringUtils:
             mtype = MediaType.TV
         else:
             mtype = None
-        content = re.sub(r"^电影|^电视剧|^动漫|\s+电影|\s+电视剧|\s+动漫", "", content).strip()
+        content = re.sub(
+            r"^电影|^电视剧|^动漫|\s+电影|\s+电视剧|\s+动漫", "", content
+        ).strip()
         # 稍微切一下剧集吧
         season_num = None
         episode_num = None
         year = None
-        season_re = re.search(r"第\s*([0-9一二三四五六七八九十]+)\s*季", content, re.IGNORECASE)
+        season_re = re.search(
+            r"第\s*([0-9一二三四五六七八九十]+)\s*季", content, re.IGNORECASE
+        )
         if season_re:
             mtype = MediaType.TV
             season_num = int(cn2an.cn2an(season_re.group(1), mode="smart"))
-        episode_re = re.search(r"第\s*([0-9一二三四五六七八九十]+)\s*集", content, re.IGNORECASE)
+        episode_re = re.search(
+            r"第\s*([0-9一二三四五六七八九十]+)\s*集", content, re.IGNORECASE
+        )
         if episode_re:
             mtype = MediaType.TV
             episode_num = int(cn2an.cn2an(episode_re.group(1), mode="smart"))
@@ -305,7 +318,7 @@ class StringUtils:
         random_str = ""
         base_str = "ABCDEFGHIGKLMNOPQRSTUVWXYZabcdefghigklmnopqrstuvwxyz0123456789"
         length = len(base_str) - 1
-        for i in range(randomlength):
+        for _i in range(randomlength):
             random_str += base_str[random.randint(0, length)]
         return random_str
 

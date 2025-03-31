@@ -1,9 +1,11 @@
 import json
+
 from threading import Lock
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
 import log
+
 from app.conf import ModuleConf
 from app.downloader import Downloader
 from app.helper import DbHelper
@@ -11,6 +13,7 @@ from app.message import Message
 from app.utils import ExceptionUtils
 from app.utils.commons import singleton
 from config import Config
+
 
 lock = Lock()
 
@@ -111,9 +114,9 @@ class TorrentRemover(object):
             try:
                 lock.acquire()
                 # 获取需删除种子列表
-                downloader_type = ModuleConf.TORRENTREMOVER_DICT.get(task.get("downloader")).get(
-                    "downloader_type"
-                )
+                downloader_type = ModuleConf.TORRENTREMOVER_DICT.get(
+                    task.get("downloader")
+                ).get("downloader_type")
                 task.get("config")["samedata"] = task.get("samedata")
                 task.get("config")["onlynastool"] = task.get("onlynastool")
                 torrents = self.downloader.get_remove_torrents(
@@ -148,7 +151,9 @@ class TorrentRemover(object):
                         text = f"{text}\n{text_item}"
                         # 删除种子
                         self.downloader.delete_torrents(
-                            downloader=downloader_type, delete_file=False, ids=[torrent.get("id")]
+                            downloader=downloader_type,
+                            delete_file=False,
+                            ids=[torrent.get("id")],
                         )
                 elif task.get("action") == 3:
                     text = f"共删除{len(torrents)}个种子（及文件）"
@@ -161,13 +166,17 @@ class TorrentRemover(object):
                         text = f"{text}\n{text_item}"
                         # 删除种子
                         self.downloader.delete_torrents(
-                            downloader=downloader_type, delete_file=True, ids=[torrent.get("id")]
+                            downloader=downloader_type,
+                            delete_file=True,
+                            ids=[torrent.get("id")],
                         )
                 if torrents and title and text:
                     self.message.send_brushtask_remove_message(title=title, text=text)
             except Exception as e:
                 ExceptionUtils.exception_traceback(e)
-                log.error(f"【TorrentRemover】自动删种任务：{task.get('name')}异常：{str(e)}")
+                log.error(
+                    f"【TorrentRemover】自动删种任务：{task.get('name')}异常：{str(e)}"
+                )
             finally:
                 lock.release()
 
@@ -221,7 +230,9 @@ class TorrentRemover(object):
             upload_avs = int(upload_avs)
         size = data.get("size")
         size = str(size).split("-") if size else []
-        if size and (len(size) != 2 or not str(size[0]).isdigit() or not str(size[-1]).isdigit()):
+        if size and (
+            len(size) != 2 or not str(size[0]).isdigit() or not str(size[-1]).isdigit()
+        ):
             return False, "种子大小参数不合法"
         else:
             size = [int(size[0]), int(size[-1])] if size else []
@@ -241,7 +252,9 @@ class TorrentRemover(object):
                 for qb_state_item in qb_state:
                     if (
                         qb_state_item
-                        not in ModuleConf.TORRENTREMOVER_DICT.get("Qb").get("torrent_state").keys()
+                        not in ModuleConf.TORRENTREMOVER_DICT.get("Qb")
+                        .get("torrent_state")
+                        .keys()
                     ):
                         return False, "种子状态参数不合法"
             qb_category = data.get("qb_category")
@@ -259,7 +272,9 @@ class TorrentRemover(object):
                 for tr_state_item in tr_state:
                     if (
                         tr_state_item
-                        not in ModuleConf.TORRENTREMOVER_DICT.get("Tr").get("torrent_state").keys()
+                        not in ModuleConf.TORRENTREMOVER_DICT.get("Tr")
+                        .get("torrent_state")
+                        .keys()
                     ):
                         return False, "种子状态参数不合法"
             tr_error_key = data.get("tr_error_key")
@@ -311,9 +326,9 @@ class TorrentRemover(object):
             task.get("config")["samedata"] = task.get("samedata")
             task.get("config")["onlynastool"] = task.get("onlynastool")
             torrents = self.downloader.get_remove_torrents(
-                downloader=ModuleConf.TORRENTREMOVER_DICT.get(task.get("downloader")).get(
-                    "downloader_type"
-                ),
+                downloader=ModuleConf.TORRENTREMOVER_DICT.get(
+                    task.get("downloader")
+                ).get("downloader_type"),
                 config=task.get("config"),
             )
             return True, torrents

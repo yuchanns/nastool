@@ -20,18 +20,24 @@ class WordsHelper:
 
     def init_config(self):
         self.dbhelper = DbHelper()
-        self.ignored_words_info = self.dbhelper.get_custom_words(enabled=1, wtype=1, regex=1)
+        self.ignored_words_info = self.dbhelper.get_custom_words(
+            enabled=1, wtype=1, regex=1
+        )
         self.ignored_words_noregex_info = self.dbhelper.get_custom_words(
             enabled=1, wtype=1, regex=0
         )
-        self.replaced_words_info = self.dbhelper.get_custom_words(enabled=1, wtype=2, regex=1)
+        self.replaced_words_info = self.dbhelper.get_custom_words(
+            enabled=1, wtype=2, regex=1
+        )
         self.replaced_words_noregex_info = self.dbhelper.get_custom_words(
             enabled=1, wtype=2, regex=0
         )
         self.replaced_offset_words_info = self.dbhelper.get_custom_words(
             enabled=1, wtype=3, regex=1
         )
-        self.offset_words_info = self.dbhelper.get_custom_words(enabled=1, wtype=4, regex=1)
+        self.offset_words_info = self.dbhelper.get_custom_words(
+            enabled=1, wtype=4, regex=1
+        )
 
     def process(self, title):
         # 错误信息
@@ -130,7 +136,9 @@ class WordsHelper:
                 back = offset_word_info.BACK
                 offset = offset_word_info.OFFSET
                 offset_word = f"{front}@{back}@{offset}"
-                title, offset_msg, offset_flag = self.episode_offset(front, back, offset, title)
+                title, offset_msg, offset_flag = self.episode_offset(
+                    front, back, offset, title
+                )
                 if offset_flag:
                     used_offset_words.append(offset_word)
                 elif offset_msg:
@@ -182,7 +190,9 @@ class WordsHelper:
                 return title, msg, False
             if front and not re.findall(r"%s" % front, title):
                 return title, msg, False
-            offset_word_info_re = re.compile(r"(?<=%s.*?)[0-9]+(?=.*?%s)" % (front, back))
+            offset_word_info_re = re.compile(
+                r"(?<=%s.*?)[0-9]+(?=.*?%s)" % (front, back)
+            )
             episode_nums_str = re.findall(offset_word_info_re, title)
             if not episode_nums_str:
                 return title, msg, False
@@ -199,10 +209,14 @@ class WordsHelper:
                 else:
                     offset_order_flag = False
                 episode_nums_offset_int.append(episode_num_offset_int)
-            episode_nums_dict = dict(zip(episode_nums_str, episode_nums_offset_int))
+            episode_nums_dict = dict(
+                zip(episode_nums_str, episode_nums_offset_int, strict=False)
+            )
             # 集数向前偏移，集数按升序处理
             if offset_order_flag:
-                episode_nums_list = sorted(episode_nums_dict.items(), key=lambda x: x[1])
+                episode_nums_list = sorted(
+                    episode_nums_dict.items(), key=lambda x: x[1]
+                )
             # 集数向后偏移，集数按降序处理
             else:
                 episode_nums_list = sorted(
@@ -212,7 +226,9 @@ class WordsHelper:
                 episode_offset_re = re.compile(
                     r"(?<=%s.*?)%s(?=.*?%s)" % (front, episode_num[0], back)
                 )
-                title = re.sub(episode_offset_re, r"%s" % str(episode_num[1]).zfill(2), title)
+                title = re.sub(
+                    episode_offset_re, r"%s" % str(episode_num[1]).zfill(2), title
+                )
             return title, msg, True
         except Exception as err:
             ExceptionUtils.exception_traceback(err)

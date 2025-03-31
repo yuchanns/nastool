@@ -2,16 +2,20 @@
 import base64
 import json
 import re
+
 from abc import ABCMeta, abstractmethod
 from urllib.parse import urljoin, urlsplit
 
 import requests
+
 from lxml import etree
 
 import log
+
 from app.helper import SiteHelper
 from app.utils import RequestUtils
 from app.utils.types import SiteSchema
+
 
 SITE_BASE_ORDER = 1000
 
@@ -146,7 +150,8 @@ class _ISiteUserInfo(metaclass=ABCMeta):
                 )
                 while next_page:
                     next_page = self._parse_message_unread_links(
-                        self._get_page_content(urljoin(self._base_url, next_page)), msg_links
+                        self._get_page_content(urljoin(self._base_url, next_page)),
+                        msg_links,
                     )
 
                 unread_msg_links.extend(msg_links)
@@ -157,7 +162,9 @@ class _ISiteUserInfo(metaclass=ABCMeta):
             head, date, content = self._parse_message_content(
                 self._get_page_content(urljoin(self._base_url, msg_link))
             )
-            log.debug(f"【Sites】{self.site_name} 标题 {head} 时间 {date} 内容 {content}")
+            log.debug(
+                f"【Sites】{self.site_name} 标题 {head} 时间 {date} 内容 {content}"
+            )
             self.message_unread_contents.append((head, date, content))
 
     def _parse_seeding_pages(self):
@@ -218,7 +225,10 @@ class _ISiteUserInfo(metaclass=ABCMeta):
                 self._favicon_url = urljoin(self._base_url, fav_link[0])
 
         res = RequestUtils(
-            cookies=self._site_cookie, session=self._session, timeout=60, headers=self._ua
+            cookies=self._site_cookie,
+            session=self._session,
+            timeout=60,
+            headers=self._ua,
         ).get_res(url=self._favicon_url)
         if res:
             self.site_favicon = base64.b64encode(res.content).decode()
@@ -251,11 +261,17 @@ class _ISiteUserInfo(metaclass=ABCMeta):
 
         if params:
             res = RequestUtils(
-                cookies=self._site_cookie, session=self._session, timeout=60, headers=req_headers
+                cookies=self._site_cookie,
+                session=self._session,
+                timeout=60,
+                headers=req_headers,
             ).post_res(url=url, params=params)
         else:
             res = RequestUtils(
-                cookies=self._site_cookie, session=self._session, timeout=60, headers=req_headers
+                cookies=self._site_cookie,
+                session=self._session,
+                timeout=60,
+                headers=req_headers,
             ).get_res(url=url)
         if res is not None and res.status_code in (200, 500):
             if "charset=utf-8" in res.text or "charset=UTF-8" in res.text:

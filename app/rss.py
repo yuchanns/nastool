@@ -1,8 +1,10 @@
 import re
 import xml.dom.minidom
+
 from threading import Lock
 
 import log
+
 from app.downloader import Downloader
 from app.filter import Filter
 from app.helper import DbHelper
@@ -10,8 +12,16 @@ from app.media import Media
 from app.media.meta import MetaInfo
 from app.sites import Sites
 from app.subscribe import Subscribe
-from app.utils import DomUtils, ExceptionUtils, RequestUtils, RssTitleUtils, StringUtils, Torrent
+from app.utils import (
+    DomUtils,
+    ExceptionUtils,
+    RequestUtils,
+    RssTitleUtils,
+    StringUtils,
+    Torrent,
+)
 from app.utils.types import MediaType, SearchType
+
 
 lock = Lock()
 
@@ -55,7 +65,9 @@ class Rss:
             else:
                 log.info(
                     "【Rss】电影订阅清单：%s"
-                    % " ".join("%s" % info.get("name") for _, info in rss_movies.items())
+                    % " ".join(
+                        "%s" % info.get("name") for _, info in rss_movies.items()
+                    )
                 )
             # 读取电视剧订阅
             rss_tvs = self.subscribe.get_subscribe_tvs(state="R")
@@ -73,7 +85,7 @@ class Rss:
             # 获取有订阅的站点范围
             check_sites = []
             check_all = False
-            for rid, rinfo in rss_movies.items():
+            for _rid, rinfo in rss_movies.items():
                 rss_sites = rinfo.get("rss_sites")
                 if not rss_sites:
                     check_all = True
@@ -81,7 +93,7 @@ class Rss:
                 else:
                     check_sites += rss_sites
             if not check_all:
-                for rid, rinfo in rss_tvs.items():
+                for _rid, rinfo in rss_tvs.items():
                     rss_sites = rinfo.get("rss_sites")
                     if not rss_sites:
                         check_all = True
@@ -210,14 +222,19 @@ class Rss:
                                 if media_info.type == MediaType.MOVIE:
                                     exist_flag, rss_no_exists, _ = (
                                         self.downloader.check_exists_medias(
-                                            meta_info=media_info, no_exists=rss_no_exists
+                                            meta_info=media_info,
+                                            no_exists=rss_no_exists,
                                         )
                                     )
                                 else:
                                     # 从登记薄中获取缺失剧集
                                     season = 1
                                     if match_info.get("season"):
-                                        season = int(str(match_info.get("season")).replace("S", ""))
+                                        season = int(
+                                            str(match_info.get("season")).replace(
+                                                "S", ""
+                                            )
+                                        )
                                     # 设定的总集数
                                     total_ep = match_info.get("total")
                                     # 设定的开始集数
@@ -230,7 +247,9 @@ class Rss:
                                         episodes = []
                                         if current_ep:
                                             episodes = list(
-                                                range(int(current_ep), int(total_ep) + 1)
+                                                range(
+                                                    int(current_ep), int(total_ep) + 1
+                                                )
                                             )
                                         rss_no_exists[media_info.tmdb_id] = [
                                             {
@@ -250,7 +269,8 @@ class Rss:
                                     # 检查本地媒体库情况
                                     exist_flag, library_no_exists, _ = (
                                         self.downloader.check_exists_medias(
-                                            meta_info=media_info, total_ep={season: total_ep}
+                                            meta_info=media_info,
+                                            total_ep={season: total_ep},
                                         )
                                     )
                                     # 取交集做为缺失集
@@ -302,7 +322,9 @@ class Rss:
                             res_order=match_info.get("res_order"),
                             filter_rule=match_info.get("filter_rule"),
                             over_edition=match_info.get("over_edition"),
-                            download_volume_factor=match_info.get("download_volume_factor"),
+                            download_volume_factor=match_info.get(
+                                "download_volume_factor"
+                            ),
                             upload_volume_factor=match_info.get("upload_volume_factor"),
                             rssid=match_info.get("id"),
                         )
@@ -321,8 +343,12 @@ class Rss:
                         ExceptionUtils.exception_traceback(e)
                         log.error("【Rss】处理RSS发生错误：%s" % str(e))
                         continue
-                log.info("【Rss】%s 处理结束，匹配到 %s 个有效资源" % (site_name, res_num))
-            log.info("【Rss】所有RSS处理结束，共 %s 个有效资源" % len(rss_download_torrents))
+                log.info(
+                    "【Rss】%s 处理结束，匹配到 %s 个有效资源" % (site_name, res_num)
+                )
+            log.info(
+                "【Rss】所有RSS处理结束，共 %s 个有效资源" % len(rss_download_torrents)
+            )
             # 开始择优下载
             self.download_rss_torrent(
                 rss_download_torrents=rss_download_torrents, rss_no_exists=rss_no_exists
@@ -368,11 +394,15 @@ class Rss:
                         if site_domain and site_domain in _special_title_sites:
                             title = _special_title_sites.get(site_domain)(title)
                         # 描述
-                        description = DomUtils.tag_value(item, "description", default="")
+                        description = DomUtils.tag_value(
+                            item, "description", default=""
+                        )
                         # 种子页面
                         link = DomUtils.tag_value(item, "link", default="")
                         # 种子链接
-                        enclosure = DomUtils.tag_value(item, "enclosure", "url", default="")
+                        enclosure = DomUtils.tag_value(
+                            item, "enclosure", "url", default=""
+                        )
                         if not enclosure and not link:
                             continue
                         # 部分RSS只有link没有enclosure
@@ -380,7 +410,9 @@ class Rss:
                             enclosure = link
                             link = None
                         # 大小
-                        size = DomUtils.tag_value(item, "enclosure", "length", default=0)
+                        size = DomUtils.tag_value(
+                            item, "enclosure", "length", default=0
+                        )
                         if size and str(size).isdigit():
                             size = int(size)
                         else:
@@ -445,7 +477,7 @@ class Rss:
 
         # 匹配电影
         if media_info.type == MediaType.MOVIE and rss_movies:
-            for rid, rss_info in rss_movies.items():
+            for _rid, rss_info in rss_movies.items():
                 rss_sites = rss_info.get("rss_sites")
                 # 过滤订阅站点
                 if rss_sites and media_info.site not in rss_sites:
@@ -477,8 +509,13 @@ class Rss:
                     if year and str(year) != str(media_info.year):
                         continue
                     # 匹配关键字或正则表达式
-                    search_title = f"{media_info.org_string} {media_info.title} {media_info.year}"
-                    if not re.search(name, search_title, re.I) and name not in search_title:
+                    search_title = (
+                        f"{media_info.org_string} {media_info.title} {media_info.year}"
+                    )
+                    if (
+                        not re.search(name, search_title, re.I)
+                        and name not in search_title
+                    ):
                         continue
                 # 媒体匹配成功
                 match_flag = True
@@ -488,7 +525,7 @@ class Rss:
         # 匹配电视剧
         elif rss_tvs:
             # 匹配种子标题
-            for rid, rss_info in rss_tvs.items():
+            for _rid, rss_info in rss_tvs.items():
                 rss_sites = rss_info.get("rss_sites")
                 # 过滤订阅站点
                 if rss_sites and media_info.site not in rss_sites:
@@ -517,14 +554,23 @@ class Rss:
                 # 模糊匹配
                 else:
                     # 匹配季，季可以为空
-                    if season and season != "S00" and season != media_info.get_season_string():
+                    if (
+                        season
+                        and season != "S00"
+                        and season != media_info.get_season_string()
+                    ):
                         continue
                     # 匹配年份
                     if year and str(year) != str(media_info.year):
                         continue
                     # 匹配关键字或正则表达式
-                    search_title = f"{media_info.org_string} {media_info.title} {media_info.year}"
-                    if not re.search(name, search_title, re.I) and name not in search_title:
+                    search_title = (
+                        f"{media_info.org_string} {media_info.title} {media_info.year}"
+                    )
+                    if (
+                        not re.search(name, search_title, re.I)
+                        and name not in search_title
+                    ):
                         continue
                 # 媒体匹配成功
                 match_flag = True
@@ -566,8 +612,10 @@ class Rss:
                 "team": match_rss_info.get("filter_team"),
                 "rule": filter_rule,
             }
-            match_filter_flag, res_order, match_filter_msg = self.filter.check_torrent_filter(
-                meta_info=media_info, filter_args=filter_dict
+            match_filter_flag, res_order, match_filter_msg = (
+                self.filter.check_torrent_filter(
+                    meta_info=media_info, filter_args=filter_dict
+                )
             )
             if not match_filter_flag:
                 match_msg.append(match_filter_msg)
@@ -622,7 +670,9 @@ class Rss:
             if not download_item.rssid or download_item.rssid in finished_rss_torrents:
                 return
             finished_rss_torrents.append(download_item.rssid)
-            self.subscribe.finish_rss_subscribe(rssid=download_item.rssid, media=download_item)
+            self.subscribe.finish_rss_subscribe(
+                rssid=download_item.rssid, media=download_item
+            )
 
         def __update_tv_rss(download_item, left_media):
             """
@@ -634,7 +684,9 @@ class Rss:
                 return
             updated_rss_torrents.append(download_item.rssid)
             self.subscribe.update_subscribe_tv_lack(
-                rssid=download_item.rssid, media_info=download_item, seasoninfo=left_media
+                rssid=download_item.rssid,
+                media_info=download_item,
+                seasoninfo=left_media,
             )
 
         def __update_over_edition(download_item):

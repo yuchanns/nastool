@@ -45,7 +45,9 @@ class Fanart:
                         images = ret.json().get(image_type)
                         if isinstance(images, list):
                             self._images[image_type] = (
-                                images[0].get("url") if isinstance(images[0], dict) else ""
+                                images[0].get("url")
+                                if isinstance(images[0], dict)
+                                else ""
                             )
                         else:
                             self._images[image_type] = ""
@@ -53,17 +55,26 @@ class Fanart:
                     for image_type in self._tv_image_types:
                         images = ret.json().get(image_type)
                         if isinstance(images, list):
-                            if image_type in ["seasonposter", "seasonthumb", "seasonbanner"]:
+                            if image_type in [
+                                "seasonposter",
+                                "seasonthumb",
+                                "seasonbanner",
+                            ]:
                                 if not self._images.get(image_type):
                                     self._images[image_type] = {}
                                 for image in images:
-                                    if image.get("season") not in self._images[image_type].keys():
-                                        self._images[image_type][image.get("season")] = image.get(
-                                            "url"
-                                        )
+                                    if (
+                                        image.get("season")
+                                        not in self._images[image_type].keys()
+                                    ):
+                                        self._images[image_type][
+                                            image.get("season")
+                                        ] = image.get("url")
                             else:
                                 self._images[image_type] = (
-                                    images[0].get("url") if isinstance(images[0], dict) else ""
+                                    images[0].get("url")
+                                    if isinstance(images[0], dict)
+                                    else ""
                                 )
                         else:
                             self._images[image_type] = ""

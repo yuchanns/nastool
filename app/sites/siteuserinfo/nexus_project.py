@@ -22,4 +22,6 @@ class NexusProjectSiteUserInfo(NexusPhpSiteUserInfo):
             self._user_detail_page = user_detail.group().strip().lstrip("/")
             self.userid = user_detail.group(1)
 
-        self._torrent_seeding_page = f"viewusertorrents.php?id={self.userid}&show=seeding"
+        self._torrent_seeding_page = (
+            f"viewusertorrents.php?id={self.userid}&show=seeding"
+        )

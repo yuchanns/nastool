@@ -11,7 +11,6 @@ from config import WEBDRIVER_PATH
 
 
 class SystemUtils:
-
     @staticmethod
     def __get_hidden_shell():
         if os.name == "nt":
@@ -85,7 +84,9 @@ class SystemUtils:
         """
         if not pname:
             return False
-        text = subprocess.Popen("ps -ef | grep -v grep | grep %s" % pname, shell=True).communicate()
+        text = subprocess.Popen(
+            "ps -ef | grep -v grep | grep %s" % pname, shell=True
+        ).communicate()
         return True if text else False
 
     @staticmethod
@@ -151,7 +152,9 @@ class SystemUtils:
         移动
         """
         try:
-            tmp_file = os.path.normpath(os.path.join(os.path.dirname(src), os.path.basename(dest)))
+            tmp_file = os.path.normpath(
+                os.path.join(os.path.dirname(src), os.path.basename(dest))
+            )
             shutil.move(os.path.normpath(src), tmp_file)
             shutil.move(tmp_file, os.path.normpath(dest))
             return 0, ""
@@ -168,7 +171,9 @@ class SystemUtils:
             if platform.release().find("-z4-") >= 0:
                 # 兼容极空间Z4
                 tmp = os.path.normpath(
-                    os.path.join(PathUtils.get_parent_paths(dest, 2), os.path.basename(dest))
+                    os.path.join(
+                        PathUtils.get_parent_paths(dest, 2), os.path.basename(dest)
+                    )
                 )
                 os.link(os.path.normpath(src), tmp)
                 shutil.move(tmp, os.path.normpath(dest))
@@ -295,13 +300,18 @@ class SystemUtils:
                     if (
                         link_file
                         and "$RECYCLE.BIN" not in link_file
-                        and os.path.normpath(file) != os.path.normpath(f"{drive}{link_file}")
+                        and os.path.normpath(file)
+                        != os.path.normpath(f"{drive}{link_file}")
                     ):
                         link_file = f"{drive.upper()}{link_file}"
                         file_name = os.path.basename(link_file)
                         file_path = os.path.dirname(link_file)
                         ret_files.append(
-                            {"file": link_file, "filename": file_name, "filepath": file_path}
+                            {
+                                "file": link_file,
+                                "filename": file_name,
+                                "filepath": file_path,
+                            }
                         )
         else:
             inode = os.stat(file).st_ino
@@ -313,11 +323,17 @@ class SystemUtils:
             if stdout:
                 link_files = stdout.decode("utf-8").split("\n")
                 for link_file in link_files:
-                    if link_file and os.path.normpath(file) != os.path.normpath(link_file):
+                    if link_file and os.path.normpath(file) != os.path.normpath(
+                        link_file
+                    ):
                         file_name = os.path.basename(link_file)
                         file_path = os.path.dirname(link_file)
                         ret_files.append(
-                            {"file": link_file, "filename": file_name, "filepath": file_path}
+                            {
+                                "file": link_file,
+                                "filename": file_name,
+                                "filepath": file_path,
+                            }
                         )
 
         return ret_files

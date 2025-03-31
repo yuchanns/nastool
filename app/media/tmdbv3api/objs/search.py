@@ -1,5 +1,6 @@
 from app.media.tmdbv3api.tmdb import TMDb
 
+
 try:
     from urllib import urlencode
 except ImportError:

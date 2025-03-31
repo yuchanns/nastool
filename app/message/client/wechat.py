@@ -1,10 +1,12 @@
 import json
 import threading
+
 from datetime import datetime
 
 from app.message.client._base import _IMessageClient
 from app.utils import ExceptionUtils, RequestUtils
 from config import DEFAULT_WECHAT_PROXY
+
 
 lock = threading.Lock()
 
@@ -39,11 +41,19 @@ class WeChat(_IMessageClient):
             self._default_proxy = self._client_config.get("default_proxy")
         if self._default_proxy:
             if isinstance(self._default_proxy, bool):
-                self._send_msg_url = f"{DEFAULT_WECHAT_PROXY}/cgi-bin/message/send?access_token=%s"
-                self._token_url = f"{DEFAULT_WECHAT_PROXY}/cgi-bin/gettoken?corpid=%s&corpsecret=%s"
+                self._send_msg_url = (
+                    f"{DEFAULT_WECHAT_PROXY}/cgi-bin/message/send?access_token=%s"
+                )
+                self._token_url = (
+                    f"{DEFAULT_WECHAT_PROXY}/cgi-bin/gettoken?corpid=%s&corpsecret=%s"
+                )
             else:
-                self._send_msg_url = f"{self._default_proxy}/cgi-bin/message/send?access_token=%s"
-                self._token_url = f"{self._default_proxy}/cgi-bin/gettoken?corpid=%s&corpsecret=%s"
+                self._send_msg_url = (
+                    f"{self._default_proxy}/cgi-bin/message/send?access_token=%s"
+                )
+                self._token_url = (
+                    f"{self._default_proxy}/cgi-bin/gettoken?corpid=%s&corpsecret=%s"
+                )
         if self._corpid and self._corpsecret and self._agent_id:
             self.__get_access_token()
 
@@ -130,7 +140,14 @@ class WeChat(_IMessageClient):
             "msgtype": "news",
             "agentid": self._agent_id,
             "news": {
-                "articles": [{"title": title, "description": text, "picurl": image_url, "url": url}]
+                "articles": [
+                    {
+                        "title": title,
+                        "description": text,
+                        "picurl": image_url,
+                        "url": url,
+                    }
+                ]
             },
         }
         return self.__post_request(message_url, req_json)
@@ -148,7 +165,9 @@ class WeChat(_IMessageClient):
         if not title and not text:
             return False, "标题和内容不能同时为空"
         if image:
-            ret_code, ret_msg = self.__send_image_message(title, text, image, url, user_id)
+            ret_code, ret_msg = self.__send_image_message(
+                title, text, image, url, user_id
+            )
         else:
             ret_code, ret_msg = self.__send_message(title, text, user_id)
         return ret_code, ret_msg
@@ -170,12 +189,16 @@ class WeChat(_IMessageClient):
             if media.get_vote_string():
                 title = f"{index}. {media.get_title_string()}\n{media.get_type_string()}，{media.get_vote_string()}"
             else:
-                title = f"{index}. {media.get_title_string()}\n{media.get_type_string()}"
+                title = (
+                    f"{index}. {media.get_title_string()}\n{media.get_type_string()}"
+                )
             articles.append(
                 {
                     "title": title,
                     "description": "",
-                    "picurl": media.get_message_image() if index == 1 else media.get_poster_image(),
+                    "picurl": media.get_message_image()
+                    if index == 1
+                    else media.get_poster_image(),
                     "url": media.get_detail_url(),
                 }
             )
@@ -195,7 +218,8 @@ class WeChat(_IMessageClient):
         headers = {"content-type": "application/json"}
         try:
             res = RequestUtils(headers=headers).post(
-                message_url, params=json.dumps(req_json, ensure_ascii=False).encode("utf-8")
+                message_url,
+                params=json.dumps(req_json, ensure_ascii=False).encode("utf-8"),
             )
             if res:
                 ret_json = res.json()

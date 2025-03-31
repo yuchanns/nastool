@@ -7,6 +7,7 @@ from watchdog.observers import Observer
 from watchdog.observers.polling import PollingObserver
 
 import log
+
 from app.conf import ModuleConf
 from app.filetransfer import FileTransfer
 from app.helper import DbHelper
@@ -14,6 +15,7 @@ from app.utils import ExceptionUtils, PathUtils
 from app.utils.commons import singleton
 from app.utils.types import OsType, SyncType
 from config import RMT_MEDIAEXT, Config
+
 
 lock = threading.Lock()
 
@@ -99,7 +101,8 @@ class Sync(object):
                     )
                 else:
                     log.info(
-                        "【Sync】读取到监控目录：%s，转移方式：%s" % (monpath, path_syncmode.value)
+                        "【Sync】读取到监控目录：%s，转移方式：%s"
+                        % (monpath, path_syncmode.value)
                     )
                 if not enabled:
                     log.info("【Sync】%s 不进行监控和同步：手动关闭" % monpath)
@@ -211,7 +214,9 @@ class Sync(object):
                     if ret != 0:
                         log.warn("【Sync】%s 同步失败，错误码：%s" % (event_path, ret))
                     elif not msg:
-                        self.dbhelper.insert_sync_history(event_path, monitor_dir, target_path)
+                        self.dbhelper.insert_sync_history(
+                            event_path, monitor_dir, target_path
+                        )
                         log.info("【Sync】%s 同步完成" % event_path)
                 # 识别转移
                 else:
@@ -258,7 +263,9 @@ class Sync(object):
                             lock.release()
             except Exception as e:
                 ExceptionUtils.exception_traceback(e)
-                log.error("【Sync】发生错误：%s - %s" % (str(e), traceback.format_exc()))
+                log.error(
+                    "【Sync】发生错误：%s - %s" % (str(e), traceback.format_exc())
+                )
 
     def transfer_mon_files(self):
         """
@@ -367,7 +374,9 @@ class Sync(object):
                     if ret != 0:
                         log.warn("【Sync】%s 同步失败，错误码：%s" % (link_file, ret))
                     elif not msg:
-                        self.dbhelper.insert_sync_history(link_file, monpath, target_path)
+                        self.dbhelper.insert_sync_history(
+                            link_file, monpath, target_path
+                        )
                         log.info("【Sync】%s 同步完成" % link_file)
             else:
                 for path in PathUtils.get_dir_level1_medias(monpath, RMT_MEDIAEXT):

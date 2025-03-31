@@ -1,6 +1,7 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 
 import log
+
 from app.conf import SystemConfig
 from app.downloader import Downloader
 from app.helper.security_helper import SecurityHelper
@@ -70,17 +71,23 @@ class SpeedLimiter:
                 self.qb_upload_ratio = 0
                 self.tr_upload_ratio = 0
             self.auto_limit = (
-                True if self.bandwidth and (self.qb_upload_ratio or self.tr_upload_ratio) else False
+                True
+                if self.bandwidth and (self.qb_upload_ratio or self.tr_upload_ratio)
+                else False
             )
             try:
-                self.qb_download_limit = int(float(config.get("qb_download") or 0)) * 1024
+                self.qb_download_limit = (
+                    int(float(config.get("qb_download") or 0)) * 1024
+                )
                 self.qb_upload_limit = int(float(config.get("qb_upload") or 0)) * 1024
             except Exception as e:
                 ExceptionUtils.exception_traceback(e)
                 self.qb_download_limit = 0
                 self.qb_upload_limit = 0
             self.qb_limit = (
-                True if self.qb_download_limit or self.qb_upload_limit or self.auto_limit else False
+                True
+                if self.qb_download_limit or self.qb_upload_limit or self.auto_limit
+                else False
             )
             try:
                 self.tr_download_limit = int(float(config.get("tr_download") or 0))
@@ -90,7 +97,9 @@ class SpeedLimiter:
                 self.tr_upload_limit = 0
                 ExceptionUtils.exception_traceback(e)
             self.tr_limit = (
-                True if self.tr_download_limit or self.tr_upload_limit or self.auto_limit else False
+                True
+                if self.tr_download_limit or self.tr_upload_limit or self.auto_limit
+                else False
             )
             self.limit_enabled = True if self.qb_limit or self.tr_limit else False
             self.unlimited_ips["ipv4"] = config.get("ipv4") or "0.0.0.0/0"
@@ -163,8 +172,13 @@ class SpeedLimiter:
         """
         检查emby Webhook消息
         """
-        if self.limit_enabled and message.get("Event") in ["playback.start", "playback.stop"]:
-            self.__check_playing_sessions(mediaserver_type=MediaServerType.EMBY, time_check=False)
+        if self.limit_enabled and message.get("Event") in [
+            "playback.start",
+            "playback.stop",
+        ]:
+            self.__check_playing_sessions(
+                mediaserver_type=MediaServerType.EMBY, time_check=False
+            )
 
     def jellyfin_action(self, message):
         """
@@ -195,7 +209,9 @@ class SpeedLimiter:
                     )
                     and session.get("NowPlayingItem").get("MediaType") == "Video"
                 ):
-                    total_bit_rate += int(session.get("NowPlayingItem").get("Bitrate")) or 0
+                    total_bit_rate += (
+                        int(session.get("NowPlayingItem").get("Bitrate")) or 0
+                    )
             if total_bit_rate:
                 limit_flag = True
                 if self.auto_limit:
@@ -204,12 +220,20 @@ class SpeedLimiter:
                         self.qb_upload_limit = 10 * 1024
                         self.tr_upload_limit = 10
                     else:
-                        qb_upload_limit = residual_bandwidth / 8 / 1024 * self.qb_upload_ratio
-                        tr_upload_limit = residual_bandwidth / 8 / 1024 * self.tr_upload_ratio
-                        self.qb_upload_limit = (
-                            qb_upload_limit * 1024 if qb_upload_limit > 10 else 10 * 1024
+                        qb_upload_limit = (
+                            residual_bandwidth / 8 / 1024 * self.qb_upload_ratio
                         )
-                        self.tr_upload_limit = tr_upload_limit if tr_upload_limit > 10 else 10
+                        tr_upload_limit = (
+                            residual_bandwidth / 8 / 1024 * self.tr_upload_ratio
+                        )
+                        self.qb_upload_limit = (
+                            qb_upload_limit * 1024
+                            if qb_upload_limit > 10
+                            else 10 * 1024
+                        )
+                        self.tr_upload_limit = (
+                            tr_upload_limit if tr_upload_limit > 10 else 10
+                        )
         elif mediaserver_type == MediaServerType.JELLYFIN:
             pass
         elif mediaserver_type == MediaServerType.PLEX:

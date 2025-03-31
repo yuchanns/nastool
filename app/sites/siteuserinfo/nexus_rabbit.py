@@ -24,10 +24,10 @@ class NexusRabbitSiteUserInfo(NexusPhpSiteUserInfo):
 
     def _parse_site_page(self, html_text):
         super()._parse_site_page(html_text)
-        self._torrent_seeding_page = (
-            f"getusertorrentlistajax.php?page=1&limit=5000000&type=seeding&uid={self.userid}"
-        )
-        self._torrent_seeding_headers = {"Accept": "application/json, text/javascript, */*; q=0.01"}
+        self._torrent_seeding_page = f"getusertorrentlistajax.php?page=1&limit=5000000&type=seeding&uid={self.userid}"
+        self._torrent_seeding_headers = {
+            "Accept": "application/json, text/javascript, */*; q=0.01"
+        }
 
     def _parse_user_torrent_seeding_info(self, html_text, multi_page=False):
         """

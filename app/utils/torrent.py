@@ -1,12 +1,14 @@
 import datetime
 import os.path
 import re
+
 from urllib.parse import quote, unquote
 
 from bencode import bdecode
 
 from app.utils.http_utils import RequestUtils
 from config import Config
+
 
 # Trackers列表
 trackers = [
@@ -258,7 +260,9 @@ class Torrent:
                 target[title][index]["episodes"] = target_episodes
                 continue
             target_episodes = list(
-                set(target_info.get("episodes")).intersection(set(source_info.get("episodes")))
+                set(target_info.get("episodes")).intersection(
+                    set(source_info.get("episodes"))
+                )
             )
             target[title][index]["episodes"] = target_episodes
         return target

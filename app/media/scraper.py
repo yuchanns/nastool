@@ -1,8 +1,10 @@
 import os.path
 import time
+
 from xml.dom import minidom
 
 import log
+
 from app.helper import FfmpegHelper
 from app.media import Media
 from app.media.douban import DouBan
@@ -19,7 +21,13 @@ class Scraper:
         self.douban = DouBan()
 
     def __gen_common_nfo(
-        self, tmdbinfo: dict, doubaninfo: dict, scraper_nfo: dict, doc, root, chinese=False
+        self,
+        tmdbinfo: dict,
+        doubaninfo: dict,
+        scraper_nfo: dict,
+        doc,
+        root,
+        chinese=False,
     ):
         if scraper_nfo.get("basic"):
             # 添加时间
@@ -31,7 +39,9 @@ class Scraper:
             )
             # TMDB
             DomUtils.add_node(doc, root, "tmdbid", tmdbinfo.get("id") or "")
-            uniqueid_tmdb = DomUtils.add_node(doc, root, "uniqueid", tmdbinfo.get("id") or "")
+            uniqueid_tmdb = DomUtils.add_node(
+                doc, root, "uniqueid", tmdbinfo.get("id") or ""
+            )
             uniqueid_tmdb.setAttribute("type", "tmdb")
             uniqueid_tmdb.setAttribute("default", "true")
             # TVDB IMDB
@@ -58,9 +68,13 @@ class Scraper:
             # 导演
             directors, actors = self.media.get_tmdb_directors_actors(tmdbinfo=tmdbinfo)
             if chinese:
-                directors, actors = self.__gen_people_chinese_info(directors, actors, doubaninfo)
+                directors, actors = self.__gen_people_chinese_info(
+                    directors, actors, doubaninfo
+                )
             for director in directors:
-                xdirector = DomUtils.add_node(doc, root, "director", director.get("name") or "")
+                xdirector = DomUtils.add_node(
+                    doc, root, "director", director.get("name") or ""
+                )
                 xdirector.setAttribute("tmdbid", str(director.get("id") or ""))
             # 演员
             for actor in actors:
@@ -87,7 +101,12 @@ class Scraper:
         return doc
 
     def gen_movie_nfo_file(
-        self, tmdbinfo: dict, doubaninfo: dict, scraper_movie_nfo: dict, out_path, file_name
+        self,
+        tmdbinfo: dict,
+        doubaninfo: dict,
+        scraper_movie_nfo: dict,
+        out_path,
+        file_name,
     ):
         """
         生成电影的NFO描述文件
@@ -114,20 +133,28 @@ class Scraper:
         if scraper_movie_nfo.get("basic"):
             # 标题
             DomUtils.add_node(doc, root, "title", tmdbinfo.get("title") or "")
-            DomUtils.add_node(doc, root, "originaltitle", tmdbinfo.get("original_title") or "")
+            DomUtils.add_node(
+                doc, root, "originaltitle", tmdbinfo.get("original_title") or ""
+            )
             # 发布日期
-            DomUtils.add_node(doc, root, "premiered", tmdbinfo.get("release_date") or "")
+            DomUtils.add_node(
+                doc, root, "premiered", tmdbinfo.get("release_date") or ""
+            )
             # 年份
             DomUtils.add_node(
                 doc,
                 root,
                 "year",
-                tmdbinfo.get("release_date")[:4] if tmdbinfo.get("release_date") else "",
+                tmdbinfo.get("release_date")[:4]
+                if tmdbinfo.get("release_date")
+                else "",
             )
         # 保存
         self.__save_nfo(doc, os.path.join(out_path, "%s.nfo" % file_name))
 
-    def gen_tv_nfo_file(self, tmdbinfo: dict, doubaninfo: dict, scraper_tv_nfo: dict, out_path):
+    def gen_tv_nfo_file(
+        self, tmdbinfo: dict, doubaninfo: dict, scraper_tv_nfo: dict, out_path
+    ):
         """
         生成电视剧的NFO描述文件
         :param tmdbinfo: TMDB元数据
@@ -151,15 +178,21 @@ class Scraper:
         if scraper_tv_nfo.get("basic"):
             # 标题
             DomUtils.add_node(doc, root, "title", tmdbinfo.get("name") or "")
-            DomUtils.add_node(doc, root, "originaltitle", tmdbinfo.get("original_name") or "")
+            DomUtils.add_node(
+                doc, root, "originaltitle", tmdbinfo.get("original_name") or ""
+            )
             # 发布日期
-            DomUtils.add_node(doc, root, "premiered", tmdbinfo.get("first_air_date") or "")
+            DomUtils.add_node(
+                doc, root, "premiered", tmdbinfo.get("first_air_date") or ""
+            )
             # 年份
             DomUtils.add_node(
                 doc,
                 root,
                 "year",
-                tmdbinfo.get("first_air_date")[:4] if tmdbinfo.get("first_air_date") else "",
+                tmdbinfo.get("first_air_date")[:4]
+                if tmdbinfo.get("first_air_date")
+                else "",
             )
             DomUtils.add_node(doc, root, "season", "-1")
             DomUtils.add_node(doc, root, "episode", "-1")
@@ -178,7 +211,10 @@ class Scraper:
         root = DomUtils.add_node(doc, doc, "season")
         # 添加时间
         DomUtils.add_node(
-            doc, root, "dateadded", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
+            doc,
+            root,
+            "dateadded",
+            time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())),
         )
         # 简介
         xplot = DomUtils.add_node(doc, root, "plot")
@@ -192,7 +228,10 @@ class Scraper:
         DomUtils.add_node(doc, root, "releasedate", tmdbinfo.get("air_date") or "")
         # 发行年份
         DomUtils.add_node(
-            doc, root, "year", tmdbinfo.get("air_date")[:4] if tmdbinfo.get("air_date") else ""
+            doc,
+            root,
+            "year",
+            tmdbinfo.get("air_date")[:4] if tmdbinfo.get("air_date") else "",
         )
         # seasonnumber
         DomUtils.add_node(doc, root, "seasonnumber", season)
@@ -200,7 +239,13 @@ class Scraper:
         self.__save_nfo(doc, os.path.join(out_path, "season.nfo"))
 
     def gen_tv_episode_nfo_file(
-        self, tmdbinfo: dict, scraper_tv_nfo, season: int, episode: int, out_path, file_name
+        self,
+        tmdbinfo: dict,
+        scraper_tv_nfo,
+        season: int,
+        episode: int,
+        out_path,
+        file_name,
     ):
         """
         生成电视剧集的NFO描述文件
@@ -231,7 +276,9 @@ class Scraper:
                 time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())),
             )
             # TMDBID
-            uniqueid = DomUtils.add_node(doc, root, "uniqueid", tmdbinfo.get("id") or "")
+            uniqueid = DomUtils.add_node(
+                doc, root, "uniqueid", tmdbinfo.get("id") or ""
+            )
             uniqueid.setAttribute("type", "tmdb")
             uniqueid.setAttribute("default", "true")
             # tmdbid
@@ -242,9 +289,13 @@ class Scraper:
             )
             # 简介
             xplot = DomUtils.add_node(doc, root, "plot")
-            xplot.appendChild(doc.createCDATASection(episode_detail.get("overview") or ""))
+            xplot.appendChild(
+                doc.createCDATASection(episode_detail.get("overview") or "")
+            )
             xoutline = DomUtils.add_node(doc, root, "outline")
-            xoutline.appendChild(doc.createCDATASection(episode_detail.get("overview") or ""))
+            xoutline.appendChild(
+                doc.createCDATASection(episode_detail.get("overview") or "")
+            )
             # 发布日期
             DomUtils.add_node(doc, root, "aired", episode_detail.get("air_date") or "")
             # 年份
@@ -252,20 +303,26 @@ class Scraper:
                 doc,
                 root,
                 "year",
-                episode_detail.get("air_date")[:4] if episode_detail.get("air_date") else "",
+                episode_detail.get("air_date")[:4]
+                if episode_detail.get("air_date")
+                else "",
             )
             # 季
             DomUtils.add_node(doc, root, "season", season)
             # 集
             DomUtils.add_node(doc, root, "episode", episode)
             # 评分
-            DomUtils.add_node(doc, root, "rating", episode_detail.get("vote_average") or "0")
+            DomUtils.add_node(
+                doc, root, "rating", episode_detail.get("vote_average") or "0"
+            )
         if scraper_tv_nfo.get("episode_credits"):
             # 导演
             directors = episode_detail.get("crew") or []
             for director in directors:
                 if director.get("known_for_department") == "Directing":
-                    xdirector = DomUtils.add_node(doc, root, "director", director.get("name") or "")
+                    xdirector = DomUtils.add_node(
+                        doc, root, "director", director.get("name") or ""
+                    )
                     xdirector.setAttribute("tmdbid", str(director.get("id") or ""))
             # 演员
             actors = episode_detail.get("guest_stars") or []
@@ -276,7 +333,9 @@ class Scraper:
                     DomUtils.add_node(doc, xactor, "type", "Actor")
                     DomUtils.add_node(doc, xactor, "tmdbid", actor.get("id") or "")
         # 保存文件
-        self.__save_nfo(doc, os.path.join(out_path, os.path.join(out_path, "%s.nfo" % file_name)))
+        self.__save_nfo(
+            doc, os.path.join(out_path, os.path.join(out_path, "%s.nfo" % file_name))
+        )
 
     @staticmethod
     def __save_image(url, out_path, itype=""):
@@ -286,7 +345,9 @@ class Scraper:
         if not url or not out_path:
             return
         if itype:
-            image_path = os.path.join(out_path, "%s.%s" % (itype, str(url).split(".")[-1]))
+            image_path = os.path.join(
+                out_path, "%s.%s" % (itype, str(url).split(".")[-1])
+            )
         else:
             image_path = out_path
         if os.path.exists(image_path):
@@ -309,7 +370,9 @@ class Scraper:
         with open(out_file, "wb") as xml_file:
             xml_file.write(xml_str)
 
-    def gen_scraper_files(self, media, scraper_nfo, scraper_pic, dir_path, file_name, file_ext):
+    def gen_scraper_files(
+        self, media, scraper_nfo, scraper_pic, dir_path, file_name, file_ext
+    ):
         """
         刮削元数据
         :param media: 已识别的媒体信息
@@ -333,7 +396,9 @@ class Scraper:
                     # 已存在时不处理
                     if not os.path.exists(
                         os.path.join(dir_path, "movie.nfo")
-                    ) and not os.path.exists(os.path.join(dir_path, "%s.nfo" % file_name)):
+                    ) and not os.path.exists(
+                        os.path.join(dir_path, "%s.nfo" % file_name)
+                    ):
                         # 查询Douban信息
                         if scraper_movie_nfo.get("credits") and scraper_movie_nfo.get(
                             "credits_chinese"
@@ -356,7 +421,9 @@ class Scraper:
                         self.__save_image(poster_image, dir_path, "poster")
                 # backdrop
                 if scraper_movie_pic.get("backdrop"):
-                    backdrop_image = media.get_backdrop_image(default=False, original=True)
+                    backdrop_image = media.get_backdrop_image(
+                        default=False, original=True
+                    )
                     if backdrop_image:
                         self.__save_image(backdrop_image, dir_path, "fanart")
                 # background
@@ -368,12 +435,16 @@ class Scraper:
                         self.__save_image(background_image, dir_path, "background")
                 # logo
                 if scraper_movie_pic.get("logo"):
-                    logo_image = media.fanart.get_logo(media_type=media.type, queryid=media.tmdb_id)
+                    logo_image = media.fanart.get_logo(
+                        media_type=media.type, queryid=media.tmdb_id
+                    )
                     if logo_image:
                         self.__save_image(logo_image, dir_path, "logo")
                 # disc
                 if scraper_movie_pic.get("disc"):
-                    disc_image = media.fanart.get_disc(media_type=media.type, queryid=media.tmdb_id)
+                    disc_image = media.fanart.get_disc(
+                        media_type=media.type, queryid=media.tmdb_id
+                    )
                     if disc_image:
                         self.__save_image(disc_image, dir_path, "disc")
                 # banner
@@ -395,27 +466,40 @@ class Scraper:
                 scraper_tv_nfo = scraper_nfo.get("tv")
                 scraper_tv_pic = scraper_pic.get("tv")
                 # tv nfo
-                if not os.path.exists(os.path.join(os.path.dirname(dir_path), "tvshow.nfo")):
+                if not os.path.exists(
+                    os.path.join(os.path.dirname(dir_path), "tvshow.nfo")
+                ):
                     if scraper_tv_nfo.get("basic") or scraper_tv_nfo.get("credits"):
                         # 查询Douban信息
-                        if scraper_tv_nfo.get("credits") and scraper_tv_nfo.get("credits_chinese"):
+                        if scraper_tv_nfo.get("credits") and scraper_tv_nfo.get(
+                            "credits_chinese"
+                        ):
                             doubaninfo = self.douban.get_douban_info(media)
                         else:
                             doubaninfo = None
                         # 根目录描述文件
                         self.gen_tv_nfo_file(
-                            media.tmdb_info, doubaninfo, scraper_tv_nfo, os.path.dirname(dir_path)
+                            media.tmdb_info,
+                            doubaninfo,
+                            scraper_tv_nfo,
+                            os.path.dirname(dir_path),
                         )
                 # poster
                 if scraper_tv_pic.get("poster"):
                     poster_image = media.get_poster_image(original=True)
                     if poster_image:
-                        self.__save_image(poster_image, os.path.dirname(dir_path), "poster")
+                        self.__save_image(
+                            poster_image, os.path.dirname(dir_path), "poster"
+                        )
                 # backdrop
                 if scraper_tv_pic.get("backdrop"):
-                    backdrop_image = media.get_backdrop_image(default=False, original=True)
+                    backdrop_image = media.get_backdrop_image(
+                        default=False, original=True
+                    )
                     if backdrop_image:
-                        self.__save_image(backdrop_image, os.path.dirname(dir_path), "fanart")
+                        self.__save_image(
+                            backdrop_image, os.path.dirname(dir_path), "fanart"
+                        )
                 # background
                 if scraper_tv_pic.get("background"):
                     background_image = media.fanart.get_background(
@@ -425,7 +509,9 @@ class Scraper:
                         self.__save_image(background_image, dir_path, "show")
                 # logo
                 if scraper_tv_pic.get("logo"):
-                    logo_image = media.fanart.get_logo(media_type=media.type, queryid=media.tvdb_id)
+                    logo_image = media.fanart.get_logo(
+                        media_type=media.type, queryid=media.tvdb_id
+                    )
                     if logo_image:
                         self.__save_image(logo_image, dir_path, "logo")
                 # clearart
@@ -461,7 +547,9 @@ class Scraper:
                                 seasoninfo, int(media.get_season_seq()), dir_path
                             )
                 # episode nfo
-                if scraper_tv_nfo.get("episode_basic") or scraper_tv_nfo.get("episode_credits"):
+                if scraper_tv_nfo.get("episode_basic") or scraper_tv_nfo.get(
+                    "episode_credits"
+                ):
                     if not os.path.exists(os.path.join(dir_path, "%s.nfo" % file_name)):
                         seasoninfo = self.media.get_tmdb_tv_season_detail(
                             tmdbid=media.tmdb_id, season=int(media.get_season_seq())
@@ -477,12 +565,18 @@ class Scraper:
                             )
                 # season poster
                 if scraper_tv_pic.get("season_poster"):
-                    season_poster = "season%s-poster" % media.get_season_seq().rjust(2, "0")
+                    season_poster = "season%s-poster" % media.get_season_seq().rjust(
+                        2, "0"
+                    )
                     seasonposter = media.fanart.get_seasonposter(
-                        media_type=media.type, queryid=media.tvdb_id, season=media.get_season_seq()
+                        media_type=media.type,
+                        queryid=media.tvdb_id,
+                        season=media.get_season_seq(),
                     )
                     if seasonposter:
-                        self.__save_image(seasonposter, os.path.dirname(dir_path), season_poster)
+                        self.__save_image(
+                            seasonposter, os.path.dirname(dir_path), season_poster
+                        )
                     else:
                         seasoninfo = self.media.get_tmdb_tv_season_detail(
                             tmdbid=media.tmdb_id, season=int(media.get_season_seq())
@@ -496,7 +590,9 @@ class Scraper:
                 # season banner
                 if scraper_tv_pic.get("season_banner"):
                     seasonbanner = media.fanart.get_seasonbanner(
-                        media_type=media.type, queryid=media.tvdb_id, season=media.get_season_seq()
+                        media_type=media.type,
+                        queryid=media.tvdb_id,
+                        season=media.get_season_seq(),
                     )
                     if seasonbanner:
                         self.__save_image(
@@ -507,7 +603,9 @@ class Scraper:
                 # season thumb
                 if scraper_tv_pic.get("season_thumb"):
                     seasonthumb = media.fanart.get_seasonthumb(
-                        media_type=media.type, queryid=media.tvdb_id, season=media.get_season_seq()
+                        media_type=media.type,
+                        queryid=media.tvdb_id,
+                        season=media.get_season_seq(),
                     )
                     if seasonthumb:
                         self.__save_image(
@@ -563,15 +661,22 @@ class Scraper:
                         actor_douban.get("latin_name", "").lower().split(" ")
                     )
                 else:
-                    actor_douban["latin_name"] = actor_douban.get("name", "").lower().split(" ")
+                    actor_douban["latin_name"] = (
+                        actor_douban.get("name", "").lower().split(" ")
+                    )
             # 导演
             if directors:
                 for director in directors:
-                    director_douban = self.__match_people_in_douban(director, directors_douban)
+                    director_douban = self.__match_people_in_douban(
+                        director, directors_douban
+                    )
                     if director_douban:
                         director["name"] = director_douban.get("name")
                     else:
-                        log.info("【Scraper】豆瓣该影片或剧集无导演 %s 信息" % director.get("name"))
+                        log.info(
+                            "【Scraper】豆瓣该影片或剧集无导演 %s 信息"
+                            % director.get("name")
+                        )
             # 演员
             if actors:
                 for actor in actors:
@@ -581,7 +686,10 @@ class Scraper:
                         if actor_douban.get("character") != "演员":
                             actor["character"] = actor_douban.get("character")[2:]
                     else:
-                        log.info("【Scraper】豆瓣该影片或剧集无演员 %s 信息" % actor.get("name"))
+                        log.info(
+                            "【Scraper】豆瓣该影片或剧集无演员 %s 信息"
+                            % actor.get("name")
+                        )
         else:
             log.info("【Scraper】豆瓣无该影片或剧集信息")
         return directors, actors
@@ -597,7 +705,9 @@ class Scraper:
                 latin_match_res = True
                 #  姓和名分开匹配
                 for latin_name in people_douban.get("latin_name"):
-                    latin_match_res = latin_match_res and (latin_name in people_aka_name.lower())
+                    latin_match_res = latin_match_res and (
+                        latin_name in people_aka_name.lower()
+                    )
                 if latin_match_res or (people_douban.get("name") == people_aka_name):
                     return people_douban
         return None

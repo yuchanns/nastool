@@ -9,7 +9,6 @@ from version import APP_VERSION
 
 
 class WebUtils:
-
     @staticmethod
     def get_location(ip):
         """
@@ -82,7 +81,9 @@ class WebUtils:
             year = info.get("year")
             if original_title:
                 media_info = Media().get_media_info(
-                    title=f"{original_title} {year}", mtype=mtype, append_to_response="all"
+                    title=f"{original_title} {year}",
+                    mtype=mtype,
+                    append_to_response="all",
                 )
             if not media_info or not media_info.tmdb_info:
                 media_info = Media().get_media_info(
@@ -103,15 +104,21 @@ class WebUtils:
             )
             if not media_info or not media_info.tmdb_info:
                 media_info = Media().get_media_info(
-                    title=f"{title_cn} {year}", mtype=MediaType.TV, append_to_response="all"
+                    title=f"{title_cn} {year}",
+                    mtype=MediaType.TV,
+                    append_to_response="all",
                 )
         else:
             # TMDB
-            info = Media().get_tmdb_info(tmdbid=mediaid, mtype=mtype, append_to_response="all")
+            info = Media().get_tmdb_info(
+                tmdbid=mediaid, mtype=mtype, append_to_response="all"
+            )
             if not info:
                 return None
             media_info = MetaInfo(
-                title=info.get("title") if mtype == MediaType.MOVIE else info.get("name")
+                title=info.get("title")
+                if mtype == MediaType.MOVIE
+                else info.get("name")
             )
             media_info.set_tmdb_info(info)
 
@@ -128,18 +135,24 @@ class WebUtils:
         """
         if not keyword:
             return []
-        mtype, key_word, season_num, episode_num, _, content = StringUtils.get_keyword_from_string(
-            keyword
+        mtype, key_word, season_num, episode_num, _, content = (
+            StringUtils.get_keyword_from_string(keyword)
         )
         if source == "tmdb":
             use_douban_titles = False
         elif source == "douban":
             use_douban_titles = True
         else:
-            use_douban_titles = Config().get_config("laboratory").get("use_douban_titles")
+            use_douban_titles = (
+                Config().get_config("laboratory").get("use_douban_titles")
+            )
         if use_douban_titles:
             medias = DouBan().search_douban_medias(
-                keyword=key_word, mtype=mtype, season=season_num, episode=episode_num, page=page
+                keyword=key_word,
+                mtype=mtype,
+                season=season_num,
+                episode=episode_num,
+                page=page,
             )
         else:
             meta_info = MetaInfo(title=content)
@@ -150,7 +163,10 @@ class WebUtils:
             for tmdbinfo in tmdbinfos:
                 tmp_info = MetaInfo(title=keyword)
                 tmp_info.set_tmdb_info(tmdbinfo)
-                if meta_info.type != MediaType.MOVIE and tmp_info.type == MediaType.MOVIE:
+                if (
+                    meta_info.type != MediaType.MOVIE
+                    and tmp_info.type == MediaType.MOVIE
+                ):
                     continue
                 if tmp_info.begin_season:
                     tmp_info.title = "%s 第%s季" % (
@@ -158,6 +174,9 @@ class WebUtils:
                         cn2an.an2cn(meta_info.begin_season, mode="low"),
                     )
                 if tmp_info.begin_episode:
-                    tmp_info.title = "%s 第%s集" % (tmp_info.title, meta_info.begin_episode)
+                    tmp_info.title = "%s 第%s集" % (
+                        tmp_info.title,
+                        meta_info.begin_episode,
+                    )
                 medias.append(tmp_info)
         return medias

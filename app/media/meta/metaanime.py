@@ -69,16 +69,24 @@ class MetaAnime(MetaBase):
                             self.en_name = "%s %s" % (self.en_name or "", word)
                             lastword_type = "en"
                 if self.cn_name:
-                    _, self.cn_name, _, _, _, _ = StringUtils.get_keyword_from_string(self.cn_name)
+                    _, self.cn_name, _, _, _, _ = StringUtils.get_keyword_from_string(
+                        self.cn_name
+                    )
                     if self.cn_name:
                         self.cn_name = re.sub(
-                            r"%s" % self._name_nostring_re, "", self.cn_name, flags=re.IGNORECASE
+                            r"%s" % self._name_nostring_re,
+                            "",
+                            self.cn_name,
+                            flags=re.IGNORECASE,
                         ).strip()
                         self.cn_name = zhconv.convert(self.cn_name, "zh-hans")
                 if self.en_name:
                     self.en_name = (
                         re.sub(
-                            r"%s" % self._name_nostring_re, "", self.en_name, flags=re.IGNORECASE
+                            r"%s" % self._name_nostring_re,
+                            "",
+                            self.en_name,
+                            flags=re.IGNORECASE,
                         )
                         .strip()
                         .title()
@@ -131,7 +139,9 @@ class MetaAnime(MetaBase):
                         self.begin_episode = int(begin_episode)
                         if end_episode and int(end_episode) != self.begin_episode:
                             self.end_episode = int(end_episode)
-                            self.total_episodes = (self.end_episode - self.begin_episode) + 1
+                            self.total_episodes = (
+                                self.end_episode - self.begin_episode
+                            ) + 1
                         else:
                             self.total_episodes = 1
                     except Exception as err:
@@ -154,7 +164,9 @@ class MetaAnime(MetaBase):
                     self.resource_pix = self.resource_pix[0]
                 if self.resource_pix:
                     if re.search(r"x", self.resource_pix, re.IGNORECASE):
-                        self.resource_pix = re.split(r"[Xx]", self.resource_pix)[-1] + "p"
+                        self.resource_pix = (
+                            re.split(r"[Xx]", self.resource_pix)[-1] + "p"
+                        )
                     else:
                         self.resource_pix = self.resource_pix.lower()
                     if str(self.resource_pix).isdigit():
@@ -228,9 +240,13 @@ class MetaAnime(MetaBase):
                     else:
                         titles.append("%s%s" % (left_char, name.split("/")[0].strip()))
                 elif name:
-                    if StringUtils.is_chinese(name) and not StringUtils.is_all_chinese(name):
+                    if StringUtils.is_chinese(name) and not StringUtils.is_all_chinese(
+                        name
+                    ):
                         if not re.search(r"\[\d+", name, re.IGNORECASE):
-                            name = re.sub(r"[\d|#:：\-()（）\u4e00-\u9fff]", "", name).strip()
+                            name = re.sub(
+                                r"[\d|#:：\-()（）\u4e00-\u9fff]", "", name
+                            ).strip()
                         if not name or name.strip().isdigit():
                             continue
                     if name == "[":

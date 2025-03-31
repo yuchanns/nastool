@@ -2,12 +2,14 @@ import os
 import pickle
 import random
 import time
+
 from enum import Enum
 from threading import RLock
 
 from app.utils import ExceptionUtils
 from app.utils.commons import singleton
 from config import Config
+
 
 lock = RLock()
 
@@ -63,7 +65,9 @@ class MetaHelper(object):
             if info:
                 expire = info.get(CACHE_EXPIRE_TIMESTAMP_STR)
                 if not expire or int(time.time()) < expire:
-                    info[CACHE_EXPIRE_TIMESTAMP_STR] = int(time.time()) + EXPIRE_TIMESTAMP
+                    info[CACHE_EXPIRE_TIMESTAMP_STR] = (
+                        int(time.time()) + EXPIRE_TIMESTAMP
+                    )
                     self.update_meta_data({key: info})
                 elif expire and self._tmdb_cache_expire:
                     self.delete_meta_data(key)
@@ -175,7 +179,9 @@ class MetaHelper(object):
         with lock:
             for key, item in meta_data.items():
                 if not self._meta_data.get(key):
-                    item[CACHE_EXPIRE_TIMESTAMP_STR] = int(time.time()) + EXPIRE_TIMESTAMP
+                    item[CACHE_EXPIRE_TIMESTAMP_STR] = (
+                        int(time.time()) + EXPIRE_TIMESTAMP
+                    )
                     self._meta_data[key] = item
 
     def save_meta_data(self, force=False):
@@ -183,7 +189,9 @@ class MetaHelper(object):
         保存缓存数据到文件
         """
         meta_data = self.__load_meta_data(self._meta_path)
-        new_meta_data = {k: v for k, v in self._meta_data.items() if str(v.get("id")) != "0"}
+        new_meta_data = {
+            k: v for k, v in self._meta_data.items() if str(v.get("id")) != "0"
+        }
 
         if (
             not force
@@ -207,7 +215,9 @@ class MetaHelper(object):
                 expire = info.get(CACHE_EXPIRE_TIMESTAMP_STR)
                 if not expire:
                     ret = True
-                    info[CACHE_EXPIRE_TIMESTAMP_STR] = int(time.time()) + EXPIRE_TIMESTAMP
+                    info[CACHE_EXPIRE_TIMESTAMP_STR] = (
+                        int(time.time()) + EXPIRE_TIMESTAMP
+                    )
                 elif int(time.time()) >= expire:
                     ret = True
                     if self._tmdb_cache_expire:
@@ -220,7 +230,9 @@ class MetaHelper(object):
                 expire = info.get(CACHE_EXPIRE_TIMESTAMP_STR)
                 if not expire:
                     ret = True
-                    info[CACHE_EXPIRE_TIMESTAMP_STR] = int(time.time()) + EXPIRE_TIMESTAMP
+                    info[CACHE_EXPIRE_TIMESTAMP_STR] = (
+                        int(time.time()) + EXPIRE_TIMESTAMP
+                    )
                 elif int(time.time()) >= expire:
                     ret = True
                     if self._tmdb_cache_expire:

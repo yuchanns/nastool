@@ -1,5 +1,4 @@
 class NumberUtils:
-
     @staticmethod
     def max_ele(a, b):
         """

@@ -5,6 +5,7 @@
 @copyright: Copyright (c) 1998-2014 Tencent Inc.
 
 """
+
 import base64
 import hashlib
 
@@ -17,6 +18,7 @@ import time
 import xml.etree.cElementTree as ET
 
 from Crypto.Cipher import AES
+
 
 # Description:定义错误码含义
 #########################################################################
@@ -152,7 +154,6 @@ class Prpcrypt(object):
     """提供接收和推送给企业微信消息的加解密接口"""
 
     def __init__(self, key):
-
         # self.key = base64.b64decode(key+"=")
         self.key = key
         # 设置加解密模式为AES的CBC模式

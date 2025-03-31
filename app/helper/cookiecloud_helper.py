@@ -36,4 +36,7 @@ class CookieCloudHelper(object):
         elif ret:
             return {}, "同步CookieCloud失败，错误码：%s" % ret.status_code
         else:
-            return {}, "CookieCloud请求失败，请检查服务器地址、用户KEY及加密密码是否正确"
+            return (
+                {},
+                "CookieCloud请求失败，请检查服务器地址、用户KEY及加密密码是否正确",
+            )

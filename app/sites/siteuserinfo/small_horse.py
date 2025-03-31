@@ -54,7 +54,9 @@ class SmallHorseSiteUserInfo(_ISiteUserInfo):
             )
             if tmps[1].xpath("li")[4].xpath("span//text()"):
                 self.ratio = StringUtils.str_float(
-                    str(tmps[1].xpath("li")[4].xpath("span//text()")[0]).replace("∞", "0")
+                    str(tmps[1].xpath("li")[4].xpath("span//text()")[0]).replace(
+                        "∞", "0"
+                    )
                 )
             else:
                 self.ratio = StringUtils.str_float(
@@ -63,12 +65,18 @@ class SmallHorseSiteUserInfo(_ISiteUserInfo):
             self.bonus = StringUtils.str_float(
                 str(tmps[1].xpath("li")[5].xpath("text()")[0]).split(":")[1]
             )
-            self.user_level = str(tmps[3].xpath("li")[0].xpath("text()")[0]).split(":")[1].strip()
+            self.user_level = (
+                str(tmps[3].xpath("li")[0].xpath("text()")[0]).split(":")[1].strip()
+            )
             self.seeding = StringUtils.str_int(
-                (tmps[4].xpath("li")[5].xpath("text()")[0]).split(":")[1].replace("[", "")
+                (tmps[4].xpath("li")[5].xpath("text()")[0])
+                .split(":")[1]
+                .replace("[", "")
             )
             self.leeching = StringUtils.str_int(
-                (tmps[4].xpath("li")[6].xpath("text()")[0]).split(":")[1].replace("[", "")
+                (tmps[4].xpath("li")[6].xpath("text()")[0])
+                .split(":")[1]
+                .replace("[", "")
             )
 
     def _parse_user_detail_info(self, html_text):

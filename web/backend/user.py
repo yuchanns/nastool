@@ -57,7 +57,12 @@ class User(UserMixin):
                 continue
             if user.ID == user_id:
                 return User(
-                    {"id": user.ID, "name": user.NAME, "password": user.PASSWORD, "pris": user.PRIS}
+                    {
+                        "id": user.ID,
+                        "name": user.NAME,
+                        "password": user.PASSWORD,
+                        "pris": user.PRIS,
+                    }
                 )
         return None
 
@@ -71,6 +76,11 @@ class User(UserMixin):
         for user in self.dbhelper.get_users():
             if user.NAME == user_name:
                 return User(
-                    {"id": user.ID, "name": user.NAME, "password": user.PASSWORD, "pris": user.PRIS}
+                    {
+                        "id": user.ID,
+                        "name": user.NAME,
+                        "password": user.PASSWORD,
+                        "pris": user.PRIS,
+                    }
                 )
         return None

@@ -1,8 +1,10 @@
 import requests
 import urllib3
+
 from urllib3.exceptions import InsecureRequestWarning
 
 from config import Config
+
 
 urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -28,11 +30,17 @@ class RequestUtils:
             content_type = "application/x-www-form-urlencoded; charset=UTF-8"
         if headers:
             if isinstance(headers, str):
-                self._headers = {"Content-Type": content_type, "User-Agent": f"{headers}"}
+                self._headers = {
+                    "Content-Type": content_type,
+                    "User-Agent": f"{headers}",
+                }
             else:
                 self._headers = headers
         else:
-            self._headers = {"Content-Type": content_type, "User-Agent": Config().get_ua()}
+            self._headers = {
+                "Content-Type": content_type,
+                "User-Agent": Config().get_ua(),
+            }
         if referer:
             self._headers.update({"referer": referer})
         if cookies:

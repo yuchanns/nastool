@@ -1,6 +1,7 @@
 from functools import lru_cache
 
 import requests
+
 from lxml import etree
 
 from app.utils import ExceptionUtils, RequestUtils
@@ -9,7 +10,6 @@ from app.utils.commons import singleton
 
 @singleton
 class DoubanWeb(object):
-
     _session = requests.Session()
 
     _movie_base = "https://movie.douban.com"
@@ -114,7 +114,9 @@ class DoubanWeb(object):
                 "actor": "./div[@class='detail']/div[@class='meta abstract_2']/text()",
             },
         },
-        "user": {"name": "//div[@class='side-info']/div[@class='side-info-txt']/h3/text()"},
+        "user": {
+            "name": "//div[@class='side-info']/div[@class='side-info-txt']/h3/text()"
+        },
     }
 
     _jsonurls = {
@@ -140,16 +142,18 @@ class DoubanWeb(object):
         req_url = cls._weburls.get(url)
         if not req_url:
             return None
-        return RequestUtils(cookies=cookie, session=cls._session, timeout=cls._timout).get(
-            url=req_url % kwargs
-        )
+        return RequestUtils(
+            cookies=cookie, session=cls._session, timeout=cls._timout
+        ).get(url=req_url % kwargs)
 
     @classmethod
     def __invoke_json(cls, url, *kwargs):
         req_url = cls._jsonurls.get(url)
         if not req_url:
             return None
-        req = RequestUtils(session=cls._session, timeout=cls._timout).get_res(url=req_url % kwargs)
+        req = RequestUtils(session=cls._session, timeout=cls._timout).get_res(
+            url=req_url % kwargs
+        )
         return req.json() if req else None
 
     @staticmethod
@@ -228,7 +232,9 @@ class DoubanWeb(object):
         """
         看过
         """
-        return self.__get_list("collect", self.__invoke_web("collect", cookie, userid, start))
+        return self.__get_list(
+            "collect", self.__invoke_web("collect", cookie, userid, start)
+        )
 
     def wish(self, cookie, userid, start=0):
         """

@@ -1,5 +1,6 @@
 import re
 import time
+
 from urllib import parse
 
 import requests
@@ -35,7 +36,9 @@ class Py115:
             if p:
                 rootobject = p.json()
                 if not rootobject.get("state"):
-                    self.err = "获取目录 [{}]ID 错误：{}".format(tdir, rootobject["error"])
+                    self.err = "获取目录 [{}]ID 错误：{}".format(
+                        tdir, rootobject["error"]
+                    )
                     return False, ""
                 return True, rootobject.get("id")
         except Exception as result:
@@ -47,7 +50,9 @@ class Py115:
     def getsign(self):
         try:
             self.sign = ""
-            url = "https://115.com/?ct=offline&ac=space&_=" + str(round(time.time() * 1000))
+            url = "https://115.com/?ct=offline&ac=space&_=" + str(
+                round(time.time() * 1000)
+            )
             p = self.req.get_res(url=url)
             if p:
                 rootobject = p.json()
@@ -128,7 +133,11 @@ class Py115:
 
             url = "https://115.com/web/lixian/?ct=lixian&ac=add_task_url"
             postdata = "url={}&savepath=&wp_path_id={}&uid={}&sign={}&time={}".format(
-                parse.quote(content), dirid, self.uid, self.sign, str(round(time.time() * 1000))
+                parse.quote(content),
+                dirid,
+                self.uid,
+                self.sign,
+                str(round(time.time() * 1000)),
             )
             p = self.req.post_res(url=url, params=postdata.encode("utf-8"))
             if p:
@@ -172,7 +181,9 @@ class Py115:
             if p:
                 rootobject = p.json()
                 if not rootobject.get("state"):
-                    self.err = "获取 ID[{}]路径 错误：{}".format(id, rootobject["error"])
+                    self.err = "获取 ID[{}]路径 错误：{}".format(
+                        id, rootobject["error"]
+                    )
                     return False, path
                 patharray = rootobject["path"]
                 for pathobject in patharray:

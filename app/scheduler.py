@@ -7,6 +7,7 @@ from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.schedulers.background import BackgroundScheduler
 
 import log
+
 from app.doubansync import DoubanSync
 from app.downloader import Downloader
 from app.helper import MetaHelper
@@ -51,7 +52,8 @@ class Scheduler:
         读取配置，启动定时服务
         """
         self.SCHEDULER = BackgroundScheduler(
-            timezone=Config().get_timezone(), executors={"default": ThreadPoolExecutor(20)}
+            timezone=Config().get_timezone(),
+            executors={"default": ThreadPoolExecutor(20)},
         )
         if not self.SCHEDULER:
             return
@@ -73,18 +75,25 @@ class Scheduler:
 
                         def start_random_job():
                             task_time_count = random.randint(
-                                start_hour * 60 + start_minute, end_hour * 60 + end_minute
+                                start_hour * 60 + start_minute,
+                                end_hour * 60 + end_minute,
                             )
                             self.start_data_site_signin_job(
                                 math.floor(task_time_count / 60), task_time_count % 60
                             )
 
                         self.SCHEDULER.add_job(
-                            start_random_job, "cron", hour=start_hour, minute=start_minute
+                            start_random_job,
+                            "cron",
+                            hour=start_hour,
+                            minute=start_minute,
                         )
                         log.info(
                             "站点自动签到服务时间范围随机模式启动，起始时间于%s:%s"
-                            % (str(start_hour).rjust(2, "0"), str(start_minute).rjust(2, "0"))
+                            % (
+                                str(start_hour).rjust(2, "0"),
+                                str(start_minute).rjust(2, "0"),
+                            )
                         )
                     except Exception as e:
                         log.info(
@@ -98,7 +107,9 @@ class Scheduler:
                     except Exception as e:
                         log.info("站点自动签到时间 配置格式错误：%s" % str(e))
                         hour = minute = 0
-                    self.SCHEDULER.add_job(Sites().signin, "cron", hour=hour, minute=minute)
+                    self.SCHEDULER.add_job(
+                        Sites().signin, "cron", hour=hour, minute=minute
+                    )
                     log.info("站点自动签到服务启动")
                 else:
                     try:
@@ -132,13 +143,18 @@ class Scheduler:
                 if pt_check_interval:
                     if pt_check_interval < 300:
                         pt_check_interval = 300
-                    self.SCHEDULER.add_job(Rss().rssdownload, "interval", seconds=pt_check_interval)
+                    self.SCHEDULER.add_job(
+                        Rss().rssdownload, "interval", seconds=pt_check_interval
+                    )
                     log.info("RSS订阅服务启动")
 
             # RSS订阅定时检索
             search_rss_interval = self._pt.get("search_rss_interval")
             if search_rss_interval:
-                if isinstance(search_rss_interval, str) and search_rss_interval.isdigit():
+                if (
+                    isinstance(search_rss_interval, str)
+                    and search_rss_interval.isdigit()
+                ):
                     search_rss_interval = int(search_rss_interval)
                 else:
                     try:
@@ -150,7 +166,9 @@ class Scheduler:
                     if search_rss_interval < 6:
                         search_rss_interval = 6
                     self.SCHEDULER.add_job(
-                        Subscribe().subscribe_search_all, "interval", hours=search_rss_interval
+                        Subscribe().subscribe_search_all,
+                        "interval",
+                        hours=search_rss_interval,
                     )
                     log.info("订阅定时搜索服务启动")
 
@@ -168,7 +186,9 @@ class Scheduler:
                             log.info("豆瓣同步服务启动失败：%s" % str(e))
                             douban_interval = 0
                 if douban_interval:
-                    self.SCHEDULER.add_job(DoubanSync().sync, "interval", hours=douban_interval)
+                    self.SCHEDULER.add_job(
+                        DoubanSync().sync, "interval", hours=douban_interval
+                    )
                     log.info("豆瓣同步服务启动")
 
         # 媒体库同步
@@ -186,7 +206,9 @@ class Scheduler:
                             mediasync_interval = 0
                 if mediasync_interval:
                     self.SCHEDULER.add_job(
-                        MediaServer().sync_mediaserver, "interval", hours=mediasync_interval
+                        MediaServer().sync_mediaserver,
+                        "interval",
+                        hours=mediasync_interval,
                     )
                     log.info("媒体库同步服务启动")
 
@@ -201,7 +223,9 @@ class Scheduler:
         )
 
         # RSS队列中检索
-        self.SCHEDULER.add_job(Subscribe().subscribe_search, "interval", seconds=RSS_CHECK_INTERVAL)
+        self.SCHEDULER.add_job(
+            Subscribe().subscribe_search, "interval", seconds=RSS_CHECK_INTERVAL
+        )
 
         # 站点数据刷新
         self.SCHEDULER.add_job(
@@ -213,12 +237,16 @@ class Scheduler:
 
         # 豆瓣RSS转TMDB，定时更新TMDB数据
         self.SCHEDULER.add_job(
-            Subscribe().refresh_rss_metainfo, "interval", hours=RSS_REFRESH_TMDB_INTERVAL
+            Subscribe().refresh_rss_metainfo,
+            "interval",
+            hours=RSS_REFRESH_TMDB_INTERVAL,
         )
 
         # 定时清除未识别的缓存
         self.SCHEDULER.add_job(
-            MetaHelper().delete_unknown_meta, "interval", hours=META_DELETE_UNKNOWN_INTERVAL
+            MetaHelper().delete_unknown_meta,
+            "interval",
+            hours=META_DELETE_UNKNOWN_INTERVAL,
         )
 
         # 定时刷新壁纸

@@ -29,7 +29,9 @@ class FileListSiteUserInfo(_ISiteUserInfo):
             self._user_detail_page = user_detail.group().strip().lstrip("/")
             self.userid = user_detail.group(1)
 
-        self._torrent_seeding_page = f"snatchlist.php?id={self.userid}&action=torrents&type=seeding"
+        self._torrent_seeding_page = (
+            f"snatchlist.php?id={self.userid}&action=torrents&type=seeding"
+        )
 
     def _parse_user_base_info(self, html_text):
         html_text = self._prepare_html_text(html_text)
@@ -53,7 +55,9 @@ class FileListSiteUserInfo(_ISiteUserInfo):
         html_text = self._prepare_html_text(html_text)
         html = etree.HTML(html_text)
 
-        upload_html = html.xpath('//table//tr/td[text()="Uploaded"]/following-sibling::td//text()')
+        upload_html = html.xpath(
+            '//table//tr/td[text()="Uploaded"]/following-sibling::td//text()'
+        )
         if upload_html:
             self.upload = StringUtils.num_filesize(upload_html[0])
         download_html = html.xpath(
@@ -64,7 +68,9 @@ class FileListSiteUserInfo(_ISiteUserInfo):
 
         self.ratio = 0 if self.download == 0 else self.upload / self.download
 
-        user_level_html = html.xpath('//table//tr/td[text()="Class"]/following-sibling::td//text()')
+        user_level_html = html.xpath(
+            '//table//tr/td[text()="Class"]/following-sibling::td//text()'
+        )
         if user_level_html:
             self.user_level = user_level_html[0].strip()
 
@@ -102,8 +108,12 @@ class FileListSiteUserInfo(_ISiteUserInfo):
             page_seeding = len(seeding_sizes)
 
             for i in range(0, len(seeding_sizes)):
-                size = StringUtils.num_filesize(seeding_sizes[i].xpath("string(.)").strip())
-                seeders = StringUtils.str_int(seeding_seeders[i].xpath("string(.)").strip())
+                size = StringUtils.num_filesize(
+                    seeding_sizes[i].xpath("string(.)").strip()
+                )
+                seeders = StringUtils.str_int(
+                    seeding_seeders[i].xpath("string(.)").strip()
+                )
 
                 page_seeding_size += size
                 page_seeding_info.append([seeders, size])

@@ -6,7 +6,6 @@ from app.utils.commons import singleton
 
 @singleton
 class SystemConfig:
-
     # 系统设置
     systemconfig = {
         # 默认下载设置

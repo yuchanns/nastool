@@ -9,6 +9,7 @@ from app.db.models import Base
 from app.utils import ExceptionUtils, PathUtils
 from config import Config
 
+
 lock = threading.Lock()
 _Engine = create_engine(
     f"sqlite:///{os.path.join(Config().get_config_path(), 'user.db')}?check_same_thread=False",
@@ -25,7 +26,6 @@ _Session = scoped_session(
 
 
 class MainDb:
-
     @property
     def session(self):
         return _Session()

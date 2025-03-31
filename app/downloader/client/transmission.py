@@ -1,11 +1,13 @@
 import os.path
 import re
 import time
+
 from datetime import datetime
 
 import transmission_rpc
 
 import log
+
 from app.downloader.client._base import _IDownloadClient
 from app.utils import ExceptionUtils, StringUtils
 from app.utils.types import DownloaderType
@@ -160,7 +162,9 @@ class Transmission(_IDownloadClient):
         if not self.trc:
             return []
         try:
-            torrents, _ = self.get_torrents(status=["downloading", "download_pending"], tag=tag)
+            torrents, _ = self.get_torrents(
+                status=["downloading", "download_pending"], tag=tag
+            )
             return torrents
         except Exception as err:
             ExceptionUtils.exception_traceback(err)
@@ -328,11 +332,15 @@ class Transmission(_IDownloadClient):
                 continue
             if seeding_time and torrent_seeding_time <= seeding_time * 3600:
                 continue
-            if size and (torrent.total_size >= maxsize or torrent.total_size <= minsize):
+            if size and (
+                torrent.total_size >= maxsize or torrent.total_size <= minsize
+            ):
                 continue
             if upload_avs and torrent_upload_avs >= upload_avs * 1024:
                 continue
-            if savepath_key and not re.findall(savepath_key, torrent.download_dir, re.I):
+            if savepath_key and not re.findall(
+                savepath_key, torrent.download_dir, re.I
+            ):
                 continue
             if tracker_key:
                 if not torrent.trackers:
@@ -347,7 +355,9 @@ class Transmission(_IDownloadClient):
                         continue
             if tr_state and torrent.status not in tr_state:
                 continue
-            if tr_error_key and not re.findall(tr_error_key, torrent.error_string, re.I):
+            if tr_error_key and not re.findall(
+                tr_error_key, torrent.error_string, re.I
+            ):
                 continue
             labels = set(torrent.labels)
             if tags and (not labels or not set(tags).issubset(labels)):
@@ -377,7 +387,9 @@ class Transmission(_IDownloadClient):
                                 "id": torrent.id,
                                 "name": torrent.name,
                                 "site": (
-                                    torrent.trackers[0].get("sitename") if torrent.trackers else ""
+                                    torrent.trackers[0].get("sitename")
+                                    if torrent.trackers
+                                    else ""
                                 ),
                                 "size": torrent.total_size,
                             }
@@ -398,7 +410,10 @@ class Transmission(_IDownloadClient):
     ):
         try:
             ret = self.trc.add_torrent(
-                torrent=content, download_dir=download_dir, paused=is_paused, cookies=cookie
+                torrent=content,
+                download_dir=download_dir,
+                paused=is_paused,
+                cookies=cookie,
             )
             if ret and ret.id:
                 if upload_limit:

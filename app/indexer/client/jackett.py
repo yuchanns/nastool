@@ -68,7 +68,7 @@ class Jackett(_IIndexClient):
                     {
                         "id": v["id"],
                         "name": v["name"],
-                        "domain": f'{self.host}api/v2.0/indexers/{v["id"]}/results/torznab/',
+                        "domain": f"{self.host}api/v2.0/indexers/{v['id']}/results/torznab/",
                         "public": True if v["type"] == "public" else False,
                         "builtin": False,
                     }

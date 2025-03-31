@@ -2,6 +2,7 @@ import unittest
 
 from tests.test_metainfo import MetaInfoTest
 
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # 测试名称识别

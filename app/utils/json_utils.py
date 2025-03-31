@@ -1,9 +1,9 @@
 import json
+
 from enum import Enum
 
 
 class JsonUtils:
-
     @staticmethod
     def json_serializable(obj):
         """

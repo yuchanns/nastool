@@ -10,7 +10,9 @@ class AsObj:
             raise TMDbException(entries["status_message"])
         for key, value in entries.items():
             if isinstance(value, list):
-                value = [AsObj(**item) if isinstance(item, dict) else item for item in value]
+                value = [
+                    AsObj(**item) if isinstance(item, dict) else item for item in value
+                ]
             if isinstance(value, dict):
                 value = AsObj(**value)
             setattr(self, key, value)

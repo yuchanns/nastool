@@ -1,6 +1,7 @@
 # coding: utf-8
 import copy
 import time
+
 from urllib.parse import quote
 
 from pyquery import PyQuery
@@ -15,7 +16,6 @@ from config import Config
 
 
 class RenderSpider(object):
-
     torrentspider = None
     torrents_info_array = []
     result_num = 100
@@ -82,7 +82,9 @@ class RenderSpider(object):
                 )
                 if submit_obj:
                     # 输入用户名
-                    chrome.browser.find_element(By.XPATH, search_input).send_keys(keyword)
+                    chrome.browser.find_element(By.XPATH, search_input).send_keys(
+                        keyword
+                    )
                     # 提交搜索
                     submit_obj.click()
                 else:

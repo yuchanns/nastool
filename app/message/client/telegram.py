@@ -4,10 +4,12 @@ from urllib.parse import urlencode
 import requests
 
 import log
+
 from app.helper import ThreadHelper
 from app.message.client._base import _IMessageClient
 from app.utils import ExceptionUtils, RequestUtils
 from config import Config
+
 
 lock = Lock()
 WEBHOOK_STATUS = False
@@ -61,7 +63,9 @@ class Telegram(_IMessageClient):
                     if not self._message_proxy_event:
                         event = Event()
                         self._message_proxy_event = event
-                        ThreadHelper().start_thread(self.__start_telegram_message_proxy, [event])
+                        ThreadHelper().start_thread(
+                            self.__start_telegram_message_proxy, [event]
+                        )
 
     @classmethod
     def match(cls, ctype):
@@ -97,7 +101,10 @@ class Telegram(_IMessageClient):
 
             # text中的Markdown特殊字符转义
             text = (
-                text.replace("[", r"\[").replace("_", r"\_").replace("*", r"\*").replace("`", r"\`")
+                text.replace("[", r"\[")
+                .replace("_", r"\_")
+                .replace("*", r"\*")
+                .replace("`", r"\`")
             )
             # 拼装消息内容
             titles = str(title).split("\n")
@@ -200,8 +207,15 @@ class Telegram(_IMessageClient):
             else:
                 photo_req = RequestUtils(proxies=proxies).get_res(image)
                 if photo_req and photo_req.content:
-                    sc_url = "https://api.telegram.org/bot%s/sendPhoto" % self._telegram_token
-                    data = {"chat_id": chat_id, "caption": caption, "parse_mode": "Markdown"}
+                    sc_url = (
+                        "https://api.telegram.org/bot%s/sendPhoto"
+                        % self._telegram_token
+                    )
+                    data = {
+                        "chat_id": chat_id,
+                        "caption": caption,
+                        "parse_mode": "Markdown",
+                    }
                     files = {"photo": photo_req.content}
                     res = requests.post(sc_url, proxies=proxies, data=data, files=files)
                     flag, msg = _res_parse(res)
@@ -237,13 +251,19 @@ class Telegram(_IMessageClient):
                 self.__del_bot_webhook()
             values = {"url": self._webhook_url, "allowed_updates": ["message"]}
             sc_url = "https://api.telegram.org/bot%s/setWebhook?" % self._telegram_token
-            res = RequestUtils(proxies=Config().get_proxies()).get_res(sc_url + urlencode(values))
+            res = RequestUtils(proxies=Config().get_proxies()).get_res(
+                sc_url + urlencode(values)
+            )
             if res is not None:
                 json = res.json()
                 if json.get("ok"):
-                    log.info("【Telegram】Webhook 设置成功，地址为：%s" % self._webhook_url)
+                    log.info(
+                        "【Telegram】Webhook 设置成功，地址为：%s" % self._webhook_url
+                    )
                 else:
-                    log.error("【Telegram】Webhook 设置失败：" % json.get("description"))
+                    log.error(
+                        "【Telegram】Webhook 设置失败：" % json.get("description")
+                    )
             else:
                 log.error("【Telegram】Webhook 设置失败：网络连接故障！")
 

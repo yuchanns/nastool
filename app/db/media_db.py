@@ -10,6 +10,7 @@ from app.db.models import MEDIASYNCITEMS, MEDIASYNCSTATISTIC, BaseMedia
 from app.utils import ExceptionUtils
 from config import Config
 
+
 lock = threading.Lock()
 _Engine = create_engine(
     f"sqlite:///{os.path.join(Config().get_config_path(), 'media.db')}?check_same_thread=False",
@@ -24,7 +25,6 @@ _Session = scoped_session(sessionmaker(bind=_Engine, autoflush=True, autocommit=
 
 
 class MediaDb:
-
     @property
     def session(self):
         return _Session()
@@ -39,7 +39,8 @@ class MediaDb:
             return False
         try:
             self.session.query(MEDIASYNCITEMS).filter(
-                MEDIASYNCITEMS.SERVER == server_type, MEDIASYNCITEMS.ITEM_ID == iteminfo.get("id")
+                MEDIASYNCITEMS.SERVER == server_type,
+                MEDIASYNCITEMS.ITEM_ID == iteminfo.get("id"),
             ).delete()
             self.session.flush()
             self.session.add(
@@ -67,7 +68,8 @@ class MediaDb:
         try:
             if server_type and library:
                 self.session.query(MEDIASYNCITEMS).filter(
-                    MEDIASYNCITEMS.SERVER == server_type, MEDIASYNCITEMS.LIBRARY == library
+                    MEDIASYNCITEMS.SERVER == server_type,
+                    MEDIASYNCITEMS.LIBRARY == library,
                 ).delete()
             else:
                 self.session.query(MEDIASYNCITEMS).delete()
@@ -92,7 +94,9 @@ class MediaDb:
                     TOTAL_COUNT=total_count,
                     MOVIE_COUNT=movie_count,
                     TV_COUNT=tv_count,
-                    UPDATE_TIME=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())),
+                    UPDATE_TIME=time.strftime(
+                        "%Y-%m-%d %H:%M:%S", time.localtime(time.time())
+                    ),
                 )
             )
             self.session.commit()
@@ -126,7 +130,9 @@ class MediaDb:
         else:
             items = (
                 self.session.query(MEDIASYNCITEMS)
-                .filter(MEDIASYNCITEMS.SERVER == server_type, MEDIASYNCITEMS.TITLE == title)
+                .filter(
+                    MEDIASYNCITEMS.SERVER == server_type, MEDIASYNCITEMS.TITLE == title
+                )
                 .all()
             )
         if items:

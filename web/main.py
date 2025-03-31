@@ -8,6 +8,7 @@ import time
 import traceback
 import urllib
 import xml.dom.minidom
+
 from functools import wraps
 from math import floor
 from pathlib import Path
@@ -27,6 +28,7 @@ from flask_compress import Compress
 from flask_login import LoginManager, current_user, login_required, login_user
 
 import log
+
 from app.brushtask import BrushTask
 from app.conf import ModuleConf, SystemConfig
 from app.downloader import Downloader
@@ -43,7 +45,7 @@ from app.subscribe import Subscribe
 from app.sync import Sync
 from app.torrentremover import TorrentRemover
 from app.utils import DomUtils, ExceptionUtils, StringUtils, SystemUtils
-from app.utils.types import *
+from app.utils.types import DownloaderType, MediaType, OsType, SearchType
 from config import PT_TRANSFER_INTERVAL, Config
 from web.action import WebAction
 from web.apiv1 import apiv1_bp
@@ -52,6 +54,7 @@ from web.backend.wallpaper import get_login_wallpaper
 from web.backend.web_utils import WebUtils
 from web.backend.WXBizMsgCrypt3 import WXBizMsgCrypt
 from web.security import require_auth
+
 
 # 配置文件锁
 ConfigLock = Lock()
@@ -136,7 +139,9 @@ def login():
         SiteFavicons = Sites().get_site_favicon()
         Indexers = Indexer().get_indexers()
         SearchSource = (
-            "douban" if Config().get_config("laboratory").get("use_douban_titles") else "tmdb"
+            "douban"
+            if Config().get_config("laboratory").get("use_douban_titles")
+            else "tmdb"
         )
         CustomScriptCfg = SystemConfig().get_system_config("CustomScript")
         return render_template(
@@ -162,7 +167,10 @@ def login():
         跳转到登录页面
         """
         return render_template(
-            "login.html", GoPage=GoPage, LoginWallpaper=get_login_wallpaper(), err_msg=errmsg
+            "login.html",
+            GoPage=GoPage,
+            LoginWallpaper=get_login_wallpaper(),
+            err_msg=errmsg,
         )
 
     # 登录认证
@@ -279,7 +287,9 @@ def search():
 @login_required
 def movie_rss():
     RssItems = WebAction().get_movie_rss_list().get("result")
-    RuleGroups = {str(group["id"]): group["name"] for group in Filter().get_rule_groups()}
+    RuleGroups = {
+        str(group["id"]): group["name"] for group in Filter().get_rule_groups()
+    }
     DownloadSettings = Downloader().get_download_setting()
     return render_template(
         "rss/movie_rss.html",
@@ -295,7 +305,9 @@ def movie_rss():
 @login_required
 def tv_rss():
     RssItems = WebAction().get_tv_rss_list().get("result")
-    RuleGroups = {str(group["id"]): group["name"] for group in Filter().get_rule_groups()}
+    RuleGroups = {
+        str(group["id"]): group["name"] for group in Filter().get_rule_groups()
+    }
     DownloadSettings = Downloader().get_download_setting()
     return render_template(
         "rss/tv_rss.html",
@@ -350,7 +362,10 @@ def rss_calendar():
             Uniques.add(unique)
             UniqueTvItems.append(item)
     return render_template(
-        "rss/rss_calendar.html", Today=Today, RssMovieItems=RssMovieItems, RssTvItems=UniqueTvItems
+        "rss/rss_calendar.html",
+        Today=Today,
+        RssMovieItems=RssMovieItems,
+        RssTvItems=UniqueTvItems,
     )
 
 
@@ -359,7 +374,9 @@ def rss_calendar():
 @login_required
 def sites():
     CfgSites = Sites().get_sites()
-    RuleGroups = {str(group["id"]): group["name"] for group in Filter().get_rule_groups()}
+    RuleGroups = {
+        str(group["id"]): group["name"] for group in Filter().get_rule_groups()
+    }
     DownloadSettings = {
         did: attr["name"] for did, attr in Downloader().get_download_setting().items()
     }
@@ -382,7 +399,9 @@ def sites():
 @login_required
 def sitelist():
     IndexerSites = Indexer().get_builtin_indexers(check=False, public=False)
-    return render_template("site/sitelist.html", Sites=IndexerSites, Count=len(IndexerSites))
+    return render_template(
+        "site/sitelist.html", Sites=IndexerSites, Count=len(IndexerSites)
+    )
 
 
 # 站点资源页面
@@ -395,7 +414,9 @@ def resources():
     keyword = request.args.get("keyword")
     Results = (
         WebAction()
-        .action("list_site_resources", {"id": site_id, "page": page, "keyword": keyword})
+        .action(
+            "list_site_resources", {"id": site_id, "page": page, "keyword": keyword}
+        )
         .get("data")
         or []
     )
@@ -427,7 +448,9 @@ def recommend():
     Keyword = request.args.get("keyword") or ""
     Source = request.args.get("source") or ""
     FilterKey = request.args.get("filter") or ""
-    Params = json.loads(request.args.get("params")) if request.args.get("params") else {}
+    Params = (
+        json.loads(request.args.get("params")) if request.args.get("params") else {}
+    )
     return render_template(
         "discovery/recommend.html",
         Type=Type,
@@ -532,7 +555,11 @@ def discovery_person():
     SubTitle = request.args.get("subtitle")
     Type = request.args.get("type")
     return render_template(
-        "discovery/person.html", TmdbId=TmdbId, Title=Title, SubTitle=SubTitle, Type=Type
+        "discovery/person.html",
+        TmdbId=TmdbId,
+        Title=Title,
+        SubTitle=SubTitle,
+        Type=Type,
     )
 
 
@@ -555,7 +582,10 @@ def downloading():
 def downloaded():
     CurrentPage = request.args.get("page") or 1
     return render_template(
-        "discovery/recommend.html", Type="DOWNLOADED", Title="近期下载", CurrentPage=CurrentPage
+        "discovery/recommend.html",
+        Type="DOWNLOADED",
+        Title="近期下载",
+        CurrentPage=CurrentPage,
     )
 
 
@@ -620,10 +650,14 @@ def statistics():
                 SiteRatios.append(round(float(ratio), 1))
 
     # 近期上传下载各站点汇总
-    CurrentUpload, CurrentDownload, _, _, _ = Sites().get_pt_site_statistics_history(days=2)
+    CurrentUpload, CurrentDownload, _, _, _ = Sites().get_pt_site_statistics_history(
+        days=2
+    )
 
     # 站点用户数据
-    SiteUserStatistics = WebAction().get_site_user_statistics({"encoding": "DICT"}).get("data")
+    SiteUserStatistics = (
+        WebAction().get_site_user_statistics({"encoding": "DICT"}).get("data")
+    )
 
     return render_template(
         "site/statistics.html",
@@ -1052,7 +1086,9 @@ def tmdbcache():
         current_page = 1
     else:
         current_page = int(current_page)
-    total_count, tmdb_caches = MetaHelper().dump_meta_data(search_str, current_page, page_num)
+    total_count, tmdb_caches = MetaHelper().dump_meta_data(
+        search_str, current_page, page_num
+    )
 
     total_page = floor(total_count / page_num) + 1
 
@@ -1090,7 +1126,9 @@ def tmdbcache():
 @login_required
 def unidentification():
     Items = WebAction().get_unknown_list().get("items")
-    return render_template("rename/unidentification.html", TotalCount=len(Items), Items=Items)
+    return render_template(
+        "rename/unidentification.html", TotalCount=len(Items), Items=Items
+    )
 
 
 # 文件管理页面
@@ -1133,7 +1171,9 @@ def basic():
 @login_required
 def customwords():
     groups = WebAction().get_customwords().get("result")
-    return render_template("setting/customwords.html", Groups=groups, GroupsCount=len(groups))
+    return render_template(
+        "setting/customwords.html", Groups=groups, GroupsCount=len(groups)
+    )
 
 
 # 目录同步页面
@@ -1247,7 +1287,9 @@ def notification():
 @login_required
 def subtitle():
     ChromeOk = ChromeHelper().get_status()
-    return render_template("setting/subtitle.html", Config=Config().get_config(), ChromeOk=ChromeOk)
+    return render_template(
+        "setting/subtitle.html", Config=Config().get_config(), ChromeOk=ChromeOk
+    )
 
 
 # 用户管理页面
@@ -1277,7 +1319,9 @@ def filterrule():
 def user_rss():
     Tasks = RssChecker().get_rsstask_info()
     RssParsers = RssChecker().get_userrss_parser()
-    RuleGroups = {str(group["id"]): group["name"] for group in Filter().get_rule_groups()}
+    RuleGroups = {
+        str(group["id"]): group["name"] for group in Filter().get_rule_groups()
+    }
     DownloadSettings = {
         did: attr["name"] for did, attr in Downloader().get_download_setting().items()
     }
@@ -1300,7 +1344,9 @@ def user_rss():
 @login_required
 def rss_parser():
     RssParsers = RssChecker().get_userrss_parser()
-    return render_template("rss/rss_parser.html", RssParsers=RssParsers, Count=len(RssParsers))
+    return render_template(
+        "rss/rss_parser.html", RssParsers=RssParsers, Count=len(RssParsers)
+    )
 
 
 # 事件响应
@@ -1405,7 +1451,9 @@ def wechat():
         try:
             sReqData = request.data
             log.debug("收到微信消息：%s" % str(sReqData))
-            ret, sMsg = wxcpt.DecryptMsg(sReqData, sVerifyMsgSig, sVerifyTimeStamp, sVerifyNonce)
+            ret, sMsg = wxcpt.DecryptMsg(
+                sReqData, sVerifyMsgSig, sVerifyTimeStamp, sVerifyNonce
+            )
             if ret != 0:
                 log.error("解密微信消息失败 DecryptMsg ret = %s" % str(ret))
                 return make_response("ok", 200)
@@ -1414,7 +1462,7 @@ def wechat():
             1、消息格式：
             <xml>
                <ToUserName><![CDATA[toUser]]></ToUserName>
-               <FromUserName><![CDATA[fromUser]]></FromUserName> 
+               <FromUserName><![CDATA[fromUser]]></FromUserName>
                <CreateTime>1348831860</CreateTime>
                <MsgType><![CDATA[text]]></MsgType>
                <Content><![CDATA[this is a test]]></Content>
@@ -1429,7 +1477,7 @@ def wechat():
                 <MsgType><![CDATA[event]]></MsgType>
                 <Event><![CDATA[subscribe]]></Event>
                 <AgentID>1</AgentID>
-            </xml>            
+            </xml>
             """
             dom_tree = xml.dom.minidom.parseString(sMsg.decode("UTF-8"))
             root_node = dom_tree.documentElement
@@ -1457,12 +1505,17 @@ def wechat():
             if content:
                 # 处理消息内容
                 WebAction().handle_message_job(
-                    msg=content, in_from=SearchType.WX, user_id=user_id, user_name=user_id
+                    msg=content,
+                    in_from=SearchType.WX,
+                    user_id=user_id,
+                    user_name=user_id,
                 )
             return make_response(content, 200)
         except Exception as err:
             ExceptionUtils.exception_traceback(err)
-            log.error("微信消息处理发生错误：%s - %s" % (str(err), traceback.format_exc()))
+            log.error(
+                "微信消息处理发生错误：%s - %s" % (str(err), traceback.format_exc())
+            )
             return make_response("ok", 200)
 
 
@@ -1537,7 +1590,9 @@ def telegram():
         return "NAStool未启用Telegram交互"
     msg_json = request.get_json()
     if not SecurityHelper().check_telegram_ip(request.remote_addr):
-        log.error("收到来自 %s 的非法Telegram消息：%s" % (request.remote_addr, msg_json))
+        log.error(
+            "收到来自 %s 的非法Telegram消息：%s" % (request.remote_addr, msg_json)
+        )
         return "不允许的IP地址请求"
     if msg_json:
         message = msg_json.get("message", {})
@@ -1551,7 +1606,9 @@ def telegram():
             if text.startswith("/"):
                 if str(user_id) not in interactive_client.get("client").get_admin():
                     Message().send_channel_msg(
-                        channel=SearchType.TG, title="只有管理员才有权限执行此命令", user_id=user_id
+                        channel=SearchType.TG,
+                        title="只有管理员才有权限执行此命令",
+                        user_id=user_id,
                     )
                     return "只有管理员才有权限执行此命令"
             else:
@@ -1585,13 +1642,16 @@ def synology():
         return "NAStool未启用Synology Chat交互"
     msg_data = request.form
     if not SecurityHelper().check_synology_ip(request.remote_addr):
-        log.error("收到来自 %s 的非法Synology Chat消息：%s" % (request.remote_addr, msg_data))
+        log.error(
+            "收到来自 %s 的非法Synology Chat消息：%s" % (request.remote_addr, msg_data)
+        )
         return "不允许的IP地址请求"
     if msg_data:
         token = msg_data.get("token")
         if not interactive_client.get("client").check_token(token):
             log.error(
-                "收到来自 %s 的非法Synology Chat消息：token校验不通过！" % request.remote_addr
+                "收到来自 %s 的非法Synology Chat消息：token校验不通过！"
+                % request.remote_addr
             )
             return "token校验不通过"
         text = msg_data.get("text")
@@ -1601,7 +1661,10 @@ def synology():
         user_name = msg_data.get("username")
         if text:
             WebAction().handle_message_job(
-                msg=text, in_from=SearchType.SYNOLOGY, user_id=user_id, user_name=user_name
+                msg=text,
+                in_from=SearchType.SYNOLOGY,
+                user_id=user_id,
+                user_name=user_name,
             )
     return "Ok"
 
@@ -1724,7 +1787,10 @@ def slack():
         elif msg_json.get("type") == "event_callback":
             channel = msg_json.get("event", {}).get("client")
             text = re.sub(
-                r"<@[0-9A-Z]+>", "", msg_json.get("event", {}).get("text"), flags=re.IGNORECASE
+                r"<@[0-9A-Z]+>",
+                "",
+                msg_json.get("event", {}).get("text"),
+                flags=re.IGNORECASE,
             ).strip()
             username = ""
         elif msg_json.get("type") == "shortcut":
@@ -1788,7 +1854,9 @@ def subscribe():
         return make_response("ok", 200)
     subject = req_json.get("subject")
     media_type = (
-        MediaType.MOVIE if req_json.get("media", {}).get("media_type") == "movie" else MediaType.TV
+        MediaType.MOVIE
+        if req_json.get("media", {}).get("media_type") == "movie"
+        else MediaType.TV
     )
     tmdbId = req_json.get("media", {}).get("tmdbId")
     if not media_type or not tmdbId or not subject:
@@ -1799,7 +1867,10 @@ def subscribe():
     meta_info = MetaInfo(title=subject, mtype=media_type)
     if media_type == MediaType.MOVIE:
         code, msg, meta_info = Subscribe().add_rss_subscribe(
-            mtype=media_type, name=meta_info.get_name(), year=meta_info.year, mediaid=tmdbId
+            mtype=media_type,
+            name=meta_info.get_name(),
+            year=meta_info.year,
+            mediaid=tmdbId,
         )
         meta_info.user_name = req_json.get("request", {}).get("requestedBy_username")
         Message().send_rss_success_message(in_from=SearchType.API, media_info=meta_info)
@@ -1821,7 +1892,9 @@ def subscribe():
                 mediaid=tmdbId,
                 season=season,
             )
-            Message().send_rss_success_message(in_from=SearchType.API, media_info=meta_info)
+            Message().send_rss_success_message(
+                in_from=SearchType.API, media_info=meta_info
+            )
     if code == 0:
         return make_response("ok", 200)
     else:

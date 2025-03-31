@@ -1,8 +1,10 @@
 import json
 import re
+
 from enum import Enum
 
 import log
+
 from app.conf import ModuleConf
 from app.helper import DbHelper, SubmoduleHelper
 from app.message.message_center import MessageCenter
@@ -55,7 +57,9 @@ class Message(object):
                 "name": client_config.NAME,
                 "type": client_config.TYPE,
                 "config": config,
-                "switchs": json.loads(client_config.SWITCHS) if client_config.SWITCHS else [],
+                "switchs": json.loads(client_config.SWITCHS)
+                if client_config.SWITCHS
+                else [],
                 "interactive": client_config.INTERACTIVE,
                 "enabled": client_config.ENABLED,
             }
@@ -90,7 +94,9 @@ class Message(object):
             return False
         # 测试状态不启动监听服务
         state, ret_msg = self.__build_class(ctype=ctype, conf=config).send_msg(
-            title="测试", text="这是一条测试消息", url="https://github.com/jxxghp/nas-tools"
+            title="测试",
+            text="这是一条测试消息",
+            url="https://github.com/jxxghp/nas-tools",
         )
         if not state:
             log.error(f"【Message】{ctype} 发送测试消息失败：%s" % ret_msg)
@@ -144,12 +150,19 @@ class Message(object):
         :return: 发送状态、错误信息
         """
         # 插入消息中心
-        self.messagecenter.insert_system_message(level="INFO", title=title, content=text)
+        self.messagecenter.insert_system_message(
+            level="INFO", title=title, content=text
+        )
         # 发送消息
         client = self._active_interactive_clients.get(channel)
         if client:
             state = self.__sendmsg(
-                client=client, title=title, text=text, image=image, url=url, user_id=user_id
+                client=client,
+                title=title,
+                text=text,
+                image=image,
+                url=url,
+                user_id=user_id,
             )
             return state
         return False
@@ -180,7 +193,9 @@ class Message(object):
         """
         client = self._active_interactive_clients.get(channel)
         if client:
-            state = self.__send_list_msg(client=client, title=title, medias=medias, user_id=user_id)
+            state = self.__send_list_msg(
+                client=client, title=title, medias=medias, user_id=user_id
+            )
             return state
         return False
 
@@ -222,7 +237,9 @@ class Message(object):
             can_item.description = re.sub(r"<[^>]+>", "", description)
             msg_text = f"{msg_text}\n描述：{can_item.description}"
         # 插入消息中心
-        self.messagecenter.insert_system_message(level="INFO", title=msg_title, content=msg_text)
+        self.messagecenter.insert_system_message(
+            level="INFO", title=msg_title, content=msg_text
+        )
         # 发送消息
         for client in self._active_clients:
             if "download_start" in client.get("switchs"):
@@ -234,7 +251,9 @@ class Message(object):
                     url="downloading",
                 )
 
-    def send_transfer_movie_message(self, in_from: Enum, media_info, exist_filenum, category_flag):
+    def send_transfer_movie_message(
+        self, in_from: Enum, media_info, exist_filenum, category_flag
+    ):
         """
         发送转移电影的消息
         :param in_from: 转移来源
@@ -253,13 +272,13 @@ class Message(object):
                 msg_str = f"{msg_str}，类别：{media_info.category}"
         if media_info.get_resource_type_string():
             msg_str = f"{msg_str}，质量：{media_info.get_resource_type_string()}"
-        msg_str = (
-            f"{msg_str}，大小：{StringUtils.str_filesize(media_info.size)}，来自：{in_from.value}"
-        )
+        msg_str = f"{msg_str}，大小：{StringUtils.str_filesize(media_info.size)}，来自：{in_from.value}"
         if exist_filenum != 0:
             msg_str = f"{msg_str}，{exist_filenum}个文件已存在"
         # 插入消息中心
-        self.messagecenter.insert_system_message(level="INFO", title=msg_title, content=msg_str)
+        self.messagecenter.insert_system_message(
+            level="INFO", title=msg_title, content=msg_str
+        )
         # 发送消息
         for client in self._active_clients:
             if "transfer_finished" in client.get("switchs"):
@@ -277,9 +296,7 @@ class Message(object):
         """
         for item_info in message_medias.values():
             if item_info.total_episodes == 1:
-                msg_title = (
-                    f"{item_info.get_title_string()} {item_info.get_season_episode_string()} 已入库"
-                )
+                msg_title = f"{item_info.get_title_string()} {item_info.get_season_episode_string()} 已入库"
             else:
                 msg_title = f"{item_info.get_title_string()} {item_info.get_season_string()} 共{item_info.total_episodes}集 已入库"
             if item_info.vote_average:
@@ -293,7 +310,9 @@ class Message(object):
             else:
                 msg_str = f"{msg_str}，总大小：{StringUtils.str_filesize(item_info.size)}，来自：{in_from.value}"
             # 插入消息中心
-            self.messagecenter.insert_system_message(level="INFO", title=msg_title, content=msg_str)
+            self.messagecenter.insert_system_message(
+                level="INFO", title=msg_title, content=msg_str
+            )
             # 发送消息
             for client in self._active_clients:
                 if "transfer_finished" in client.get("switchs"):
@@ -315,12 +334,17 @@ class Message(object):
         )
         text = f"站点：{item.site}\n种子名称：{item.org_string}\n种子链接：{item.enclosure}\n错误信息：{error_msg}"
         # 插入消息中心
-        self.messagecenter.insert_system_message(level="INFO", title=title, content=text)
+        self.messagecenter.insert_system_message(
+            level="INFO", title=title, content=text
+        )
         # 发送消息
         for client in self._active_clients:
             if "download_fail" in client.get("switchs"):
                 self.__sendmsg(
-                    client=client, title=title, text=text, image=item.get_message_image()
+                    client=client,
+                    title=title,
+                    text=text,
+                    image=item.get_message_image(),
                 )
 
     def send_rss_success_message(self, in_from: Enum, media_info):
@@ -330,9 +354,7 @@ class Message(object):
         if media_info.type == MediaType.MOVIE:
             msg_title = f"{media_info.get_title_string()} 已添加订阅"
         else:
-            msg_title = (
-                f"{media_info.get_title_string()} {media_info.get_season_string()} 已添加订阅"
-            )
+            msg_title = f"{media_info.get_title_string()} {media_info.get_season_string()} 已添加订阅"
         msg_str = f"类型：{media_info.type.value}"
         if media_info.vote_average:
             msg_str = f"{msg_str}，{media_info.get_vote_string()}"
@@ -340,7 +362,9 @@ class Message(object):
         if media_info.user_name:
             msg_str = f"{msg_str}，用户：{media_info.user_name}"
         # 插入消息中心
-        self.messagecenter.insert_system_message(level="INFO", title=msg_title, content=msg_str)
+        self.messagecenter.insert_system_message(
+            level="INFO", title=msg_title, content=msg_str
+        )
         # 发送消息
         for client in self._active_clients:
             if "rss_added" in client.get("switchs"):
@@ -360,18 +384,16 @@ class Message(object):
             return
         else:
             if media_info.over_edition:
-                msg_title = (
-                    f"{media_info.get_title_string()} {media_info.get_season_string()} 已完成洗版"
-                )
+                msg_title = f"{media_info.get_title_string()} {media_info.get_season_string()} 已完成洗版"
             else:
-                msg_title = (
-                    f"{media_info.get_title_string()} {media_info.get_season_string()} 已完成订阅"
-                )
+                msg_title = f"{media_info.get_title_string()} {media_info.get_season_string()} 已完成订阅"
         msg_str = f"类型：{media_info.type.value}"
         if media_info.vote_average:
             msg_str = f"{msg_str}，{media_info.get_vote_string()}"
         # 插入消息中心
-        self.messagecenter.insert_system_message(level="INFO", title=msg_title, content=msg_str)
+        self.messagecenter.insert_system_message(
+            level="INFO", title=msg_title, content=msg_str
+        )
         # 发送消息
         for client in self._active_clients:
             if "rss_finished" in client.get("switchs"):
@@ -392,7 +414,9 @@ class Message(object):
         title = "站点签到"
         text = "\n".join(msgs)
         # 插入消息中心
-        self.messagecenter.insert_system_message(level="INFO", title=title, content=text)
+        self.messagecenter.insert_system_message(
+            level="INFO", title=title, content=text
+        )
         # 发送消息
         for client in self._active_clients:
             if "site_signin" in client.get("switchs"):
@@ -407,7 +431,9 @@ class Message(object):
         if not text:
             text = ""
         # 插入消息中心
-        self.messagecenter.insert_system_message(level="INFO", title=title, content=text)
+        self.messagecenter.insert_system_message(
+            level="INFO", title=title, content=text
+        )
         # 发送消息
         for client in self._active_clients:
             if "site_message" in client.get("switchs"):
@@ -422,11 +448,15 @@ class Message(object):
         title = f"【{count} 个文件入库失败】"
         text = f"源路径：{path}\n原因：{text}"
         # 插入消息中心
-        self.messagecenter.insert_system_message(level="INFO", title=title, content=text)
+        self.messagecenter.insert_system_message(
+            level="INFO", title=title, content=text
+        )
         # 发送消息
         for client in self._active_clients:
             if "transfer_fail" in client.get("switchs"):
-                self.__sendmsg(client=client, title=title, text=text, url="unidentification")
+                self.__sendmsg(
+                    client=client, title=title, text=text, url="unidentification"
+                )
 
     def send_brushtask_remove_message(self, title, text):
         """
@@ -435,7 +465,9 @@ class Message(object):
         if not title or not text:
             return
         # 插入消息中心
-        self.messagecenter.insert_system_message(level="INFO", title=title, content=text)
+        self.messagecenter.insert_system_message(
+            level="INFO", title=title, content=text
+        )
         # 发送消息
         for client in self._active_clients:
             if "brushtask_remove" in client.get("switchs"):
@@ -448,7 +480,9 @@ class Message(object):
         if not title or not text:
             return
         # 插入消息中心
-        self.messagecenter.insert_system_message(level="INFO", title=title, content=text)
+        self.messagecenter.insert_system_message(
+            level="INFO", title=title, content=text
+        )
         # 发送消息
         for client in self._active_clients:
             if "brushtask_added" in client.get("switchs"):
@@ -461,7 +495,9 @@ class Message(object):
         if not title or not text or not image:
             return
         # 插入消息中心
-        self.messagecenter.insert_system_message(level="INFO", title=title, content=text)
+        self.messagecenter.insert_system_message(
+            level="INFO", title=title, content=text
+        )
         # 发送消息
         for client in self._active_clients:
             if "mediaserver_message" in client.get("switchs"):
@@ -474,7 +510,9 @@ class Message(object):
         if not title:
             return
         # 插入消息中心
-        self.messagecenter.insert_system_message(level="INFO", title=title, content=text)
+        self.messagecenter.insert_system_message(
+            level="INFO", title=title, content=text
+        )
         # 发送消息
         for client in self._active_clients:
             if "custom_message" in client.get("switchs"):

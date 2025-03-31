@@ -1,5 +1,11 @@
 # coding: utf-8
-from app.utils.types import *
+from app.utils.types import (
+    DownloaderType,
+    IndexerType,
+    MediaServerType,
+    RmtMode,
+    SearchType,
+)
 
 
 class ModuleConf(object):
@@ -248,7 +254,11 @@ class ModuleConf(object):
                         "title": "推送渠道",
                         "tooltip": "使用PushPlus中配置的发送渠道，具体参考pushplus.plus官网文档说明，支持第三方webhook、钉钉、飞书、邮箱等",
                         "type": "select",
-                        "options": {"wechat": "微信", "mail": "邮箱", "webhook": "第三方Webhook"},
+                        "options": {
+                            "wechat": "微信",
+                            "mail": "邮箱",
+                            "webhook": "第三方Webhook",
+                        },
                         "default": "wechat",
                     },
                     "topic": {
@@ -397,7 +407,10 @@ class ModuleConf(object):
             "site_message": {"name": "站点消息", "fuc_name": "site_message"},
             "brushtask_added": {"name": "刷流下种", "fuc_name": "brushtask_added"},
             "brushtask_remove": {"name": "刷流删种", "fuc_name": "brushtask_remove"},
-            "mediaserver_message": {"name": "媒体服务", "fuc_name": "mediaserver_message"},
+            "mediaserver_message": {
+                "name": "媒体服务",
+                "fuc_name": "mediaserver_message",
+            },
             "custom_message": {"name": "自定义消息", "fuc_name": "custom_message"},
         },
     }
@@ -458,7 +471,12 @@ class ModuleConf(object):
             "HDR": r"HDR",
             "3D": r"3D",
         },
-        "pix": {"8k": r"8K", "4k": r"4K|2160P|X2160", "1080p": r"1080[PIX]|X1080", "720p": r"720P"},
+        "pix": {
+            "8k": r"8K",
+            "4k": r"4K|2160P|X2160",
+            "1080p": r"1080[PIX]|X1080",
+            "720p": r"720P",
+        },
     }
 
     # 网络测试对象

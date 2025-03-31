@@ -1,6 +1,7 @@
 from app.media.tmdbv3api.as_obj import AsObj
 from app.media.tmdbv3api.tmdb import TMDb
 
+
 try:
     from urllib import urlencode
 except ImportError:
@@ -54,7 +55,11 @@ class Person(TMDb):
             self._call(
                 self._urls["changes"] % person_id,
                 urlencode(
-                    {"start_date": str(start_date), "end_date": str(end_date), "page": str(page)}
+                    {
+                        "start_date": str(start_date),
+                        "end_date": str(end_date),
+                        "page": str(page),
+                    }
                 ),
             ),
             "changes",
@@ -66,7 +71,9 @@ class Person(TMDb):
         :param person_id:
         :return:
         """
-        return self._get_obj(self._call(self._urls["movie_credits"] % person_id, ""), "cast")
+        return self._get_obj(
+            self._call(self._urls["movie_credits"] % person_id, ""), "cast"
+        )
 
     def tv_credits(self, person_id):
         """
@@ -74,7 +81,9 @@ class Person(TMDb):
         :param person_id:
         :return:
         """
-        return self._get_obj(self._call(self._urls["tv_credits"] % person_id, ""), "cast")
+        return self._get_obj(
+            self._call(self._urls["tv_credits"] % person_id, ""), "cast"
+        )
 
     def combined_credits(self, person_id):
         """
@@ -90,7 +99,9 @@ class Person(TMDb):
         :param person_id:
         :return:
         """
-        return self._get_obj(self._call(self._urls["external_ids"] % (str(person_id)), ""), None)
+        return self._get_obj(
+            self._call(self._urls["external_ids"] % (str(person_id)), ""), None
+        )
 
     def images(self, person_id):
         """

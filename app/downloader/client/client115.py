@@ -1,4 +1,5 @@
 import log
+
 from app.downloader.client._base import _IDownloadClient
 from app.downloader.client._py115 import Py115
 from app.utils import StringUtils
@@ -83,9 +84,13 @@ class Client115(_IDownloadClient):
         if not self.downclient:
             return False
         if isinstance(content, str):
-            ret, self.lasthash = self.downclient.addtask(tdir=download_dir, content=content)
+            ret, self.lasthash = self.downclient.addtask(
+                tdir=download_dir, content=content
+            )
             if not ret:
-                log.error(f"【{self.client_type}】添加下载任务失败：{self.downclient.err}")
+                log.error(
+                    f"【{self.client_type}】添加下载任务失败：{self.downclient.err}"
+                )
                 return None
             return self.lasthash
         else:

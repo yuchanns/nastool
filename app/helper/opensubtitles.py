@@ -4,6 +4,7 @@ from urllib.parse import quote
 from pyquery import PyQuery
 
 import log
+
 from app.helper.chrome_helper import ChromeHelper
 from config import Config
 
@@ -12,7 +13,9 @@ class OpenSubtitles:
     _cookie = ""
     _ua = None
     _url_imdbid = "https://www.opensubtitles.org/zh/search/imdbid-%s/sublanguageid-chi"
-    _url_keyword = "https://www.opensubtitles.org/zh/search/moviename-%s/sublanguageid-chi"
+    _url_keyword = (
+        "https://www.opensubtitles.org/zh/search/moviename-%s/sublanguageid-chi"
+    )
 
     def __init__(self):
         self._ua = Config().get_ua()
@@ -37,7 +40,9 @@ class OpenSubtitles:
         """
         按关键字搜索OpenSubtitles
         """
-        return self.__parse_opensubtitles_results(url=self._url_keyword % quote(keyword))
+        return self.__parse_opensubtitles_results(
+            url=self._url_keyword % quote(keyword)
+        )
 
     @classmethod
     @lru_cache(maxsize=128)
@@ -47,7 +52,9 @@ class OpenSubtitles:
         """
         chrome = ChromeHelper()
         if not chrome.get_status():
-            log.error("【Subtitle】未找到浏览器内核，当前环境无法检索opensubtitles字幕！")
+            log.error(
+                "【Subtitle】未找到浏览器内核，当前环境无法检索opensubtitles字幕！"
+            )
             return []
         # 访问页面
         if not chrome.visit(url):

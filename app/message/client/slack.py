@@ -1,15 +1,19 @@
 import re
+
 from threading import Lock
 
 import requests
+
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk.errors import SlackApiError
 
 import log
+
 from app.message.client._base import _IMessageClient
 from app.utils import ExceptionUtils
 from config import Config
+
 
 lock = Lock()
 
@@ -32,7 +36,9 @@ class Slack(_IMessageClient):
         self.init_config()
 
     def init_config(self):
-        self._ds_url = "http://127.0.0.1:%s/slack" % self._config.get_config("app").get("web_port")
+        self._ds_url = "http://127.0.0.1:%s/slack" % self._config.get_config("app").get(
+            "web_port"
+        )
         if self._client_config:
             try:
                 slack_app = App(token=self._client_config.get("bot_token"))
@@ -46,7 +52,8 @@ class Slack(_IMessageClient):
             def slack_message(message):
                 local_res = requests.post(self._ds_url, json=message, timeout=10)
                 log.debug(
-                    "【Slack】message: %s processed, response is: %s" % (message, local_res.text)
+                    "【Slack】message: %s processed, response is: %s"
+                    % (message, local_res.text)
                 )
 
             @slack_app.action(re.compile(r"actionId-\d+"))
@@ -54,7 +61,8 @@ class Slack(_IMessageClient):
                 ack()
                 local_res = requests.post(self._ds_url, json=body, timeout=60)
                 log.debug(
-                    "【Slack】message: %s processed, response is: %s" % (body, local_res.text)
+                    "【Slack】message: %s processed, response is: %s"
+                    % (body, local_res.text)
                 )
 
             @slack_app.event("app_mention")
@@ -62,7 +70,8 @@ class Slack(_IMessageClient):
                 say(f"收到，请稍等... <@{body.get('event', {}).get('user')}>")
                 local_res = requests.post(self._ds_url, json=body, timeout=10)
                 log.debug(
-                    "【Slack】message: %s processed, response is: %s" % (body, local_res.text)
+                    "【Slack】message: %s processed, response is: %s"
+                    % (body, local_res.text)
                 )
 
             @slack_app.shortcut(re.compile(r"/*"))
@@ -70,7 +79,8 @@ class Slack(_IMessageClient):
                 ack()
                 local_res = requests.post(self._ds_url, json=body, timeout=10)
                 log.debug(
-                    "【Slack】message: %s processed, response is: %s" % (body, local_res.text)
+                    "【Slack】message: %s processed, response is: %s"
+                    % (body, local_res.text)
                 )
 
             # 启动服务
@@ -125,7 +135,10 @@ class Slack(_IMessageClient):
                     text = "\n".join(titles[1:])
                 else:
                     text = "%s\n%s" % ("\n".join(titles[1:]), text)
-            block = {"type": "section", "text": {"type": "mrkdwn", "text": f"*{title}*\n{text}"}}
+            block = {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": f"*{title}*\n{text}"},
+            }
             # 消息图片
             if image:
                 block["accessory"] = {
@@ -142,7 +155,11 @@ class Slack(_IMessageClient):
                         "elements": [
                             {
                                 "type": "button",
-                                "text": {"type": "plain_text", "text": "查看详情", "emoji": True},
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "查看详情",
+                                    "emoji": True,
+                                },
                                 "value": "click_me_url",
                                 "url": f"{url}",
                                 "action_id": "actionId-url",
@@ -173,7 +190,10 @@ class Slack(_IMessageClient):
                 channel = self.__find_public_channel()
             title = f"共找到{len(medias)}条相关信息，请选择"
             # 消息主体
-            title_section = {"type": "section", "text": {"type": "mrkdwn", "text": f"*{title}*"}}
+            title_section = {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": f"*{title}*"},
+            }
             blocks = [title_section]
             # 列表
             if medias:

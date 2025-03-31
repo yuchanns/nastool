@@ -2,7 +2,6 @@ import os
 
 
 class PathUtils:
-
     @staticmethod
     def get_dir_files(in_path, exts="", filesize=0, episode_format=None):
         """
@@ -14,7 +13,7 @@ class PathUtils:
             return []
         ret_list = []
         if os.path.isdir(in_path):
-            for root, dirs, files in os.walk(in_path):
+            for root, _dirs, files in os.walk(in_path):
                 for file in files:
                     cur_path = os.path.join(root, file)
                     # 检查路径是否合法
@@ -147,7 +146,9 @@ class PathUtils:
             if (
                 str(os.path.splitext(path)[-1]).lower() in [".m2ts", ".ts"]
                 and os.path.normpath(os.path.dirname(path)).endswith("STREAM")
-                and os.path.exists(os.path.join(PathUtils.get_parent_paths(path, 2), "index.bdmv"))
+                and os.path.exists(
+                    os.path.join(PathUtils.get_parent_paths(path, 2), "index.bdmv")
+                )
             ):
                 return PathUtils.get_parent_paths(path, 3)
             else:
@@ -158,6 +159,6 @@ class PathUtils:
         """
         获取父目录路径，level为向上查找的层数
         """
-        for lv in range(0, level):
+        for _lv in range(0, level):
             path = os.path.dirname(path)
         return path

@@ -6,6 +6,7 @@ import ruamel.yaml
 from app.utils.path_utils import PathUtils
 from config import Config
 
+
 if __name__ == "__main__":
     _indexers = []
     _site_path = os.path.join(Config().get_config_path(), "sites")

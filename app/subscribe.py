@@ -1,7 +1,9 @@
 import json
+
 from threading import Lock
 
 import log
+
 from app.downloader import Downloader
 from app.filter import Filter
 from app.helper import DbHelper, MetaHelper
@@ -14,6 +16,7 @@ from app.sites import Sites
 from app.utils import Torrent
 from app.utils.types import MediaType, SearchType
 from web.backend.web_utils import WebUtils
+
 
 lock = Lock()
 
@@ -98,7 +101,9 @@ class Subscribe:
         total_ep = int(total_ep) if str(total_ep).isdigit() else None
         current_ep = int(current_ep) if str(current_ep).isdigit() else None
         download_setting = (
-            int(download_setting) if str(download_setting).replace("-", "").isdigit() else ""
+            int(download_setting)
+            if str(download_setting).replace("-", "").isdigit()
+            else ""
         )
         fuzzy_match = True if fuzzy_match else False
         # 检索媒体信息
@@ -106,7 +111,9 @@ class Subscribe:
             # 根据TMDBID查询，从推荐加订阅的情况
             if mediaid:
                 # 根据ID查询
-                media_info = WebUtils.get_mediainfo_from_id(mtype=mtype, mediaid=mediaid)
+                media_info = WebUtils.get_mediainfo_from_id(
+                    mtype=mtype, mediaid=mediaid
+                )
             else:
                 # 根据名称和年份查询
                 if season:
@@ -114,7 +121,10 @@ class Subscribe:
                 else:
                     title = "%s %s".strip() % (name, year)
                 media_info = self.media.get_media_info(
-                    title=title, mtype=mtype, strict=True if year else False, cache=False
+                    title=title,
+                    mtype=mtype,
+                    strict=True if year else False,
+                    cache=False,
                 )
             # 检查TMDB信息
             if not media_info or not media_info.tmdb_info:
@@ -128,18 +138,26 @@ class Subscribe:
                     )
                 else:
                     # 查询季及集信息
-                    total_seasoninfo = self.media.get_tmdb_tv_seasons(tv_info=media_info.tmdb_info)
+                    total_seasoninfo = self.media.get_tmdb_tv_seasons(
+                        tv_info=media_info.tmdb_info
+                    )
                     if not total_seasoninfo:
                         return 2, "获取剧集信息失败", media_info
                     # 按季号降序排序
                     total_seasoninfo = sorted(
-                        total_seasoninfo, key=lambda x: x.get("season_number"), reverse=True
+                        total_seasoninfo,
+                        key=lambda x: x.get("season_number"),
+                        reverse=True,
                     )
                     # 取最新季
                     season = total_seasoninfo[0].get("season_number")
                     total_episode = total_seasoninfo[0].get("episode_count")
                 if not total_episode:
-                    return 3, "第%s季获取剧集数失败，请确认该季是否存在" % season, media_info
+                    return (
+                        3,
+                        "第%s季获取剧集数失败，请确认该季是否存在" % season,
+                        media_info,
+                    )
                 media_info.begin_season = int(season)
                 media_info.total_episodes = total_episode
                 if total_ep:
@@ -319,7 +337,9 @@ class Subscribe:
             note = rss_movie.NOTE
             tmdbid = rss_movie.TMDBID
             rss_sites = json.loads(rss_movie.RSS_SITES) if rss_movie.RSS_SITES else []
-            search_sites = json.loads(rss_movie.SEARCH_SITES) if rss_movie.SEARCH_SITES else []
+            search_sites = (
+                json.loads(rss_movie.SEARCH_SITES) if rss_movie.SEARCH_SITES else []
+            )
             over_edition = True if rss_movie.OVER_EDITION == 1 else False
             filter_restype = rss_movie.FILTER_RESTYPE
             filter_pix = rss_movie.FILTER_PIX
@@ -383,7 +403,9 @@ class Subscribe:
             note = rss_tv.NOTE
             tmdbid = rss_tv.TMDBID
             rss_sites = json.loads(rss_tv.RSS_SITES) if rss_tv.RSS_SITES else []
-            search_sites = json.loads(rss_tv.SEARCH_SITES) if rss_tv.SEARCH_SITES else []
+            search_sites = (
+                json.loads(rss_tv.SEARCH_SITES) if rss_tv.SEARCH_SITES else []
+            )
             over_edition = True if rss_tv.OVER_EDITION == 1 else False
             filter_restype = rss_tv.FILTER_RESTYPE
             filter_pix = rss_tv.FILTER_PIX
@@ -478,7 +500,7 @@ class Subscribe:
         # 更新电影
         log.info("【Subscribe】开始刷新订阅TMDB信息...")
         rss_movies = self.get_subscribe_movies(state="R")
-        for rid, rss_info in rss_movies.items():
+        for _rid, rss_info in rss_movies.items():
             # 跳过模糊匹配的
             if rss_info.get("fuzzy_match"):
                 continue
@@ -509,7 +531,7 @@ class Subscribe:
 
         # 更新电视剧
         rss_tvs = self.get_subscribe_tvs(state="R")
-        for rid, rss_info in rss_tvs.items():
+        for _rid, rss_info in rss_tvs.items():
             # 跳过模糊匹配的
             if rss_info.get("fuzzy_match"):
                 continue
@@ -528,12 +550,15 @@ class Subscribe:
             if media_info and media_info.tmdb_id:
                 # 获取总集数
                 total_episode = self.media.get_tmdb_season_episodes_num(
-                    tv_info=media_info.tmdb_info, season=int(str(season).replace("S", ""))
+                    tv_info=media_info.tmdb_info,
+                    season=int(str(season).replace("S", "")),
                 )
                 # 设置总集数的，不更新集数
                 if total_ep:
                     total_episode = total_ep
-                if total_episode and (name != media_info.title or total != total_episode):
+                if total_episode and (
+                    name != media_info.title or total != total_episode
+                ):
                     # 新的缺失集数
                     lack_episode = total_episode - (total - lack)
                     log.info(
@@ -604,7 +629,7 @@ class Subscribe:
             rss_movies = self.get_subscribe_movies(state=state)
         if rss_movies:
             log.info("【Subscribe】共有 %s 个电影订阅需要检索" % len(rss_movies))
-        for rid, rss_info in rss_movies.items():
+        for _rid, rss_info in rss_movies.items():
             # 跳过模糊匹配的
             if rss_info.get("fuzzy_match"):
                 continue
@@ -633,10 +658,14 @@ class Subscribe:
             # 非洗版的情况检查是否存在
             if not over_edition:
                 # 检查是否存在
-                exist_flag, no_exists, _ = self.downloader.check_exists_medias(meta_info=media_info)
+                exist_flag, no_exists, _ = self.downloader.check_exists_medias(
+                    meta_info=media_info
+                )
                 # 已经存在
                 if exist_flag:
-                    log.info("【Subscribe】电影 %s 已存在" % media_info.get_title_string())
+                    log.info(
+                        "【Subscribe】电影 %s 已存在" % media_info.get_title_string()
+                    )
                     self.finish_rss_subscribe(rssid=rssid, media=media_info)
                     continue
             else:
@@ -687,7 +716,7 @@ class Subscribe:
         if rss_tvs:
             log.info("【Subscribe】共有 %s 个电视剧订阅需要检索" % len(rss_tvs))
         rss_no_exists = {}
-        for rid, rss_info in rss_tvs.items():
+        for _rid, rss_info in rss_tvs.items():
             # 跳过模糊匹配的
             if rss_info.get("fuzzy_match"):
                 continue
@@ -744,22 +773,31 @@ class Subscribe:
                 # 当前剧集已存在，跳过
                 if exist_flag:
                     # 已全部存在
-                    if not library_no_exists or not library_no_exists.get(media_info.tmdb_id):
+                    if not library_no_exists or not library_no_exists.get(
+                        media_info.tmdb_id
+                    ):
                         log.info(
                             "【Subscribe】电视剧 %s 订阅剧集已全部存在"
                             % (media_info.get_title_string())
                         )
                         # 完成订阅
-                        self.finish_rss_subscribe(rssid=rss_info.get("id"), media=media_info)
+                        self.finish_rss_subscribe(
+                            rssid=rss_info.get("id"), media=media_info
+                        )
                     continue
                 # 取交集做为缺失集
                 rss_no_exists = Torrent.get_intersection_episodes(
-                    target=rss_no_exists, source=library_no_exists, title=media_info.tmdb_id
+                    target=rss_no_exists,
+                    source=library_no_exists,
+                    title=media_info.tmdb_id,
                 )
                 if rss_no_exists.get(media_info.tmdb_id):
                     log.info(
                         "【Subscribe】%s 订阅缺失季集：%s"
-                        % (media_info.get_title_string(), rss_no_exists.get(media_info.tmdb_id))
+                        % (
+                            media_info.get_title_string(),
+                            rss_no_exists.get(media_info.tmdb_id),
+                        )
                     )
             else:
                 # 把洗版标志加入检索
@@ -796,7 +834,9 @@ class Subscribe:
             elif no_exists:
                 # 更新状态
                 self.update_subscribe_tv_lack(
-                    rssid=rssid, media_info=media_info, seasoninfo=no_exists.get(media_info.tmdb_id)
+                    rssid=rssid,
+                    media_info=media_info,
+                    seasoninfo=no_exists.get(media_info.tmdb_id),
                 )
 
     def update_rss_state(self, rtype, rssid, state):
@@ -819,14 +859,21 @@ class Subscribe:
         :param media: 含订阅信息的媒体信息
         :return 完成订阅返回True，否则返回False
         """
-        if not rssid or not media.res_order or not media.filter_rule or not media.res_order:
+        if (
+            not rssid
+            or not media.res_order
+            or not media.filter_rule
+            or not media.res_order
+        ):
             return False
         # 更新订阅命中的优先级
         self.dbhelper.update_rss_filter_order(
             rtype=media.type, rssid=rssid, res_order=media.res_order
         )
         # 检查是否匹配最高优先级规则
-        over_edition_order = self.filter.get_rule_first_order(rulegroup=media.filter_rule)
+        over_edition_order = self.filter.get_rule_first_order(
+            rulegroup=media.filter_rule
+        )
         if int(media.res_order) >= int(over_edition_order):
             # 完成洗版订阅
             self.finish_rss_subscribe(rssid=rssid, media=media)
@@ -843,7 +890,9 @@ class Subscribe:
         :param res_order: 优先级
         :return 资源更优先返回True，否则返回False
         """
-        pre_res_order = self.dbhelper.get_rss_overedition_order(rtype=rtype, rssid=rssid)
+        pre_res_order = self.dbhelper.get_rss_overedition_order(
+            rtype=rtype, rssid=rssid
+        )
         if not pre_res_order:
             return True
         return True if int(pre_res_order) < int(res_order) else False

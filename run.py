@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import warnings
+
 from typing import Literal, TypedDict, Union, cast
 
 from twisted.internet import endpoints, reactor
@@ -12,6 +13,7 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 import log
+
 from app.brushtask import BrushTask
 from app.db import init_data, init_db, update_db
 from app.helper import ChromeHelper, DisplayHelper, IndexerHelper
@@ -26,6 +28,7 @@ from check_config import check_config, update_config
 from config import Config
 from version import APP_VERSION
 from web.main import App
+
 
 warnings.filterwarnings("ignore")
 
@@ -45,7 +48,9 @@ if is_windows_exe:
         os.path.dirname(sys.executable), "config", "logs"
     ).replace("\\", "/")
     try:
-        config_dir = os.path.join(os.path.dirname(sys.executable), "config").replace("\\", "/")
+        config_dir = os.path.join(os.path.dirname(sys.executable), "config").replace(
+            "\\", "/"
+        )
         if not os.path.exists(config_dir):
             os.makedirs(config_dir)
     except Exception as err:
@@ -69,7 +74,12 @@ def get_run_config():
     """
     获取运行配置
     """
-    args: FlaskRunArgs = {"host": "::", "port": 3000, "debug": False, "ssl_context": None}
+    args: FlaskRunArgs = {
+        "host": "::",
+        "port": 3000,
+        "debug": False,
+        "ssl_context": None,
+    }
 
     app_conf = Config().get_config("app")
     if app_conf:
@@ -138,12 +148,17 @@ def monitor_config():
             FileSystemEventHandler.__init__(self)
 
         def on_modified(self, event):
-            if not event.is_directory and os.path.basename(event.src_path) == "config.yaml":
+            if (
+                not event.is_directory
+                and os.path.basename(event.src_path) == "config.yaml"
+            ):
                 # 10秒内只能加载一次
                 if ConfigLoadCache.get(event.src_path):
                     return
                 ConfigLoadCache.set(event.src_path, True)
-                log.console("进程 %s 检测到配置文件已修改，正在重新加载..." % os.getpid())
+                log.console(
+                    "进程 %s 检测到配置文件已修改，正在重新加载..." % os.getpid()
+                )
                 time.sleep(1)
                 # 重新加载配置
                 Config().init_config()
@@ -158,7 +173,9 @@ def monitor_config():
 
     # 配置文件监听
     _observer = Observer(timeout=10)
-    _observer.schedule(_ConfigHandler(), path=Config().get_config_path(), recursive=False)
+    _observer.schedule(
+        _ConfigHandler(), path=Config().get_config_path(), recursive=False
+    )
     _observer.daemon = True
     _observer.start()
 
@@ -178,7 +195,9 @@ if __name__ == "__main__":
     if is_windows_exe and NullWriter is not None:
         homepage = Config().get_config("app").get("domain")
         if not homepage:
-            homepage = "http://localhost:%s" % str(Config().get_config("app").get("web_port"))
+            homepage = "http://localhost:%s" % str(
+                Config().get_config("app").get("web_port")
+            )
         log_path = os.environ.get("NASTOOL_LOG")
 
         sys.stdout = NullWriter()

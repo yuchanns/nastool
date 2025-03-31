@@ -1,6 +1,7 @@
 import requests
 
 import log
+
 from app.utils import RequestUtils
 from config import Config
 
@@ -16,7 +17,9 @@ class Rarbg:
 
     def init_config(self):
         session = requests.session()
-        self._req = RequestUtils(proxies=Config().get_proxies(), session=session, timeout=10)
+        self._req = RequestUtils(
+            proxies=Config().get_proxies(), session=session, timeout=10
+        )
         self.__get_token()
 
     def __get_token(self):
@@ -65,7 +68,9 @@ class Rarbg:
                     "uploadvolumefactor": 1.0,
                     "page_url": result.get("info_page"),
                     "imdbid": (
-                        result.get("episode_info").get("imdb") if result.get("episode_info") else ""
+                        result.get("episode_info").get("imdb")
+                        if result.get("episode_info")
+                        else ""
                     ),
                 }
                 torrents.append(torrent)

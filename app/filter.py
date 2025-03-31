@@ -36,7 +36,9 @@ class Filter:
                 "default": group.IS_DEFAULT,
                 "note": group.NOTE,
             }
-            if (groupid and str(groupid) == str(group.ID)) or (default and group.IS_DEFAULT == "Y"):
+            if (groupid and str(groupid) == str(group.ID)) or (
+                default and group.IS_DEFAULT == "Y"
+            ):
                 return group_info
             ret_groups.append(group_info)
         if groupid or default:
@@ -77,7 +79,9 @@ class Filter:
                     else ""
                 ),
             }
-            if str(rule.GROUP_ID) == str(groupid) and (not ruleid or int(ruleid) == rule.ID):
+            if str(rule.GROUP_ID) == str(groupid) and (
+                not ruleid or int(ruleid) == rule.ID
+            ):
                 ret_rules.append(rule_info)
         if ruleid:
             return ret_rules[0] if ret_rules else {}
@@ -90,7 +94,11 @@ class Filter:
         if not rulegroup:
             rulegroup = self.get_rule_groups(default=True)
         first_order = min(
-            [int(rule_info.get("pri")) for rule_info in self.get_rules(groupid=rulegroup)] or [0]
+            [
+                int(rule_info.get("pri"))
+                for rule_info in self.get_rules(groupid=rulegroup)
+            ]
+            or [0]
         )
         return 100 - first_order
 
@@ -173,7 +181,11 @@ class Filter:
                     else:
                         end_size = 0
                 if meta_info.type == MediaType.MOVIE:
-                    if not begin_size * 1024**3 <= int(meta_info.size) <= end_size * 1024**3:
+                    if (
+                        not begin_size * 1024**3
+                        <= int(meta_info.size)
+                        <= end_size * 1024**3
+                    ):
                         rule_match = False
                 else:
                     if (
@@ -262,7 +274,9 @@ class Filter:
         """
         # 过滤质量
         if filter_args.get("restype"):
-            restype_re = ModuleConf.TORRENT_SEARCH_PARAMS["restype"].get(filter_args.get("restype"))
+            restype_re = ModuleConf.TORRENT_SEARCH_PARAMS["restype"].get(
+                filter_args.get("restype")
+            )
             if not meta_info.get_edtion_string():
                 return (
                     False,
@@ -296,19 +310,32 @@ class Filter:
         if filter_args.get("team"):
             team = filter_args.get("team")
             if not meta_info.resource_team:
-                resource_team = self.rg_matcher.match(title=meta_info.org_string, groups=team)
+                resource_team = self.rg_matcher.match(
+                    title=meta_info.org_string, groups=team
+                )
                 if not resource_team:
-                    return False, 0, f"{meta_info.org_string} 不符合制作组/字幕组 {team} 要求"
+                    return (
+                        False,
+                        0,
+                        f"{meta_info.org_string} 不符合制作组/字幕组 {team} 要求",
+                    )
                 else:
                     meta_info.resource_team = resource_team
             elif not re.search(r"%s" % team, meta_info.resource_team, re.I):
-                return False, 0, f"{meta_info.org_string} 不符合制作组/字幕组 {team} 要求"
+                return (
+                    False,
+                    0,
+                    f"{meta_info.org_string} 不符合制作组/字幕组 {team} 要求",
+                )
         # 过滤促销
         if filter_args.get("sp_state"):
             ul_factor, dl_factor = filter_args.get("sp_state").split()
             if uploadvolumefactor and ul_factor not in ("*", str(uploadvolumefactor)):
                 return False, 0, f"{meta_info.org_string} 不符合促销要求"
-            if downloadvolumefactor and dl_factor not in ("*", str(downloadvolumefactor)):
+            if downloadvolumefactor and dl_factor not in (
+                "*",
+                str(downloadvolumefactor),
+            ):
                 return False, 0, f"{meta_info.org_string} 不符合促销要求"
         # 过滤包含
         if filter_args.get("include"):
@@ -328,7 +355,9 @@ class Filter:
         # 过滤过滤规则，-1表示不使用过滤规则，空则使用默认过滤规则
         if filter_args.get("rule"):
             # 已设置默认规则
-            match_flag, order_seq, rule_name = self.check_rules(meta_info, filter_args.get("rule"))
+            match_flag, order_seq, rule_name = self.check_rules(
+                meta_info, filter_args.get("rule")
+            )
             match_msg = "%s 大小：%s 促销：%s 不符合订阅/站点过滤规则 %s 要求" % (
                 meta_info.org_string,
                 StringUtils.str_filesize(meta_info.size),

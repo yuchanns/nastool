@@ -60,7 +60,7 @@ class Prowlarr(_IIndexClient):
                 {
                     "id": v["indexerId"],
                     "name": v["indexerName"],
-                    "domain": f'{self.host}{v["indexerId"]}/api',
+                    "domain": f"{self.host}{v['indexerId']}/api",
                     "builtin": False,
                 }
             )
