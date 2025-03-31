@@ -3,7 +3,7 @@ import datetime
 import time
 
 import log
-from app.helper import IndexerHelper, IndexerConf, ProgressHelper, ChromeHelper
+from app.helper import ChromeHelper, IndexerConf, IndexerHelper, ProgressHelper
 from app.indexer.client._base import _IIndexClient
 from app.indexer.client._rarbg import Rarbg
 from app.indexer.client._render_spider import RenderSpider
@@ -11,7 +11,7 @@ from app.indexer.client._spider import TorrentSpider
 from app.indexer.client._tnode import TNodeSpider
 from app.sites import Sites
 from app.utils import StringUtils
-from app.utils.types import SearchType, IndexerType
+from app.utils.types import IndexerType, SearchType
 from config import Config
 
 
@@ -71,17 +71,19 @@ class BuiltinIndexer(_IIndexClient):
                 language = None
                 render = False if not chrome_ok else None
                 parser = None
-            indexer = IndexerHelper().get_indexer(url=url,
-                                                  cookie=site.get("cookie"),
-                                                  ua=site.get("ua"),
-                                                  name=site.get("name"),
-                                                  rule=site.get("rule"),
-                                                  pri=site.get('pri'),
-                                                  public=is_public,
-                                                  proxy=proxy,
-                                                  render=render,
-                                                  language=language,
-                                                  parser=parser)
+            indexer = IndexerHelper().get_indexer(
+                url=url,
+                cookie=site.get("cookie"),
+                ua=site.get("ua"),
+                name=site.get("name"),
+                rule=site.get("rule"),
+                pri=site.get("pri"),
+                public=is_public,
+                proxy=proxy,
+                render=render,
+                language=language,
+                parser=parser,
+            )
             if indexer:
                 if indexer_id and indexer.id == indexer_id:
                     return indexer
@@ -94,12 +96,14 @@ class BuiltinIndexer(_IIndexClient):
         # 公开站点
         if public:
             for site, attr in self.sites.get_public_sites():
-                indexer = IndexerHelper().get_indexer(url=site,
-                                                      public=True,
-                                                      proxy=attr.get("proxy"),
-                                                      render=attr.get("render"),
-                                                      language=attr.get("language"),
-                                                      parser=attr.get("parser"))
+                indexer = IndexerHelper().get_indexer(
+                    url=site,
+                    public=True,
+                    proxy=attr.get("proxy"),
+                    render=attr.get("render"),
+                    language=attr.get("language"),
+                    parser=attr.get("parser"),
+                )
                 if indexer:
                     if indexer_id and indexer.id == indexer_id:
                         return indexer
@@ -110,12 +114,9 @@ class BuiltinIndexer(_IIndexClient):
                         ret_indexers.append(indexer)
         return ret_indexers
 
-    def search(self, order_seq,
-               indexer,
-               key_word,
-               filter_args: dict,
-               match_media,
-               in_from: SearchType):
+    def search(
+        self, order_seq, indexer, key_word, filter_args: dict, match_media, in_from: SearchType
+    ):
         """
         根据关键字多线程检索
         """
@@ -140,9 +141,9 @@ class BuiltinIndexer(_IIndexClient):
         start_time = datetime.datetime.now()
         log.info(f"【{self.index_type}】开始检索Indexer：{indexer.name} ...")
         # 特殊符号处理
-        search_word = StringUtils.handler_special_chars(text=key_word,
-                                                        replace_word=" ",
-                                                        allow_space=True)
+        search_word = StringUtils.handler_special_chars(
+            text=key_word, replace_word=" ", allow_space=True
+        )
         # 避免对英文站搜索中文
         if indexer.language == "en" and StringUtils.is_chinese(search_word):
             log.warn(f"【{self.index_type}】{indexer.name} 无法使用中文名搜索")
@@ -155,27 +156,33 @@ class BuiltinIndexer(_IIndexClient):
             elif indexer.parser == "TNodeSpider":
                 result_array = TNodeSpider(indexer=indexer).search(keyword=search_word)
             elif indexer.parser == "RenderSpider":
-                result_array = RenderSpider().search(keyword=search_word,
-                                                     indexer=indexer,
-                                                     mtype=match_media.type if match_media else None)
+                result_array = RenderSpider().search(
+                    keyword=search_word,
+                    indexer=indexer,
+                    mtype=match_media.type if match_media else None,
+                )
             else:
-                result_array = self.__spider_search(keyword=search_word,
-                                                    indexer=indexer,
-                                                    mtype=match_media.type if match_media else None)
+                result_array = self.__spider_search(
+                    keyword=search_word,
+                    indexer=indexer,
+                    mtype=match_media.type if match_media else None,
+                )
         except Exception as err:
             print(str(err))
         if len(result_array) == 0:
             log.warn(f"【{self.index_type}】{indexer.name} 未检索到数据")
-            self.progress.update(ptype='search', text=f"{indexer.name} 未检索到数据")
+            self.progress.update(ptype="search", text=f"{indexer.name} 未检索到数据")
             return []
         else:
             log.warn(f"【{self.index_type}】{indexer.name} 返回数据：{len(result_array)}")
-            return self.filter_search_results(result_array=result_array,
-                                              order_seq=order_seq,
-                                              indexer=indexer,
-                                              filter_args=_filter_args,
-                                              match_media=match_media,
-                                              start_time=start_time)
+            return self.filter_search_results(
+                result_array=result_array,
+                order_seq=order_seq,
+                indexer=indexer,
+                filter_args=_filter_args,
+                match_media=match_media,
+                start_time=start_time,
+            )
 
     def list(self, index_id, page=0, keyword=None):
         """
@@ -187,14 +194,10 @@ class BuiltinIndexer(_IIndexClient):
         if not indexer:
             return []
         if indexer.parser == "RenderSpider":
-            return RenderSpider().search(keyword=keyword,
-                                         indexer=indexer,
-                                         page=page)
+            return RenderSpider().search(keyword=keyword, indexer=indexer, page=page)
         elif indexer.parser == "TNodeSpider":
             return TNodeSpider(indexer=indexer).search(keyword=keyword, page=page)
-        return self.__spider_search(indexer=indexer,
-                                    page=page,
-                                    keyword=keyword)
+        return self.__spider_search(indexer=indexer, page=page, keyword=keyword)
 
     @staticmethod
     def __spider_search(indexer, keyword=None, page=None, mtype=None, timeout=30):
@@ -202,10 +205,7 @@ class BuiltinIndexer(_IIndexClient):
         根据关键字搜索单个站点
         """
         spider = TorrentSpider()
-        spider.setparam(indexer=indexer,
-                        keyword=keyword,
-                        page=page,
-                        mtype=mtype)
+        spider.setparam(indexer=indexer, keyword=keyword, page=page, mtype=mtype)
         spider.start()
         # 循环判断是否获取到数据
         sleep_count = 0

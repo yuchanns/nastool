@@ -1,11 +1,11 @@
 import re
 
+import anitopy
 import zhconv
 
-import anitopy
 from app.media.meta._base import MetaBase
 from app.media.meta.release_groups import ReleaseGroupsMatcher
-from app.utils import StringUtils, ExceptionUtils
+from app.utils import ExceptionUtils, StringUtils
 from app.utils.types import MediaType
 
 
@@ -13,7 +13,8 @@ class MetaAnime(MetaBase):
     """
     识别动漫
     """
-    _anime_no_words = ['CHS&CHT', 'MP4', 'GB MP4', 'WEB-DL']
+
+    _anime_no_words = ["CHS&CHT", "MP4", "GB MP4", "WEB-DL"]
     _name_nostring_re = r"S\d{2}\s*-\s*S\d{2}|S\d{2}|\s+S\d{1,2}|EP?\d{2,4}\s*-\s*EP?\d{2,4}|EP?\d{2,4}|\s+EP?\d{1,4}"
 
     def __init__(self, title, subtitle=None, fileflag=False):
@@ -32,12 +33,20 @@ class MetaAnime(MetaBase):
                 name = anitopy_info.get("anime_title")
                 if name and name.find("/") != -1:
                     name = name.split("/")[-1].strip()
-                if not name or name in self._anime_no_words or (len(name) < 5 and not StringUtils.is_chinese(name)):
+                if (
+                    not name
+                    or name in self._anime_no_words
+                    or (len(name) < 5 and not StringUtils.is_chinese(name))
+                ):
                     anitopy_info = anitopy.parse("[ANIME]" + title)
                     if anitopy_info:
                         name = anitopy_info.get("anime_title")
-                if not name or name in self._anime_no_words or (len(name) < 5 and not StringUtils.is_chinese(name)):
-                    name_match = re.search(r'\[(.+?)]', title)
+                if (
+                    not name
+                    or name in self._anime_no_words
+                    or (len(name) < 5 and not StringUtils.is_chinese(name))
+                ):
+                    name_match = re.search(r"\[(.+?)]", title)
                     if name_match and name_match.group(1):
                         name = name_match.group(1).strip()
                 # 拆份中英文名称
@@ -46,7 +55,7 @@ class MetaAnime(MetaBase):
                     for word in name.split():
                         if not word:
                             continue
-                        if word.endswith(']'):
+                        if word.endswith("]"):
                             word = word[:-1]
                         if word.isdigit():
                             if lastword_type == "cn":
@@ -62,10 +71,18 @@ class MetaAnime(MetaBase):
                 if self.cn_name:
                     _, self.cn_name, _, _, _, _ = StringUtils.get_keyword_from_string(self.cn_name)
                     if self.cn_name:
-                        self.cn_name = re.sub(r'%s' % self._name_nostring_re, '', self.cn_name, flags=re.IGNORECASE).strip()
+                        self.cn_name = re.sub(
+                            r"%s" % self._name_nostring_re, "", self.cn_name, flags=re.IGNORECASE
+                        ).strip()
                         self.cn_name = zhconv.convert(self.cn_name, "zh-hans")
                 if self.en_name:
-                    self.en_name = re.sub(r'%s' % self._name_nostring_re, '', self.en_name, flags=re.IGNORECASE).strip().title()
+                    self.en_name = (
+                        re.sub(
+                            r"%s" % self._name_nostring_re, "", self.en_name, flags=re.IGNORECASE
+                        )
+                        .strip()
+                        .title()
+                    )
                     self._name = StringUtils.str_title(self.en_name)
                 # 年份
                 year = anitopy_info.get("anime_year")
@@ -124,7 +141,7 @@ class MetaAnime(MetaBase):
                     self.type = MediaType.TV
                 # 类型
                 if not self.type:
-                    anime_type = anitopy_info.get('anime_type')
+                    anime_type = anitopy_info.get("anime_type")
                     if isinstance(anime_type, list):
                         anime_type = anime_type[0]
                     if anime_type and anime_type.upper() == "TV":
@@ -136,16 +153,18 @@ class MetaAnime(MetaBase):
                 if isinstance(self.resource_pix, list):
                     self.resource_pix = self.resource_pix[0]
                 if self.resource_pix:
-                    if re.search(r'x', self.resource_pix, re.IGNORECASE):
-                        self.resource_pix = re.split(r'[Xx]', self.resource_pix)[-1] + "p"
+                    if re.search(r"x", self.resource_pix, re.IGNORECASE):
+                        self.resource_pix = re.split(r"[Xx]", self.resource_pix)[-1] + "p"
                     else:
                         self.resource_pix = self.resource_pix.lower()
                     if str(self.resource_pix).isdigit():
                         self.resource_pix = str(self.resource_pix) + "p"
                 # 制作组/字幕组
-                self.resource_team = \
-                    anitopy_info_origin.get("release_group") or \
-                    ReleaseGroupsMatcher().match(title=original_title) or None
+                self.resource_team = (
+                    anitopy_info_origin.get("release_group")
+                    or ReleaseGroupsMatcher().match(title=original_title)
+                    or None
+                )
                 # 视频编码
                 self.video_encode = anitopy_info.get("video_term")
                 if isinstance(self.video_encode, list):
@@ -177,19 +196,21 @@ class MetaAnime(MetaBase):
         if match and match.span()[1] < len(title) - 1:
             title = re.sub(".*番.|.*[日美国][漫剧].", "", title)
         elif match:
-            title = title[:title.rfind('[')]
+            title = title[: title.rfind("[")]
         # 截掉分类
-        first_item = title.split(']')[0]
-        if first_item and re.search(r"[动漫画纪录片电影视连续剧集日美韩中港台海外亚洲华语大陆综艺原盘高清]{2,}|TV|Animation|Movie|Documentar|Anime",
-                                    zhconv.convert(first_item, "zh-hans"),
-                                    re.IGNORECASE):
+        first_item = title.split("]")[0]
+        if first_item and re.search(
+            r"[动漫画纪录片电影视连续剧集日美韩中港台海外亚洲华语大陆综艺原盘高清]{2,}|TV|Animation|Movie|Documentar|Anime",
+            zhconv.convert(first_item, "zh-hans"),
+            re.IGNORECASE,
+        ):
             title = re.sub(r"^[^]]*]", "", title).strip()
         # 去掉大小
-        title = re.sub(r'[0-9.]+\s*[MGT]i?B(?![A-Z]+)', "", title, flags=re.IGNORECASE)
+        title = re.sub(r"[0-9.]+\s*[MGT]i?B(?![A-Z]+)", "", title, flags=re.IGNORECASE)
         # 将TVxx改为xx
         title = re.sub(r"\[TV\s+(\d{1,4})", r"[\1", title, flags=re.IGNORECASE)
         # 将4K转为2160p
-        title = re.sub(r'\[4k]', '2160p', title, flags=re.IGNORECASE)
+        title = re.sub(r"\[4k]", "2160p", title, flags=re.IGNORECASE)
         # 处理/分隔的中英文标题
         names = title.split("]")
         if len(names) > 1 and title.find("- ") == -1:
@@ -197,9 +218,9 @@ class MetaAnime(MetaBase):
             for name in names:
                 if not name:
                     continue
-                left_char = ''
-                if name.startswith('['):
-                    left_char = '['
+                left_char = ""
+                if name.startswith("["):
+                    left_char = "["
                     name = name[1:]
                 if name and name.find("/") != -1:
                     if name.split("/")[-1].strip():
@@ -209,10 +230,10 @@ class MetaAnime(MetaBase):
                 elif name:
                     if StringUtils.is_chinese(name) and not StringUtils.is_all_chinese(name):
                         if not re.search(r"\[\d+", name, re.IGNORECASE):
-                            name = re.sub(r'[\d|#:：\-()（）\u4e00-\u9fff]', '', name).strip()
+                            name = re.sub(r"[\d|#:：\-()（）\u4e00-\u9fff]", "", name).strip()
                         if not name or name.strip().isdigit():
                             continue
-                    if name == '[':
+                    if name == "[":
                         titles.append("")
                     else:
                         titles.append("%s%s" % (left_char, name.strip()))

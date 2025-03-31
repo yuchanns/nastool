@@ -2,10 +2,10 @@ import os
 import re
 
 import log
-from config import Config
 from app.mediaserver.client._base import _IMediaClient
-from app.utils import RequestUtils, SystemUtils, ExceptionUtils
-from app.utils.types import MediaType, MediaServerType
+from app.utils import ExceptionUtils, RequestUtils, SystemUtils
+from app.utils.types import MediaServerType, MediaType
+from config import Config
 
 
 class Emby(_IMediaClient):
@@ -22,18 +22,18 @@ class Emby(_IMediaClient):
         if config:
             self._client_config = config
         else:
-            self._client_config = Config().get_config('emby')
+            self._client_config = Config().get_config("emby")
         self.init_config()
 
     def init_config(self):
         if self._client_config:
-            self._host = self._client_config.get('host')
+            self._host = self._client_config.get("host")
             if self._host:
-                if not self._host.startswith('http'):
+                if not self._host.startswith("http"):
                     self._host = "http://" + self._host
-                if not self._host.endswith('/'):
+                if not self._host.endswith("/"):
                     self._host = self._host + "/"
-            self._apikey = self._client_config.get('api_key')
+            self._apikey = self._client_config.get("api_key")
             if self._host and self._apikey:
                 self._libraries = self.__get_emby_librarys()
                 self._user = self.get_admin_user()
@@ -119,7 +119,7 @@ class Emby(_IMediaClient):
             res = RequestUtils().get_res(req_url)
             if res:
                 ret_json = res.json()
-                items = ret_json.get('Items')
+                items = ret_json.get("Items")
                 for item in items:
                     if item.get("Type") == "AuthenticationSucceeded":
                         event_type = "LG"
@@ -171,17 +171,20 @@ class Emby(_IMediaClient):
         """
         if not self._host or not self._apikey:
             return None
-        req_url = "%semby/Items?IncludeItemTypes=Series&Fields=ProductionYear&StartIndex=0&Recursive=true&SearchTerm=%s&Limit=10&IncludeSearchTypes=false&api_key=%s" % (
-            self._host, name, self._apikey)
+        req_url = (
+            "%semby/Items?IncludeItemTypes=Series&Fields=ProductionYear&StartIndex=0&Recursive=true&SearchTerm=%s&Limit=10&IncludeSearchTypes=false&api_key=%s"
+            % (self._host, name, self._apikey)
+        )
         try:
             res = RequestUtils().get_res(req_url)
             if res:
                 res_items = res.json().get("Items")
                 if res_items:
                     for res_item in res_items:
-                        if res_item.get('Name') == name and (
-                                not year or str(res_item.get('ProductionYear')) == str(year)):
-                            return res_item.get('Id')
+                        if res_item.get("Name") == name and (
+                            not year or str(res_item.get("ProductionYear")) == str(year)
+                        ):
+                            return res_item.get("Id")
         except Exception as e:
             ExceptionUtils.exception_traceback(e)
             log.error(f"【{self.server_type}】连接Items出错：" + str(e))
@@ -197,8 +200,10 @@ class Emby(_IMediaClient):
         """
         if not self._host or not self._apikey:
             return None
-        req_url = "%semby/Items?IncludeItemTypes=Movie&Fields=ProductionYear&StartIndex=0&Recursive=true&SearchTerm=%s&Limit=10&IncludeSearchTypes=false&api_key=%s" % (
-            self._host, title, self._apikey)
+        req_url = (
+            "%semby/Items?IncludeItemTypes=Movie&Fields=ProductionYear&StartIndex=0&Recursive=true&SearchTerm=%s&Limit=10&IncludeSearchTypes=false&api_key=%s"
+            % (self._host, title, self._apikey)
+        )
         try:
             res = RequestUtils().get_res(req_url)
             if res:
@@ -206,10 +211,15 @@ class Emby(_IMediaClient):
                 if res_items:
                     ret_movies = []
                     for res_item in res_items:
-                        if res_item.get('Name') == title and (
-                                not year or str(res_item.get('ProductionYear')) == str(year)):
+                        if res_item.get("Name") == title and (
+                            not year or str(res_item.get("ProductionYear")) == str(year)
+                        ):
                             ret_movies.append(
-                                {'title': res_item.get('Name'), 'year': str(res_item.get('ProductionYear'))})
+                                {
+                                    "title": res_item.get("Name"),
+                                    "year": str(res_item.get("ProductionYear")),
+                                }
+                            )
                             return ret_movies
         except Exception as e:
             ExceptionUtils.exception_traceback(e)
@@ -243,7 +253,11 @@ class Emby(_IMediaClient):
         if not season:
             season = 1
         req_url = "%semby/Shows/%s/Episodes?Season=%s&IsMissing=false&api_key=%s" % (
-            self._host, item_id, season, self._apikey)
+            self._host,
+            item_id,
+            season,
+            self._apikey,
+        )
         try:
             res_json = RequestUtils().get_res(req_url)
             if res_json:
@@ -268,7 +282,9 @@ class Emby(_IMediaClient):
         """
         if not self._host or not self._apikey:
             return None
-        exists_episodes = self.__get_emby_tv_episodes(meta_info.title, meta_info.year, meta_info.tmdb_id, season)
+        exists_episodes = self.__get_emby_tv_episodes(
+            meta_info.title, meta_info.year, meta_info.tmdb_id, season
+        )
         if not isinstance(exists_episodes, list):
             return None
         total_episodes = [episode for episode in range(1, total_num + 1)]
@@ -289,7 +305,10 @@ class Emby(_IMediaClient):
             if res:
                 images = res.json().get("Images")
                 for image in images:
-                    if image.get("ProviderName") == "TheMovieDb" and image.get("Type") == image_type:
+                    if (
+                        image.get("ProviderName") == "TheMovieDb"
+                        and image.get("Type") == image_type
+                    ):
                         return image.get("Url")
             else:
                 log.error(f"【{self.server_type}】Items/RemoteImages 未获取到返回数据")
@@ -306,7 +325,11 @@ class Emby(_IMediaClient):
         """
         if not self._host or not self._apikey:
             return False
-        req_url = "%semby/Items/%s/Refresh?Recursive=true&api_key=%s" % (self._host, item_id, self._apikey)
+        req_url = "%semby/Items/%s/Refresh?Recursive=true&api_key=%s" % (
+            self._host,
+            item_id,
+            self._apikey,
+        )
         try:
             res = RequestUtils().post_res(req_url)
             if res:
@@ -386,11 +409,13 @@ class Emby(_IMediaClient):
             max_path_len = 0
             equal_path_num = 0
             for folder in library.get("SubFolders"):
-                path_list = re.split(pattern='/+|\\\\+', string=folder.get("Path"))
+                path_list = re.split(pattern="/+|\\\\+", string=folder.get("Path"))
                 if item.get("category") != path_list[-1]:
                     continue
                 try:
-                    path_len = len(os.path.commonpath([item.get("target_path"), folder.get("Path")]))
+                    path_len = len(
+                        os.path.commonpath([item.get("target_path"), folder.get("Path")])
+                    )
                     if path_len >= max_path_len:
                         max_path_len = path_len
                         max_equal_path_id = folder.get("Id")
@@ -402,7 +427,9 @@ class Emby(_IMediaClient):
                 return max_equal_path_id if equal_path_num == 1 else library.get("Id")
             # 如果找不到，只要路径中有分类目录名就命中
             for folder in library.get("SubFolders"):
-                if folder.get("Path") and re.search(r"[/\\]%s" % item.get("category"), folder.get("Path")):
+                if folder.get("Path") and re.search(
+                    r"[/\\]%s" % item.get("category"), folder.get("Path")
+                ):
                     return library.get("Id")
         # 刷新根目录
         return "/"
@@ -426,7 +453,12 @@ class Emby(_IMediaClient):
             return {}
         if not self._host or not self._apikey:
             return {}
-        req_url = "%semby/Users/%s/Items/%s?api_key=%s" % (self._host, self._user, itemid, self._apikey)
+        req_url = "%semby/Users/%s/Items/%s?api_key=%s" % (
+            self._host,
+            self._user,
+            itemid,
+            self._apikey,
+        )
         try:
             res = RequestUtils().get_res(req_url)
             if res and res.status_code == 200:
@@ -443,7 +475,12 @@ class Emby(_IMediaClient):
             yield {}
         if not self._host or not self._apikey:
             yield {}
-        req_url = "%semby/Users/%s/Items?ParentId=%s&api_key=%s" % (self._host, self._user, parent, self._apikey)
+        req_url = "%semby/Users/%s/Items?ParentId=%s&api_key=%s" % (
+            self._host,
+            self._user,
+            parent,
+            self._apikey,
+        )
         try:
             res = RequestUtils().get_res(req_url)
             if res and res.status_code == 200:
@@ -453,18 +490,20 @@ class Emby(_IMediaClient):
                         continue
                     if result.get("Type") in ["Movie", "Series"]:
                         item_info = self.get_iteminfo(result.get("Id"))
-                        yield {"id": result.get("Id"),
-                               "library": item_info.get("ParentId"),
-                               "type": item_info.get("Type"),
-                               "title": item_info.get("Name"),
-                               "originalTitle": item_info.get("OriginalTitle"),
-                               "year": item_info.get("ProductionYear"),
-                               "tmdbid": item_info.get("ProviderIds", {}).get("Tmdb"),
-                               "imdbid": item_info.get("ProviderIds", {}).get("Imdb"),
-                               "path": item_info.get("Path"),
-                               "json": str(item_info)}
+                        yield {
+                            "id": result.get("Id"),
+                            "library": item_info.get("ParentId"),
+                            "type": item_info.get("Type"),
+                            "title": item_info.get("Name"),
+                            "originalTitle": item_info.get("OriginalTitle"),
+                            "year": item_info.get("ProductionYear"),
+                            "tmdbid": item_info.get("ProviderIds", {}).get("Tmdb"),
+                            "imdbid": item_info.get("ProviderIds", {}).get("Imdb"),
+                            "path": item_info.get("Path"),
+                            "json": str(item_info),
+                        }
                     elif "Folder" in result.get("Type"):
-                        for item in self.get_items(parent=result.get('Id')):
+                        for item in self.get_items(parent=result.get("Id")):
                             yield item
         except Exception as e:
             ExceptionUtils.exception_traceback(e)

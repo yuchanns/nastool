@@ -1,10 +1,10 @@
 import re
 
 import log
-from config import Config
 from app.mediaserver.client._base import _IMediaClient
+from app.utils import ExceptionUtils, RequestUtils, SystemUtils
 from app.utils.types import MediaServerType
-from app.utils import RequestUtils, SystemUtils, ExceptionUtils
+from config import Config
 
 
 class Jellyfin(_IMediaClient):
@@ -21,18 +21,18 @@ class Jellyfin(_IMediaClient):
         if config:
             self._client_config = config
         else:
-            self._client_config = Config().get_config('jellyfin')
+            self._client_config = Config().get_config("jellyfin")
         self.init_config()
 
     def init_config(self):
         if self._client_config:
-            self._host = self._client_config.get('host')
+            self._host = self._client_config.get("host")
             if self._host:
-                if not self._host.startswith('http'):
+                if not self._host.startswith("http"):
                     self._host = "http://" + self._host
-                if not self._host.endswith('/'):
+                if not self._host.endswith("/"):
                     self._host = self._host + "/"
-            self._apikey = self._client_config.get('api_key')
+            self._apikey = self._client_config.get("api_key")
             if self._host and self._apikey:
                 self._user = self.get_admin_user()
 
@@ -111,26 +111,36 @@ class Jellyfin(_IMediaClient):
         """
         if not self._host or not self._apikey:
             return []
-        req_url = "%sSystem/ActivityLog/Entries?api_key=%s&Limit=%s" % (self._host, self._apikey, num)
+        req_url = "%sSystem/ActivityLog/Entries?api_key=%s&Limit=%s" % (
+            self._host,
+            self._apikey,
+            num,
+        )
         ret_array = []
         try:
             res = RequestUtils().get_res(req_url)
             if res:
                 ret_json = res.json()
-                items = ret_json.get('Items')
+                items = ret_json.get("Items")
                 for item in items:
                     if item.get("Type") == "SessionStarted":
                         event_type = "LG"
-                        event_date = re.sub(r'\dZ', 'Z', item.get("Date"))
+                        event_date = re.sub(r"\dZ", "Z", item.get("Date"))
                         event_str = "%s, %s" % (item.get("Name"), item.get("ShortOverview"))
-                        activity = {"type": event_type, "event": event_str,
-                                    "date": SystemUtils.get_local_time(event_date)}
+                        activity = {
+                            "type": event_type,
+                            "event": event_str,
+                            "date": SystemUtils.get_local_time(event_date),
+                        }
                         ret_array.append(activity)
                     if item.get("Type") == "VideoPlayback":
                         event_type = "PL"
-                        event_date = re.sub(r'\dZ', 'Z', item.get("Date"))
-                        activity = {"type": event_type, "event": item.get("Name"),
-                                    "date": SystemUtils.get_local_time(event_date)}
+                        event_date = re.sub(r"\dZ", "Z", item.get("Date"))
+                        activity = {
+                            "type": event_type,
+                            "event": item.get("Name"),
+                            "date": SystemUtils.get_local_time(event_date),
+                        }
                         ret_array.append(activity)
             else:
                 log.error(f"【{self.server_type}】System/ActivityLog/Entries 未获取到返回数据")
@@ -167,17 +177,20 @@ class Jellyfin(_IMediaClient):
         """
         if not self._host or not self._apikey or not self._user:
             return None
-        req_url = "%sUsers/%s/Items?api_key=%s&searchTerm=%s&IncludeItemTypes=Series&Limit=10&Recursive=true" % (
-            self._host, self._user, self._apikey, name)
+        req_url = (
+            "%sUsers/%s/Items?api_key=%s&searchTerm=%s&IncludeItemTypes=Series&Limit=10&Recursive=true"
+            % (self._host, self._user, self._apikey, name)
+        )
         try:
             res = RequestUtils().get_res(req_url)
             if res:
                 res_items = res.json().get("Items")
                 if res_items:
                     for res_item in res_items:
-                        if res_item.get('Name') == name and (
-                                not year or str(res_item.get('ProductionYear')) == str(year)):
-                            return res_item.get('Id')
+                        if res_item.get("Name") == name and (
+                            not year or str(res_item.get("ProductionYear")) == str(year)
+                        ):
+                            return res_item.get("Id")
         except Exception as e:
             ExceptionUtils.exception_traceback(e)
             log.error(f"【{self.server_type}】连接Items出错：" + str(e))
@@ -198,15 +211,19 @@ class Jellyfin(_IMediaClient):
         if not season:
             season = 1
         req_url = "%sShows/%s/Seasons?api_key=%s&userId=%s" % (
-            self._host, series_id, self._apikey, self._user)
+            self._host,
+            series_id,
+            self._apikey,
+            self._user,
+        )
         try:
             res = RequestUtils().get_res(req_url)
             if res:
                 res_items = res.json().get("Items")
                 if res_items:
                     for res_item in res_items:
-                        if int(res_item.get('IndexNumber')) == int(season):
-                            return series_id, res_item.get('Id')
+                        if int(res_item.get("IndexNumber")) == int(season):
+                            return series_id, res_item.get("Id")
         except Exception as e:
             ExceptionUtils.exception_traceback(e)
             log.error(f"【{self.server_type}】连接Shows/Id/Seasons出错：" + str(e))
@@ -222,8 +239,10 @@ class Jellyfin(_IMediaClient):
         """
         if not self._host or not self._apikey or not self._user:
             return None
-        req_url = "%sUsers/%s/Items?api_key=%s&searchTerm=%s&IncludeItemTypes=Movie&Limit=10&Recursive=true" % (
-            self._host, self._user, self._apikey, title)
+        req_url = (
+            "%sUsers/%s/Items?api_key=%s&searchTerm=%s&IncludeItemTypes=Movie&Limit=10&Recursive=true"
+            % (self._host, self._user, self._apikey, title)
+        )
         try:
             res = RequestUtils().get_res(req_url)
             if res:
@@ -231,10 +250,15 @@ class Jellyfin(_IMediaClient):
                 if res_items:
                     ret_movies = []
                     for res_item in res_items:
-                        if res_item.get('Name') == title and (
-                                not year or str(res_item.get('ProductionYear')) == str(year)):
+                        if res_item.get("Name") == title and (
+                            not year or str(res_item.get("ProductionYear")) == str(year)
+                        ):
                             ret_movies.append(
-                                {'title': res_item.get('Name'), 'year': str(res_item.get('ProductionYear'))})
+                                {
+                                    "title": res_item.get("Name"),
+                                    "year": str(res_item.get("ProductionYear")),
+                                }
+                            )
                             return ret_movies
         except Exception as e:
             ExceptionUtils.exception_traceback(e)
@@ -265,7 +289,12 @@ class Jellyfin(_IMediaClient):
             if str(tmdb_id) != str(item_tmdbid):
                 return []
         req_url = "%sShows/%s/Episodes?seasonId=%s&&userId=%s&isMissing=false&api_key=%s" % (
-            self._host, series_id, season_id, self._user, self._apikey)
+            self._host,
+            series_id,
+            season_id,
+            self._user,
+            self._apikey,
+        )
         try:
             res_json = RequestUtils().get_res(req_url)
             if res_json:
@@ -290,7 +319,9 @@ class Jellyfin(_IMediaClient):
         """
         if not self._host or not self._apikey:
             return None
-        exists_episodes = self.__get_jellyfin_tv_episodes(meta_info.title, meta_info.year, meta_info.tmdb_id, season)
+        exists_episodes = self.__get_jellyfin_tv_episodes(
+            meta_info.title, meta_info.year, meta_info.tmdb_id, season
+        )
         if not isinstance(exists_episodes, list):
             return None
         total_episodes = [episode for episode in range(1, total_num + 1)]
@@ -311,7 +342,10 @@ class Jellyfin(_IMediaClient):
             if res:
                 images = res.json().get("Images")
                 for image in images:
-                    if image.get("ProviderName") == "TheMovieDb" and image.get("Type") == image_type:
+                    if (
+                        image.get("ProviderName") == "TheMovieDb"
+                        and image.get("Type") == image_type
+                    ):
                         return image.get("Url")
             else:
                 log.error(f"【{self.server_type}】Items/RemoteImages 未获取到返回数据")
@@ -371,8 +405,7 @@ class Jellyfin(_IMediaClient):
             return {}
         if not self._host or not self._apikey:
             return {}
-        req_url = "%sUsers/%s/Items/%s?api_key=%s" % (
-            self._host, self._user, itemid, self._apikey)
+        req_url = "%sUsers/%s/Items/%s?api_key=%s" % (self._host, self._user, itemid, self._apikey)
         try:
             res = RequestUtils().get_res(req_url)
             if res and res.status_code == 200:
@@ -389,7 +422,12 @@ class Jellyfin(_IMediaClient):
             yield {}
         if not self._host or not self._apikey:
             yield {}
-        req_url = "%sUsers/%s/Items?parentId=%s&api_key=%s" % (self._host, self._user, parent, self._apikey)
+        req_url = "%sUsers/%s/Items?parentId=%s&api_key=%s" % (
+            self._host,
+            self._user,
+            parent,
+            self._apikey,
+        )
         try:
             res = RequestUtils().get_res(req_url)
             if res and res.status_code == 200:
@@ -399,16 +437,18 @@ class Jellyfin(_IMediaClient):
                         continue
                     if result.get("Type") in ["Movie", "Series"]:
                         item_info = self.get_iteminfo(result.get("Id"))
-                        yield {"id": result.get("Id"),
-                               "library": item_info.get("ParentId"),
-                               "type": item_info.get("Type"),
-                               "title": item_info.get("Name"),
-                               "originalTitle": item_info.get("OriginalTitle"),
-                               "year": item_info.get("ProductionYear"),
-                               "tmdbid": item_info.get("ProviderIds", {}).get("Tmdb"),
-                               "imdbid": item_info.get("ProviderIds", {}).get("Imdb"),
-                               "path": item_info.get("Path"),
-                               "json": str(item_info)}
+                        yield {
+                            "id": result.get("Id"),
+                            "library": item_info.get("ParentId"),
+                            "type": item_info.get("Type"),
+                            "title": item_info.get("Name"),
+                            "originalTitle": item_info.get("OriginalTitle"),
+                            "year": item_info.get("ProductionYear"),
+                            "tmdbid": item_info.get("ProviderIds", {}).get("Tmdb"),
+                            "imdbid": item_info.get("ProviderIds", {}).get("Imdb"),
+                            "path": item_info.get("Path"),
+                            "json": str(item_info),
+                        }
                     elif "Folder" in result.get("Type"):
                         for item in self.get_items(result.get("Id")):
                             yield item

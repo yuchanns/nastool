@@ -3,7 +3,7 @@ import re
 
 from lxml import etree
 
-from app.sites.siteuserinfo._base import _ISiteUserInfo, SITE_BASE_ORDER
+from app.sites.siteuserinfo._base import SITE_BASE_ORDER, _ISiteUserInfo
 from app.utils import StringUtils
 from app.utils.types import SiteSchema
 
@@ -19,14 +19,14 @@ class FileListSiteUserInfo(_ISiteUserInfo):
             return False
 
         printable_text = html.xpath("string(.)") if html else ""
-        return 'Powered by FileList' in printable_text
+        return "Powered by FileList" in printable_text
 
     def _parse_site_page(self, html_text):
         html_text = self._prepare_html_text(html_text)
 
         user_detail = re.search(r"userdetails.php\?id=(\d+)", html_text)
         if user_detail and user_detail.group().strip():
-            self._user_detail_page = user_detail.group().strip().lstrip('/')
+            self._user_detail_page = user_detail.group().strip().lstrip("/")
             self.userid = user_detail.group(1)
 
         self._torrent_seeding_page = f"snatchlist.php?id={self.userid}&action=torrents&type=seeding"
@@ -35,7 +35,9 @@ class FileListSiteUserInfo(_ISiteUserInfo):
         html_text = self._prepare_html_text(html_text)
         html = etree.HTML(html_text)
 
-        ret = html.xpath(f'//a[contains(@href, "userdetails") and contains(@href, "{self.userid}")]//text()')
+        ret = html.xpath(
+            f'//a[contains(@href, "userdetails") and contains(@href, "{self.userid}")]//text()'
+        )
         if ret:
             self.username = str(ret[0])
 
@@ -54,7 +56,9 @@ class FileListSiteUserInfo(_ISiteUserInfo):
         upload_html = html.xpath('//table//tr/td[text()="Uploaded"]/following-sibling::td//text()')
         if upload_html:
             self.upload = StringUtils.num_filesize(upload_html[0])
-        download_html = html.xpath('//table//tr/td[text()="Downloaded"]/following-sibling::td//text()')
+        download_html = html.xpath(
+            '//table//tr/td[text()="Downloaded"]/following-sibling::td//text()'
+        )
         if download_html:
             self.download = StringUtils.num_filesize(download_html[0])
 
@@ -64,7 +68,9 @@ class FileListSiteUserInfo(_ISiteUserInfo):
         if user_level_html:
             self.user_level = user_level_html[0].strip()
 
-        join_at_html = html.xpath('//table//tr/td[contains(text(), "Join")]/following-sibling::td//text()')
+        join_at_html = html.xpath(
+            '//table//tr/td[contains(text(), "Join")]/following-sibling::td//text()'
+        )
         if join_at_html:
             self.join_at = StringUtils.unify_datetime_str(join_at_html[0].strip())
 
@@ -90,8 +96,8 @@ class FileListSiteUserInfo(_ISiteUserInfo):
         page_seeding = 0
         page_seeding_size = 0
         page_seeding_info = []
-        seeding_sizes = html.xpath(f'//table/tr[position()>1]/td[{size_col}]')
-        seeding_seeders = html.xpath(f'//table/tr[position()>1]/td[{seeders_col}]')
+        seeding_sizes = html.xpath(f"//table/tr[position()>1]/td[{size_col}]")
+        seeding_seeders = html.xpath(f"//table/tr[position()>1]/td[{seeders_col}]")
         if seeding_sizes and seeding_seeders:
             page_seeding = len(seeding_sizes)
 

@@ -1,11 +1,11 @@
-from app.utils import ExceptionUtils
-from app.utils.types import MediaServerType
-
-import log
-from config import Config
-from app.mediaserver.client._base import _IMediaClient
 from plexapi.myplex import MyPlexAccount
 from plexapi.server import PlexServer
+
+import log
+from app.mediaserver.client._base import _IMediaClient
+from app.utils import ExceptionUtils
+from app.utils.types import MediaServerType
+from config import Config
 
 
 class Plex(_IMediaClient):
@@ -25,21 +25,21 @@ class Plex(_IMediaClient):
         if config:
             self._client_config = config
         else:
-            self._client_config = Config().get_config('plex')
+            self._client_config = Config().get_config("plex")
         self.init_config()
 
     def init_config(self):
         if self._client_config:
-            self._host = self._client_config.get('host')
-            self._token = self._client_config.get('token')
+            self._host = self._client_config.get("host")
+            self._token = self._client_config.get("token")
             if self._host:
-                if not self._host.startswith('http'):
+                if not self._host.startswith("http"):
                     self._host = "http://" + self._host
-                if not self._host.endswith('/'):
+                if not self._host.endswith("/"):
                     self._host = self._host + "/"
-            self._username = self._client_config.get('username')
-            self._password = self._client_config.get('password')
-            self._servername = self._client_config.get('servername')
+            self._username = self._client_config.get("username")
+            self._password = self._client_config.get("password")
+            self._servername = self._client_config.get("servername")
             if self._host and self._token:
                 try:
                     self._plex = PlexServer(self._host, self._token)
@@ -49,7 +49,11 @@ class Plex(_IMediaClient):
                     log.error(f"【{self.server_type}】Plex服务器连接失败：{str(e)}")
             elif self._username and self._password and self._servername:
                 try:
-                    self._plex = MyPlexAccount(self._username, self._password).resource(self._servername).connect()
+                    self._plex = (
+                        MyPlexAccount(self._username, self._password)
+                        .resource(self._servername)
+                        .connect()
+                    )
                 except Exception as e:
                     ExceptionUtils.exception_traceback(e)
                     self._plex = None
@@ -82,12 +86,12 @@ class Plex(_IMediaClient):
         historys = self._plex.library.history(num)
         for his in historys:
             event_type = "PL"
-            event_date = his.viewedAt.strftime('%Y-%m-%d %H:%M:%S')
+            event_date = his.viewedAt.strftime("%Y-%m-%d %H:%M:%S")
             event_str = "开始播放 %s" % his.title
             activity = {"type": event_type, "event": event_str, "date": event_date}
             ret_array.append(activity)
         if ret_array:
-            ret_array = sorted(ret_array, key=lambda x: x['date'], reverse=True)
+            ret_array = sorted(ret_array, key=lambda x: x["date"], reverse=True)
         return ret_array
 
     def get_medias_count(self):
@@ -106,7 +110,12 @@ class Plex(_IMediaClient):
                 SeriesCount += sec.totalSize
             if sec.type == "artist":
                 SongCount += sec.totalSize
-        return {"MovieCount": MovieCount, "SeriesCount": SeriesCount, "SongCount": SongCount, "EpisodeCount": 0}
+        return {
+            "MovieCount": MovieCount,
+            "SeriesCount": SeriesCount,
+            "SongCount": SongCount,
+            "EpisodeCount": 0,
+        }
 
     def get_movies(self, title, year=None):
         """
@@ -123,7 +132,7 @@ class Plex(_IMediaClient):
         else:
             movies = self._plex.library.search(title=title, libtype="movie")
         for movie in movies:
-            ret_movies.append({'title': movie.title, 'year': movie.year})
+            ret_movies.append({"title": movie.title, "year": movie.year})
         return ret_movies
 
     # 根据标题、年份、季、总集数，查询Plex中缺少哪几集
@@ -138,7 +147,9 @@ class Plex(_IMediaClient):
         if not self._plex:
             return None
         exists_episodes = []
-        video = self._plex.library.search(title=meta_info.title, year=meta_info.year, libtype="show")
+        video = self._plex.library.search(
+            title=meta_info.title, year=meta_info.year, libtype="show"
+        )
         if video:
             for episode in video[0].episodes():
                 if episode.seasonNumber == season:
@@ -199,12 +210,14 @@ class Plex(_IMediaClient):
                 for item in section.all():
                     if not item:
                         continue
-                    yield {"id": item.key,
-                           "library": item.librarySectionID,
-                           "type": item.type,
-                           "title": item.title,
-                           "year": item.year,
-                           "json": str(item.__dict__)}
+                    yield {
+                        "id": item.key,
+                        "library": item.librarySectionID,
+                        "type": item.type,
+                        "title": item.title,
+                        "year": item.year,
+                        "json": str(item.__dict__),
+                    }
         except Exception as err:
             ExceptionUtils.exception_traceback(err)
         yield {}

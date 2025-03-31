@@ -1,27 +1,31 @@
 from functools import lru_cache
 
-from app.utils import RequestUtils, ExceptionUtils
+from app.utils import ExceptionUtils, RequestUtils
 from app.utils.types import MediaType
-from config import Config, FANART_MOVIE_API_URL, FANART_TV_API_URL
+from config import FANART_MOVIE_API_URL, FANART_TV_API_URL, Config
 
 
 class Fanart:
     _proxies = Config().get_proxies()
-    _movie_image_types = ['movieposter',
-                          'hdmovielogo',
-                          'moviebackground',
-                          'moviedisc',
-                          'moviebanner',
-                          'moviethumb']
-    _tv_image_types = ['hdtvlogo',
-                       'tvthumb',
-                       'showbackground',
-                       'tvbanner',
-                       'seasonposter',
-                       'seasonbanner',
-                       'seasonthumb',
-                       'tvposter',
-                       'hdclearart']
+    _movie_image_types = [
+        "movieposter",
+        "hdmovielogo",
+        "moviebackground",
+        "moviedisc",
+        "moviebanner",
+        "moviethumb",
+    ]
+    _tv_image_types = [
+        "hdtvlogo",
+        "tvthumb",
+        "showbackground",
+        "tvbanner",
+        "seasonposter",
+        "seasonbanner",
+        "seasonthumb",
+        "tvposter",
+        "hdclearart",
+    ]
     _images = {}
 
     def __init__(self):
@@ -40,21 +44,27 @@ class Fanart:
                     for image_type in self._movie_image_types:
                         images = ret.json().get(image_type)
                         if isinstance(images, list):
-                            self._images[image_type] = images[0].get('url') if isinstance(images[0], dict) else ""
+                            self._images[image_type] = (
+                                images[0].get("url") if isinstance(images[0], dict) else ""
+                            )
                         else:
                             self._images[image_type] = ""
                 else:
                     for image_type in self._tv_image_types:
                         images = ret.json().get(image_type)
                         if isinstance(images, list):
-                            if image_type in ['seasonposter', 'seasonthumb', 'seasonbanner']:
+                            if image_type in ["seasonposter", "seasonthumb", "seasonbanner"]:
                                 if not self._images.get(image_type):
                                     self._images[image_type] = {}
                                 for image in images:
                                     if image.get("season") not in self._images[image_type].keys():
-                                        self._images[image_type][image.get("season")] = image.get("url")
+                                        self._images[image_type][image.get("season")] = image.get(
+                                            "url"
+                                        )
                             else:
-                                self._images[image_type] = images[0].get('url') if isinstance(images[0], dict) else ""
+                                self._images[image_type] = (
+                                    images[0].get("url") if isinstance(images[0], dict) else ""
+                                )
                         else:
                             self._images[image_type] = ""
         except Exception as e2:

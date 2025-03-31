@@ -7,10 +7,7 @@ except ImportError:
 
 
 class Discover(TMDb):
-    _urls = {
-        "movies": "/discover/movie",
-        "tvs": "/discover/tv"
-    }
+    _urls = {"movies": "/discover/movie", "tvs": "/discover/tv"}
 
     def discover_movies(self, params, page=1):
         """
@@ -23,13 +20,7 @@ class Discover(TMDb):
             params = {}
         if page:
             params.update({"page": page})
-        return self._get_obj(
-            self._call(
-                self._urls["movies"],
-                urlencode(params)
-            ),
-            "results"
-        )
+        return self._get_obj(self._call(self._urls["movies"], urlencode(params)), "results")
 
     def discover_tv_shows(self, params, page=1):
         """
@@ -43,10 +34,4 @@ class Discover(TMDb):
             params = {}
         if page:
             params.update({"page": page})
-        return self._get_obj(
-            self._call(
-                self._urls["tvs"],
-                urlencode(params)
-            ),
-            "results"
-        )
+        return self._get_obj(self._call(self._urls["tvs"], urlencode(params)), "results")

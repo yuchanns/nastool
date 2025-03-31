@@ -17,9 +17,11 @@ class SiteHelper:
         if html.xpath("//input[@type='password']"):
             return False
         # 是否存在登出和用户面板等链接
-        logout_or_usercp = html.xpath('//a[contains(@href, "logout") or contains(@data-url, "logout")'
-                                      ' or contains(@href, "mybonus") '
-                                      ' or contains(@onclick, "logout") or contains(@href, "usercp")]')
+        logout_or_usercp = html.xpath(
+            '//a[contains(@href, "logout") or contains(@data-url, "logout")'
+            ' or contains(@href, "mybonus") '
+            ' or contains(@onclick, "logout") or contains(@href, "usercp")]'
+        )
 
         if logout_or_usercp:
             return True

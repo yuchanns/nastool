@@ -1,6 +1,6 @@
 import asyncio
 
-from pikpakapi import PikPakApi, DownloadStatus
+from pikpakapi import DownloadStatus, PikPakApi
 
 import log
 from app.downloader.client._base import _IDownloadClient
@@ -20,7 +20,7 @@ class PikPak(_IDownloadClient):
         if config:
             self._client_config = config
         else:
-            self._client_config = Config().get_config('pikpak')
+            self._client_config = Config().get_config("pikpak")
         self.init_config()
         self.connect()
 
@@ -65,7 +65,7 @@ class PikPak(_IDownloadClient):
 
         if ids is not None:
             for id in ids:
-                status = asyncio.run(self.downclient.get_task_status(id, ''))
+                status = asyncio.run(self.downclient.get_task_status(id, ""))
                 if status == DownloadStatus.downloading:
                     rv.append({"id": id, "finish": False})
                 if status == DownloadStatus.done:
@@ -81,7 +81,7 @@ class PikPak(_IDownloadClient):
                 return []
         try:
             offline_list = asyncio.run(self.downclient.offline_list())
-            return offline_list['tasks']
+            return offline_list["tasks"]
         except Exception as err:
             print(str(err))
             return []
@@ -94,16 +94,15 @@ class PikPak(_IDownloadClient):
 
     def add_torrent(self, content, download_dir=None, **kwargs):
         try:
-            folder = asyncio.run(
-                self.downclient.path_to_id(download_dir, True))
+            folder = asyncio.run(self.downclient.path_to_id(download_dir, True))
             count = len(folder)
             if count == 0:
                 print("create parent folder failed")
                 return None
             else:
-                task = asyncio.run(self.downclient.offline_download(
-                    content, folder[count - 1]["id"]
-                ))
+                task = asyncio.run(
+                    self.downclient.offline_download(content, folder[count - 1]["id"])
+                )
                 return task["task"]["id"]
         except Exception as e:
             log.error("PikPak 添加离线下载任务失败: %s" % str(e))
@@ -137,13 +136,15 @@ class PikPak(_IDownloadClient):
         Torrents = self.get_downloading_torrents()
         DispTorrents = []
         for torrent in Torrents:
-            DispTorrents.append({
-                'id': torrent.get('id'),
-                'file_id': torrent.get('file_id'),
-                'name': torrent.get('file_name'),
-                'nomenu': True,
-                'noprogress': True
-            })
+            DispTorrents.append(
+                {
+                    "id": torrent.get("id"),
+                    "file_id": torrent.get("file_id"),
+                    "name": torrent.get("file_name"),
+                    "nomenu": True,
+                    "noprogress": True,
+                }
+            )
         return DispTorrents
 
     def set_speed_limit(self, **kwargs):

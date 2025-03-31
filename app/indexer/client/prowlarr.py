@@ -1,9 +1,8 @@
-from app.utils import ExceptionUtils
+from app.helper import IndexerConf
+from app.indexer.client._base import _IIndexClient
+from app.utils import ExceptionUtils, RequestUtils
 from app.utils.types import IndexerType
 from config import Config
-from app.indexer.client._base import _IIndexClient
-from app.utils import RequestUtils
-from app.helper import IndexerConf
 
 
 class Prowlarr(_IIndexClient):
@@ -16,17 +15,17 @@ class Prowlarr(_IIndexClient):
         if config:
             self._client_config = config
         else:
-            self._client_config = Config().get_config('prowlarr')
+            self._client_config = Config().get_config("prowlarr")
         self.init_config()
 
     def init_config(self):
         if self._client_config:
-            self.api_key = self._client_config.get('api_key')
-            self.host = self._client_config.get('host')
+            self.api_key = self._client_config.get("api_key")
+            self.host = self._client_config.get("host")
             if self.host:
-                if not self.host.startswith('http'):
+                if not self.host.startswith("http"):
                     self.host = "http://" + self.host
-                if not self.host.endswith('/'):
+                if not self.host.endswith("/"):
                     self.host = self.host + "/"
 
     @classmethod
@@ -56,11 +55,17 @@ class Prowlarr(_IIndexClient):
         if not ret:
             return []
         indexers = ret.json().get("indexers", [])
-        return [IndexerConf({"id": v["indexerId"],
-                             "name": v["indexerName"],
-                             "domain": f'{self.host}{v["indexerId"]}/api',
-                             "builtin": False})
-                for v in indexers]
+        return [
+            IndexerConf(
+                {
+                    "id": v["indexerId"],
+                    "name": v["indexerName"],
+                    "domain": f'{self.host}{v["indexerId"]}/api',
+                    "builtin": False,
+                }
+            )
+            for v in indexers
+        ]
 
     def search(self, *kwargs):
         return super().search(*kwargs)

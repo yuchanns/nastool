@@ -1,7 +1,7 @@
 from urllib.parse import quote_plus
 
 from app.message.client._base import _IMessageClient
-from app.utils import RequestUtils, StringUtils, ExceptionUtils
+from app.utils import ExceptionUtils, RequestUtils, StringUtils
 
 
 class Bark(_IMessageClient):
@@ -18,9 +18,9 @@ class Bark(_IMessageClient):
 
     def init_config(self):
         if self._client_config:
-            self._server = StringUtils.get_base_url(self._client_config.get('server'))
-            self._apikey = self._client_config.get('apikey')
-            self._params = self._client_config.get('params')
+            self._server = StringUtils.get_base_url(self._client_config.get("server"))
+            self._apikey = self._client_config.get("apikey")
+            self._params = self._client_config.get("params")
 
     @classmethod
     def match(cls, ctype):
@@ -41,14 +41,19 @@ class Bark(_IMessageClient):
         try:
             if not self._server or not self._apikey:
                 return False, "参数未配置"
-            sc_url = "%s/%s/%s/%s" % (self._server, self._apikey, quote_plus(title), quote_plus(text))
+            sc_url = "%s/%s/%s/%s" % (
+                self._server,
+                self._apikey,
+                quote_plus(title),
+                quote_plus(text),
+            )
             if self._params:
                 sc_url = "%s?%s" % (sc_url, self._params)
             res = RequestUtils().post_res(sc_url)
             if res:
                 ret_json = res.json()
-                code = ret_json['code']
-                message = ret_json['message']
+                code = ret_json["code"]
+                message = ret_json["message"]
                 if code == 200:
                     return True, message
                 else:

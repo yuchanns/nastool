@@ -57,13 +57,13 @@ class TMDb(object):
     @domain.setter
     def domain(self, domain):
         if domain:
-            if not str(domain).startswith('http'):
+            if not str(domain).startswith("http"):
                 domain = "https://%s" % domain
-            if not str(domain).endswith('/3'):
+            if not str(domain).endswith("/3"):
                 domain = "%s/3" % domain
             os.environ[self.TMDB_DOMAIN] = str(domain)
         else:
-            os.environ[self.TMDB_DOMAIN] = ''
+            os.environ[self.TMDB_DOMAIN] = ""
 
     @property
     def proxies(self):
@@ -80,7 +80,7 @@ class TMDb(object):
             if proxies_strs:
                 os.environ[self.TMDB_PROXIES] = "{%s}" % ",".join(proxies_strs)
             else:
-                os.environ[self.TMDB_PROXIES] = 'None'
+                os.environ[self.TMDB_PROXIES] = "None"
 
     @api_key.setter
     def api_key(self, api_key):
@@ -139,14 +139,14 @@ class TMDb(object):
     @staticmethod
     @lru_cache(maxsize=REQUEST_CACHE_MAXSIZE)
     def cached_request(method, url, data, proxies):
-        return requests.request(method, url, data=data, proxies=eval(proxies), verify=False, timeout=10)
+        return requests.request(
+            method, url, data=data, proxies=eval(proxies), verify=False, timeout=10
+        )
 
     def cache_clear(self):
         return self.cached_request.cache_clear()
 
-    def _call(
-            self, action, append_to_response, call_cached=True, method="GET", data=None
-    ):
+    def _call(self, action, append_to_response, call_cached=True, method="GET", data=None):
         if self.api_key is None or self.api_key == "":
             raise TMDbException("No API key found.")
 
@@ -161,7 +161,9 @@ class TMDb(object):
         if self.cache and self.obj_cached and call_cached and method != "POST":
             req = self.cached_request(method, url, data, self.proxies)
         else:
-            req = self._session.request(method, url, data=data, proxies=eval(self.proxies), timeout=10, verify=False)
+            req = self._session.request(
+                method, url, data=data, proxies=eval(self.proxies), timeout=10, verify=False
+            )
 
         headers = req.headers
 
@@ -180,9 +182,7 @@ class TMDb(object):
                 time.sleep(abs(sleep_time))
                 self._call(action, append_to_response, call_cached, method, data)
             else:
-                raise TMDbException(
-                    "Rate limit reached. Try again in %d seconds." % sleep_time
-                )
+                raise TMDbException("Rate limit reached. Try again in %d seconds." % sleep_time)
 
         json = req.json()
 

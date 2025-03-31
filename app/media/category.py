@@ -5,8 +5,8 @@ import ruamel.yaml
 
 import log
 from app.utils import ExceptionUtils
-from config import Config
 from app.utils.commons import singleton
+from config import Config
 
 
 @singleton
@@ -21,24 +21,32 @@ class Category:
         self.init_config()
 
     def init_config(self):
-        media = Config().get_config('media')
+        media = Config().get_config("media")
         if media:
-            category = media.get('category')
+            category = media.get("category")
             if not category:
                 return
             self._category_path = os.path.join(Config().get_config_path(), "%s.yaml" % category)
             try:
                 if not os.path.exists(self._category_path):
-                    shutil.copy(os.path.join(Config().get_inner_config_path(), "default-category.yaml"),
-                                self._category_path)
-                    log.console("【Config】分类配置文件 %s.yaml 不存在，已将配置文件模板复制到配置目录..." % category)
-                with open(self._category_path, mode='r', encoding='utf-8') as f:
+                    shutil.copy(
+                        os.path.join(Config().get_inner_config_path(), "default-category.yaml"),
+                        self._category_path,
+                    )
+                    log.console(
+                        "【Config】分类配置文件 %s.yaml 不存在，已将配置文件模板复制到配置目录..."
+                        % category
+                    )
+                with open(self._category_path, mode="r", encoding="utf-8") as f:
                     try:
                         yaml = ruamel.yaml.YAML()
                         self._categorys = yaml.load(f)
                     except Exception as e:
                         ExceptionUtils.exception_traceback(e)
-                        log.console("【Config】%s.yaml 分类配置文件格式出现严重错误！请检查：%s" % (category, str(e)))
+                        log.console(
+                            "【Config】%s.yaml 分类配置文件格式出现严重错误！请检查：%s"
+                            % (category, str(e))
+                        )
                         self._categorys = {}
             except Exception as err:
                 ExceptionUtils.exception_traceback(err)
@@ -46,9 +54,9 @@ class Category:
                 return False
 
             if self._categorys:
-                self._movie_categorys = self._categorys.get('movie')
-                self._tv_categorys = self._categorys.get('tv')
-                self._anime_categorys = self._categorys.get('anime')
+                self._movie_categorys = self._categorys.get("movie")
+                self._tv_categorys = self._categorys.get("tv")
+                self._anime_categorys = self._categorys.get("anime")
 
     def get_movie_category_flag(self):
         """

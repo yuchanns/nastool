@@ -6,7 +6,7 @@ import requests
 import log
 from app.helper import ThreadHelper
 from app.message.client._base import _IMessageClient
-from app.utils import RequestUtils, ExceptionUtils
+from app.utils import ExceptionUtils, RequestUtils
 from config import Config
 
 lock = Lock()
@@ -38,14 +38,14 @@ class Telegram(_IMessageClient):
 
     def init_config(self):
         if self._client_config:
-            self._telegram_token = self._client_config.get('token')
-            self._telegram_chat_id = self._client_config.get('chat_id')
-            self._webhook = self._client_config.get('webhook')
-            telegram_admin_ids = self._client_config.get('admin_ids')
+            self._telegram_token = self._client_config.get("token")
+            self._telegram_chat_id = self._client_config.get("chat_id")
+            self._webhook = self._client_config.get("webhook")
+            telegram_admin_ids = self._client_config.get("admin_ids")
             if telegram_admin_ids:
                 self._telegram_admin_ids = telegram_admin_ids.split(",")
             self._telegram_user_ids = self._telegram_admin_ids
-            telegram_user_ids = self._client_config.get('user_ids')
+            telegram_user_ids = self._client_config.get("user_ids")
             if telegram_user_ids:
                 self._telegram_user_ids.extend(telegram_user_ids.split(","))
             if self._telegram_token and self._telegram_chat_id:
@@ -96,9 +96,11 @@ class Telegram(_IMessageClient):
                 return False, "参数未配置"
 
             # text中的Markdown特殊字符转义
-            text = text.replace("[", r"\[").replace("_", r"\_").replace("*", r"\*").replace("`", r"\`")
+            text = (
+                text.replace("[", r"\[").replace("_", r"\_").replace("*", r"\*").replace("`", r"\`")
+            )
             # 拼装消息内容
-            titles = str(title).split('\n')
+            titles = str(title).split("\n")
             if len(titles) > 1:
                 title = titles[0]
                 if not text:
@@ -136,18 +138,22 @@ class Telegram(_IMessageClient):
                 if not image:
                     image = media.get_message_image()
                 if media.get_vote_string():
-                    caption = "%s\n%s. [%s](%s)\n%s，%s" % (caption,
-                                                           index,
-                                                           media.get_title_string(),
-                                                           media.get_detail_url(),
-                                                           media.get_type_string(),
-                                                           media.get_vote_string())
+                    caption = "%s\n%s. [%s](%s)\n%s，%s" % (
+                        caption,
+                        index,
+                        media.get_title_string(),
+                        media.get_detail_url(),
+                        media.get_type_string(),
+                        media.get_vote_string(),
+                    )
                 else:
-                    caption = "%s\n%s. [%s](%s)\n%s" % (caption,
-                                                        index,
-                                                        media.get_title_string(),
-                                                        media.get_detail_url(),
-                                                        media.get_type_string())
+                    caption = "%s\n%s. [%s](%s)\n%s" % (
+                        caption,
+                        index,
+                        media.get_title_string(),
+                        media.get_detail_url(),
+                        media.get_type_string(),
+                    )
                 index += 1
 
             if user_id:
@@ -165,6 +171,7 @@ class Telegram(_IMessageClient):
         """
         向Telegram发送报文
         """
+
         def _res_parse(result):
             if result:
                 ret_json = result.json()
@@ -179,7 +186,12 @@ class Telegram(_IMessageClient):
         proxies = Config().get_proxies()
         if image:
             # 发送图文消息
-            values = {"chat_id": chat_id, "photo": image, "caption": caption, "parse_mode": "Markdown"}
+            values = {
+                "chat_id": chat_id,
+                "photo": image,
+                "caption": caption,
+                "parse_mode": "Markdown",
+            }
             sc_url = "https://api.telegram.org/bot%s/sendPhoto?" % self._telegram_token
             res = RequestUtils(proxies=proxies).get_res(sc_url + urlencode(values))
             flag, msg = _res_parse(res)
@@ -251,8 +263,10 @@ class Telegram(_IMessageClient):
                 pending_update_count = result.get("pending_update_count")
                 last_error_message = result.get("last_error_message")
                 if pending_update_count and last_error_message:
-                    log.warn("【Telegram】Webhook 有 %s 条消息挂起，最后一次失败原因为：%s" % (
-                        pending_update_count, last_error_message))
+                    log.warn(
+                        "【Telegram】Webhook 有 %s 条消息挂起，最后一次失败原因为：%s"
+                        % (pending_update_count, last_error_message)
+                    )
                 if webhook_url == self._webhook_url:
                     return 1
                 else:
@@ -282,14 +296,19 @@ class Telegram(_IMessageClient):
         def consume_messages(_config, _offset, _sc_url, _ds_url):
             try:
                 values = {"timeout": long_poll_timeout, "offset": _offset}
-                res = RequestUtils(proxies=_config.get_proxies()).get_res(_sc_url + urlencode(values))
+                res = RequestUtils(proxies=_config.get_proxies()).get_res(
+                    _sc_url + urlencode(values)
+                )
                 if res and res.json():
                     for msg in res.json().get("result", []):
                         # 无论本地是否成功，先更新offset，即消息最多成功消费一次
                         _offset = msg["update_id"] + 1
                         log.debug("【Telegram】接收到消息: %s" % msg)
                         local_res = requests.post(_ds_url, json=msg, timeout=10)
-                        log.debug("【Telegram】message: %s processed, response is: %s" % (msg, local_res.text))
+                        log.debug(
+                            "【Telegram】message: %s processed, response is: %s"
+                            % (msg, local_res.text)
+                        )
             except Exception as e:
                 ExceptionUtils.exception_traceback(e)
                 log.error("【Telegram】消息接收出现错误: %s" % e)

@@ -6,10 +6,10 @@ from datetime import datetime
 import transmission_rpc
 
 import log
+from app.downloader.client._base import _IDownloadClient
 from app.utils import ExceptionUtils, StringUtils
 from app.utils.types import DownloaderType
 from config import Config
-from app.downloader.client._base import _IDownloadClient
 
 
 class Transmission(_IDownloadClient):
@@ -18,10 +18,35 @@ class Transmission(_IDownloadClient):
     _client_config = {}
 
     # 参考transmission web，仅查询需要的参数，加速种子检索
-    _trarg = ["id", "name", "status", "labels", "hashString", "totalSize", "percentDone", "addedDate", "trackerStats",
-              "leftUntilDone", "rateDownload", "rateUpload", "recheckProgress", "rateDownload", "rateUpload",
-              "peersGettingFromUs", "peersSendingToUs", "uploadRatio", "uploadedEver", "downloadedEver", "downloadDir",
-              "error", "errorString", "doneDate", "queuePosition", "activityDate", "trackers"]
+    _trarg = [
+        "id",
+        "name",
+        "status",
+        "labels",
+        "hashString",
+        "totalSize",
+        "percentDone",
+        "addedDate",
+        "trackerStats",
+        "leftUntilDone",
+        "rateDownload",
+        "rateUpload",
+        "recheckProgress",
+        "rateDownload",
+        "rateUpload",
+        "peersGettingFromUs",
+        "peersSendingToUs",
+        "uploadRatio",
+        "uploadedEver",
+        "downloadedEver",
+        "downloadDir",
+        "error",
+        "errorString",
+        "doneDate",
+        "queuePosition",
+        "activityDate",
+        "trackers",
+    ]
     trc = None
     host = None
     port = None
@@ -32,16 +57,20 @@ class Transmission(_IDownloadClient):
         if config:
             self._client_config = config
         else:
-            self._client_config = Config().get_config('transmission')
+            self._client_config = Config().get_config("transmission")
         self.init_config()
         self.connect()
 
     def init_config(self):
         if self._client_config:
-            self.host = self._client_config.get('trhost')
-            self.port = int(self._client_config.get('trport')) if str(self._client_config.get('trport')).isdigit() else 0
-            self.username = self._client_config.get('trusername')
-            self.password = self._client_config.get('trpassword')
+            self.host = self._client_config.get("trhost")
+            self.port = (
+                int(self._client_config.get("trport"))
+                if str(self._client_config.get("trport")).isdigit()
+                else 0
+            )
+            self.username = self._client_config.get("trusername")
+            self.password = self._client_config.get("trpassword")
 
     @classmethod
     def match(cls, ctype):
@@ -58,11 +87,13 @@ class Transmission(_IDownloadClient):
         """
         try:
             # 登录
-            trt = transmission_rpc.Client(host=self.host,
-                                          port=self.port,
-                                          username=self.username,
-                                          password=self.password,
-                                          timeout=30)
+            trt = transmission_rpc.Client(
+                host=self.host,
+                port=self.port,
+                username=self.username,
+                password=self.password,
+                timeout=30,
+            )
             return trt
         except Exception as err:
             ExceptionUtils.exception_traceback(err)
@@ -165,13 +196,15 @@ class Transmission(_IDownloadClient):
         except Exception as err:
             ExceptionUtils.exception_traceback(err)
 
-    def change_torrent(self,
-                       tid,
-                       tag=None,
-                       upload_limit=None,
-                       download_limit=None,
-                       ratio_limit=None,
-                       seeding_time_limit=None):
+    def change_torrent(
+        self,
+        tid,
+        tag=None,
+        upload_limit=None,
+        download_limit=None,
+        ratio_limit=None,
+        seeding_time_limit=None,
+    ):
         """
         设置种子
         :param tid: ID
@@ -218,16 +251,18 @@ class Transmission(_IDownloadClient):
             seedIdleMode = 2
             seedIdleLimit = 0
         try:
-            self.trc.change_torrent(ids=ids,
-                                    labels=labels,
-                                    uploadLimited=uploadLimited,
-                                    uploadLimit=uploadLimit,
-                                    downloadLimited=downloadLimited,
-                                    downloadLimit=downloadLimit,
-                                    seedRatioMode=seedRatioMode,
-                                    seedRatioLimit=seedRatioLimit,
-                                    seedIdleMode=seedIdleMode,
-                                    seedIdleLimit=seedIdleLimit)
+            self.trc.change_torrent(
+                ids=ids,
+                labels=labels,
+                uploadLimited=uploadLimited,
+                uploadLimit=uploadLimit,
+                downloadLimited=downloadLimited,
+                downloadLimit=downloadLimit,
+                seedRatioMode=seedRatioMode,
+                seedRatioLimit=seedRatioLimit,
+                seedIdleMode=seedIdleMode,
+                seedIdleLimit=seedIdleLimit,
+            )
         except Exception as err:
             ExceptionUtils.exception_traceback(err)
 
@@ -238,7 +273,9 @@ class Transmission(_IDownloadClient):
         for torrent in torrents:
             # 3.0版本以下的Transmission没有labels
             if not hasattr(torrent, "labels"):
-                log.error(f"【{self.client_type}】当前transmission版本可能过低，无labels属性，请安装3.0以上版本！")
+                log.error(
+                    f"【{self.client_type}】当前transmission版本可能过低，无labels属性，请安装3.0以上版本！"
+                )
                 break
             if torrent.labels and "已整理" in torrent.labels:
                 continue
@@ -246,11 +283,13 @@ class Transmission(_IDownloadClient):
             if not path:
                 continue
             true_path = self.get_replace_path(path)
-            trans_tasks.append({
-                'path': os.path.join(true_path, torrent.name).replace("\\", "/"),
-                'id': torrent.id,
-                'tags': torrent.labels
-            })
+            trans_tasks.append(
+                {
+                    "path": os.path.join(true_path, torrent.name).replace("\\", "/"),
+                    "id": torrent.id,
+                    "tags": torrent.labels,
+                }
+            )
         return trans_tasks
 
     def get_remove_torrents(self, config=None):
@@ -267,8 +306,8 @@ class Transmission(_IDownloadClient):
         seeding_time = config.get("seeding_time")
         # 大小 单位：GB
         size = config.get("size")
-        minsize = size[0]*1024*1024*1024 if size else 0
-        maxsize = size[-1]*1024*1024*1024 if size else 0
+        minsize = size[0] * 1024 * 1024 * 1024 if size else 0
+        maxsize = size[-1] * 1024 * 1024 * 1024 if size else 0
         # 平均上传速度 单位 KB/s
         upload_avs = config.get("upload_avs")
         savepath_key = config.get("savepath_key")
@@ -278,16 +317,20 @@ class Transmission(_IDownloadClient):
         for torrent in torrents:
             date_done = torrent.date_done or torrent.date_added
             date_now = int(time.mktime(datetime.now().timetuple()))
-            torrent_seeding_time = date_now - int(time.mktime(date_done.timetuple())) if date_done else 0
+            torrent_seeding_time = (
+                date_now - int(time.mktime(date_done.timetuple())) if date_done else 0
+            )
             torrent_uploaded = torrent.ratio * torrent.total_size
-            torrent_upload_avs = torrent_uploaded / torrent_seeding_time if torrent_seeding_time else 0
+            torrent_upload_avs = (
+                torrent_uploaded / torrent_seeding_time if torrent_seeding_time else 0
+            )
             if ratio and torrent.ratio <= ratio:
                 continue
-            if seeding_time and torrent_seeding_time <= seeding_time*3600:
+            if seeding_time and torrent_seeding_time <= seeding_time * 3600:
                 continue
             if size and (torrent.total_size >= maxsize or torrent.total_size <= minsize):
                 continue
-            if upload_avs and torrent_upload_avs >= upload_avs*1024:
+            if upload_avs and torrent_upload_avs >= upload_avs * 1024:
                 continue
             if savepath_key and not re.findall(savepath_key, torrent.download_dir, re.I):
                 continue
@@ -309,12 +352,14 @@ class Transmission(_IDownloadClient):
             labels = set(torrent.labels)
             if tags and (not labels or not set(tags).issubset(labels)):
                 continue
-            remove_torrents.append({
-                "id": torrent.id,
-                "name": torrent.name,
-                "site": torrent.trackers[0].get("sitename"),
-                "size": torrent.total_size
-            })
+            remove_torrents.append(
+                {
+                    "id": torrent.id,
+                    "name": torrent.name,
+                    "site": torrent.trackers[0].get("sitename"),
+                    "size": torrent.total_size,
+                }
+            )
             remove_torrents_ids.append(torrent.id)
         if config.get("samedata") and remove_torrents:
             remove_torrents_plus = []
@@ -322,29 +367,39 @@ class Transmission(_IDownloadClient):
                 name = remove_torrent.get("name")
                 size = remove_torrent.get("size")
                 for torrent in torrents:
-                    if torrent.name == name and torrent.total_size == size and torrent.id not in remove_torrents_ids:
-                        remove_torrents_plus.append({
-                            "id": torrent.id,
-                            "name": torrent.name,
-                            "site": torrent.trackers[0].get("sitename") if torrent.trackers else "",
-                            "size": torrent.total_size
-                        })
+                    if (
+                        torrent.name == name
+                        and torrent.total_size == size
+                        and torrent.id not in remove_torrents_ids
+                    ):
+                        remove_torrents_plus.append(
+                            {
+                                "id": torrent.id,
+                                "name": torrent.name,
+                                "site": (
+                                    torrent.trackers[0].get("sitename") if torrent.trackers else ""
+                                ),
+                                "size": torrent.total_size,
+                            }
+                        )
             remove_torrents_plus += remove_torrents
             return remove_torrents_plus
         return remove_torrents
 
-    def add_torrent(self, content,
-                    is_paused=False,
-                    download_dir=None,
-                    upload_limit=None,
-                    download_limit=None,
-                    cookie=None,
-                    **kwargs):
+    def add_torrent(
+        self,
+        content,
+        is_paused=False,
+        download_dir=None,
+        upload_limit=None,
+        download_limit=None,
+        cookie=None,
+        **kwargs,
+    ):
         try:
-            ret = self.trc.add_torrent(torrent=content,
-                                       download_dir=download_dir,
-                                       paused=is_paused,
-                                       cookies=cookie)
+            ret = self.trc.add_torrent(
+                torrent=content, download_dir=download_dir, paused=is_paused, cookies=cookie
+            )
             if ret and ret.id:
                 if upload_limit:
                     self.set_uploadspeed_limit(ret.id, int(upload_limit))
@@ -479,7 +534,7 @@ class Transmission(_IDownloadClient):
         Torrents = self.get_downloading_torrents(tag=tag)
         DispTorrents = []
         for torrent in Torrents:
-            if torrent.status in ['stopped']:
+            if torrent.status in ["stopped"]:
                 state = "Stoped"
                 speed = "已暂停"
             else:
@@ -489,13 +544,15 @@ class Transmission(_IDownloadClient):
                 speed = "%s%sB/s %s%sB/s" % (chr(8595), _dlspeed, chr(8593), _upspeed)
             # 进度
             progress = round(torrent.progress)
-            DispTorrents.append({
-                'id': torrent.id,
-                'name': torrent.name,
-                'speed': speed,
-                'state': state,
-                'progress': progress
-            })
+            DispTorrents.append(
+                {
+                    "id": torrent.id,
+                    "name": torrent.name,
+                    "speed": speed,
+                    "state": state,
+                    "progress": progress,
+                }
+            )
         return DispTorrents
 
     def set_speed_limit(self, download_limit=None, upload_limit=None):
@@ -508,18 +565,26 @@ class Transmission(_IDownloadClient):
             session = self.trc.get_session()
             download_limit_enabled = True if download_limit else False
             upload_limit_enabled = True if upload_limit else False
-            if download_limit_enabled == session.speed_limit_down_enabled and \
-                    upload_limit_enabled == session.speed_limit_up_enabled and \
-                    download_limit == session.speed_limit_down and \
-                    upload_limit == session.speed_limit_up:
+            if (
+                download_limit_enabled == session.speed_limit_down_enabled
+                and upload_limit_enabled == session.speed_limit_up_enabled
+                and download_limit == session.speed_limit_down
+                and upload_limit == session.speed_limit_up
+            ):
                 return
             self.trc.set_session(
-                speed_limit_down=download_limit if download_limit != session.speed_limit_down
-                else session.speed_limit_down,
-                speed_limit_up=upload_limit if upload_limit != session.speed_limit_up
-                else session.speed_limit_up,
+                speed_limit_down=(
+                    download_limit
+                    if download_limit != session.speed_limit_down
+                    else session.speed_limit_down
+                ),
+                speed_limit_up=(
+                    upload_limit
+                    if upload_limit != session.speed_limit_up
+                    else session.speed_limit_up
+                ),
                 speed_limit_down_enabled=download_limit_enabled,
-                speed_limit_up_enabled=upload_limit_enabled
+                speed_limit_up_enabled=upload_limit_enabled,
             )
         except Exception as err:
             ExceptionUtils.exception_traceback(err)

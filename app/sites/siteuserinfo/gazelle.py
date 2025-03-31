@@ -3,7 +3,7 @@ import re
 
 from lxml import etree
 
-from app.sites.siteuserinfo._base import _ISiteUserInfo, SITE_BASE_ORDER
+from app.sites.siteuserinfo._base import SITE_BASE_ORDER, _ISiteUserInfo
 from app.utils import StringUtils
 from app.utils.types import SiteSchema
 
@@ -28,7 +28,7 @@ class GazelleSiteUserInfo(_ISiteUserInfo):
 
         tmps = html.xpath('//a[contains(@href, "user.php?id=")]')
         if tmps:
-            user_id_match = re.search(r"user.php\?id=(\d+)", tmps[0].attrib['href'])
+            user_id_match = re.search(r"user.php\?id=(\d+)", tmps[0].attrib["href"])
             if user_id_match and user_id_match.group().strip():
                 self.userid = user_id_match.group(1)
                 self._torrent_seeding_page = f"torrents.php?type=seeding&userid={self.userid}"
@@ -87,7 +87,7 @@ class GazelleSiteUserInfo(_ISiteUserInfo):
         else:
             user_levels_text = html.xpath('//li[contains(text(), "用户等级")]/text()')
             if user_levels_text:
-                self.user_level = user_levels_text[0].split(':')[1].strip()
+                self.user_level = user_levels_text[0].split(":")[1].strip()
 
         # 加入日期
         join_at_text = html.xpath('//*[@id="join-date-value"]/@data-value')
@@ -95,7 +95,8 @@ class GazelleSiteUserInfo(_ISiteUserInfo):
             self.join_at = StringUtils.unify_datetime_str(join_at_text[0].strip())
         else:
             join_at_text = html.xpath(
-                '//div[contains(@class, "box_userinfo_stats")]//li[contains(text(), "加入时间")]/span/text()')
+                '//div[contains(@class, "box_userinfo_stats")]//li[contains(text(), "加入时间")]/span/text()'
+            )
             if join_at_text:
                 self.join_at = StringUtils.unify_datetime_str(join_at_text[0].strip())
 
@@ -120,8 +121,12 @@ class GazelleSiteUserInfo(_ISiteUserInfo):
         page_seeding = 0
         page_seeding_size = 0
         page_seeding_info = []
-        seeding_sizes = html.xpath(f'//table[contains(@id, "torrent")]//tr[position()>1]/td[{size_col}]')
-        seeding_seeders = html.xpath(f'//table[contains(@id, "torrent")]//tr[position()>1]/td[{seeders_col}]/text()')
+        seeding_sizes = html.xpath(
+            f'//table[contains(@id, "torrent")]//tr[position()>1]/td[{size_col}]'
+        )
+        seeding_seeders = html.xpath(
+            f'//table[contains(@id, "torrent")]//tr[position()>1]/td[{seeders_col}]/text()'
+        )
         if seeding_sizes and seeding_seeders:
             page_seeding = len(seeding_sizes)
 
@@ -146,7 +151,9 @@ class GazelleSiteUserInfo(_ISiteUserInfo):
 
         # 是否存在下页数据
         next_page = None
-        next_page_text = html.xpath('//a[contains(.//text(), "Next") or contains(.//text(), "下一页")]/@href')
+        next_page_text = html.xpath(
+            '//a[contains(.//text(), "Next") or contains(.//text(), "下一页")]/@href'
+        )
         if next_page_text:
             next_page = next_page_text[-1].strip()
 

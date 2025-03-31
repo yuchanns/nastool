@@ -12,28 +12,24 @@ class ProgressHelper(object):
         pass
 
     def reset(self, ptype="search"):
-        self._process_detail[ptype] = {
-            "enable": False,
-            "value": 0,
-            "text": "请稍候..."
-        }
+        self._process_detail[ptype] = {"enable": False, "value": 0, "text": "请稍候..."}
 
     def start(self, ptype="search"):
         self.reset(ptype)
-        self._process_detail[ptype]['enable'] = True
+        self._process_detail[ptype]["enable"] = True
 
     def end(self, ptype="search"):
         if not self._process_detail.get(ptype):
             return
-        self._process_detail[ptype]['enable'] = False
+        self._process_detail[ptype]["enable"] = False
 
     def update(self, value=None, text=None, ptype="search"):
-        if not self._process_detail.get(ptype, {}).get('enable'):
+        if not self._process_detail.get(ptype, {}).get("enable"):
             return
         if value:
-            self._process_detail[ptype]['value'] = value
+            self._process_detail[ptype]["value"] = value
         if text:
-            self._process_detail[ptype]['text'] = text
+            self._process_detail[ptype]["text"] = text
 
     def get_process(self, ptype="search"):
         return self._process_detail.get(ptype)

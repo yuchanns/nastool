@@ -3,7 +3,7 @@ import re
 
 from lxml import etree
 
-from app.sites.siteuserinfo._base import _ISiteUserInfo, SITE_BASE_ORDER
+from app.sites.siteuserinfo._base import SITE_BASE_ORDER, _ISiteUserInfo
 from app.utils import StringUtils
 from app.utils.types import SiteSchema
 
@@ -14,14 +14,14 @@ class TorrentLeechSiteUserInfo(_ISiteUserInfo):
 
     @classmethod
     def match(cls, html_text):
-        return 'TorrentLeech' in html_text
+        return "TorrentLeech" in html_text
 
     def _parse_site_page(self, html_text):
         html_text = self._prepare_html_text(html_text)
 
         user_detail = re.search(r"/profile/([^/]+)/", html_text)
         if user_detail and user_detail.group().strip():
-            self._user_detail_page = user_detail.group().strip().lstrip('/')
+            self._user_detail_page = user_detail.group().strip().lstrip("/")
             self.userid = user_detail.group(1)
         self._user_traffic_page = f"profile/{self.userid}/view"
         self._torrent_seeding_page = f"profile/{self.userid}/seeding"
@@ -45,15 +45,19 @@ class TorrentLeechSiteUserInfo(_ISiteUserInfo):
             self.download = StringUtils.num_filesize(download_html[0])
         ratio_html = html.xpath('//div[contains(@class,"profile-ratio")]//span/text()')
         if ratio_html:
-            self.ratio = StringUtils.str_float(ratio_html[0].replace('∞', '0'))
+            self.ratio = StringUtils.str_float(ratio_html[0].replace("∞", "0"))
 
-        user_level_html = html.xpath('//table[contains(@class, "profileViewTable")]'
-                                     '//tr/td[text()="Class"]/following-sibling::td/text()')
+        user_level_html = html.xpath(
+            '//table[contains(@class, "profileViewTable")]'
+            '//tr/td[text()="Class"]/following-sibling::td/text()'
+        )
         if user_level_html:
             self.user_level = user_level_html[0].strip()
 
-        join_at_html = html.xpath('//table[contains(@class, "profileViewTable")]'
-                                  '//tr/td[text()="Registration date"]/following-sibling::td/text()')
+        join_at_html = html.xpath(
+            '//table[contains(@class, "profileViewTable")]'
+            '//tr/td[text()="Registration date"]/following-sibling::td/text()'
+        )
         if join_at_html:
             self.join_at = StringUtils.unify_datetime_str(join_at_html[0].strip())
 
@@ -81,8 +85,8 @@ class TorrentLeechSiteUserInfo(_ISiteUserInfo):
         page_seeding = 0
         page_seeding_size = 0
         page_seeding_info = []
-        seeding_sizes = html.xpath(f'//tbody/tr/td[{size_col}]')
-        seeding_seeders = html.xpath(f'//tbody/tr/td[{seeders_col}]/text()')
+        seeding_sizes = html.xpath(f"//tbody/tr/td[{size_col}]")
+        seeding_seeders = html.xpath(f"//tbody/tr/td[{seeders_col}]/text()")
         if seeding_sizes and seeding_seeders:
             page_seeding = len(seeding_sizes)
 

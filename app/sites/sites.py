@@ -14,11 +14,11 @@ from selenium.webdriver.support import expected_conditions as es
 from selenium.webdriver.support.wait import WebDriverWait
 
 import log
-from app.helper import ChromeHelper, SiteHelper, DbHelper
+from app.conf import SiteConf
+from app.helper import ChromeHelper, DbHelper, SiteHelper
 from app.message import Message
 from app.sites.site_user_info_factory import SiteUserInfoFactory
-from app.conf import SiteConf
-from app.utils import RequestUtils, StringUtils, ExceptionUtils
+from app.utils import ExceptionUtils, RequestUtils, StringUtils
 from app.utils.commons import singleton
 from config import Config
 
@@ -78,13 +78,17 @@ class Sites:
             site_rssurl = site.RSSURL
             site_signurl = site.SIGNURL
             site_cookie = site.COOKIE
-            site_uses = site.INCLUDE or ''
+            site_uses = site.INCLUDE or ""
             uses = []
             if site_uses:
                 signin_enable = True if "Q" in site_uses and site_signurl and site_cookie else False
                 rss_enable = True if "D" in site_uses and site_rssurl else False
                 brush_enable = True if "S" in site_uses and site_rssurl and site_cookie else False
-                statistic_enable = True if "T" in site_uses and (site_rssurl or site_signurl) and site_cookie else False
+                statistic_enable = (
+                    True
+                    if "T" in site_uses and (site_rssurl or site_signurl) and site_cookie
+                    else False
+                )
                 uses.append("Q") if signin_enable else None
                 uses.append("D") if rss_enable else None
                 uses.append("S") if brush_enable else None
@@ -113,7 +117,7 @@ class Sites:
                 "unread_msg_notify": True if site_note.get("message") == "Y" else False,
                 "chrome": True if site_note.get("chrome") == "Y" else False,
                 "proxy": True if site_note.get("proxy") == "Y" else False,
-                "subtitle": True if site_note.get("subtitle") == "Y" else False
+                "subtitle": True if site_note.get("subtitle") == "Y" else False,
             }
             # 以ID存储
             self._siteByIds[site.ID] = site_info
@@ -126,15 +130,13 @@ class Sites:
         """
         加载图标到内存
         """
-        self._site_favicons = {site.SITE: site.FAVICON for site in self.dbhelper.get_site_favicons()}
+        self._site_favicons = {
+            site.SITE: site.FAVICON for site in self.dbhelper.get_site_favicons()
+        }
 
-    def get_sites(self,
-                  siteid=None,
-                  siteurl=None,
-                  rss=False,
-                  brush=False,
-                  signin=False,
-                  statistic=False):
+    def get_sites(
+        self, siteid=None, siteurl=None, rss=False, brush=False, signin=False, statistic=False
+    ):
         """
         获取站点配置
         """
@@ -145,54 +147,35 @@ class Sites:
 
         ret_sites = []
         for site in self._siteByIds.values():
-            if rss and not site.get('rss_enable'):
+            if rss and not site.get("rss_enable"):
                 continue
-            if brush and not site.get('brush_enable'):
+            if brush and not site.get("brush_enable"):
                 continue
-            if signin and not site.get('signin_enable'):
+            if signin and not site.get("signin_enable"):
                 continue
-            if statistic and not site.get('statistic_enable'):
+            if statistic and not site.get("statistic_enable"):
                 continue
             ret_sites.append(site)
         if siteid or siteurl:
             return {}
         return ret_sites
 
-    def get_site_dict(self,
-                      rss=False,
-                      brush=False,
-                      signin=False,
-                      statistic=False):
+    def get_site_dict(self, rss=False, brush=False, signin=False, statistic=False):
         """
         获取站点字典
         """
         return [
-            {
-                "id": site.get("id"),
-                "name": site.get("name")
-            } for site in self.get_sites(
-                rss=rss,
-                brush=brush,
-                signin=signin,
-                statistic=statistic
-            )
+            {"id": site.get("id"), "name": site.get("name")}
+            for site in self.get_sites(rss=rss, brush=brush, signin=signin, statistic=statistic)
         ]
 
-    def get_site_names(self,
-                       rss=False,
-                       brush=False,
-                       signin=False,
-                       statistic=False):
+    def get_site_names(self, rss=False, brush=False, signin=False, statistic=False):
         """
         获取站点名称
         """
         return [
-            site.get("name") for site in self.get_sites(
-                rss=rss,
-                brush=brush,
-                signin=signin,
-                statistic=statistic
-            )
+            site.get("name")
+            for site in self.get_sites(rss=rss, brush=brush, signin=signin, statistic=statistic)
         ]
 
     def get_site_favicon(self, site_name=None):
@@ -223,21 +206,26 @@ class Sites:
 
         with lock:
 
-            if not force \
-                    and not specify_sites \
-                    and self._last_update_time \
-                    and (datetime.now() - self._last_update_time).seconds < 6 * 3600:
+            if (
+                not force
+                and not specify_sites
+                and self._last_update_time
+                and (datetime.now() - self._last_update_time).seconds < 6 * 3600
+            ):
                 return
 
-            if specify_sites \
-                    and not isinstance(specify_sites, list):
+            if specify_sites and not isinstance(specify_sites, list):
                 specify_sites = [specify_sites]
 
             # 没有指定站点，默认使用全部站点
             if not specify_sites:
                 refresh_sites = self.get_sites(statistic=True)
             else:
-                refresh_sites = [site for site in self.get_sites(statistic=True) if site.get("name") in specify_sites]
+                refresh_sites = [
+                    site
+                    for site in self.get_sites(statistic=True)
+                    if site.get("name") in specify_sites
+                ]
 
             if not refresh_sites:
                 return
@@ -277,14 +265,18 @@ class Sites:
         chrome = site_info.get("chrome")
         proxy = site_info.get("proxy")
         try:
-            site_user_info = SiteUserInfoFactory().build(url=site_url,
-                                                         site_name=site_name,
-                                                         site_cookie=site_cookie,
-                                                         ua=ua,
-                                                         emulate=chrome,
-                                                         proxy=proxy)
+            site_user_info = SiteUserInfoFactory().build(
+                url=site_url,
+                site_name=site_name,
+                site_cookie=site_cookie,
+                ua=ua,
+                emulate=chrome,
+                proxy=proxy,
+            )
             if site_user_info:
-                log.debug(f"【Sites】站点 {site_name} 开始以 {site_user_info.site_schema()} 模型解析")
+                log.debug(
+                    f"【Sites】站点 {site_name} 开始以 {site_user_info.site_schema()} 模型解析"
+                )
                 # 开始解析
                 site_user_info.parse()
                 log.debug(f"【Sites】站点 {site_name} 解析完成")
@@ -297,32 +289,42 @@ class Sites:
                 # 发送通知，存在未读消息
                 self.__notify_unread_msg(site_name, site_user_info, unread_msg_notify)
 
-                self._sites_data.update({site_name: {
-                    "upload": site_user_info.upload,
-                    "username": site_user_info.username,
-                    "user_level": site_user_info.user_level,
-                    "join_at": site_user_info.join_at,
-                    "download": site_user_info.download,
-                    "ratio": site_user_info.ratio,
-                    "seeding": site_user_info.seeding,
-                    "seeding_size": site_user_info.seeding_size,
-                    "leeching": site_user_info.leeching,
-                    "bonus": site_user_info.bonus,
-                    "url": site_url,
-                    "err_msg": site_user_info.err_msg,
-                    "message_unread": site_user_info.message_unread}
-                })
+                self._sites_data.update(
+                    {
+                        site_name: {
+                            "upload": site_user_info.upload,
+                            "username": site_user_info.username,
+                            "user_level": site_user_info.user_level,
+                            "join_at": site_user_info.join_at,
+                            "download": site_user_info.download,
+                            "ratio": site_user_info.ratio,
+                            "seeding": site_user_info.seeding,
+                            "seeding_size": site_user_info.seeding_size,
+                            "leeching": site_user_info.leeching,
+                            "bonus": site_user_info.bonus,
+                            "url": site_url,
+                            "err_msg": site_user_info.err_msg,
+                            "message_unread": site_user_info.message_unread,
+                        }
+                    }
+                )
 
                 return site_user_info
 
         except Exception as e:
             ExceptionUtils.exception_traceback(e)
-            log.error("【Sites】站点 %s 获取流量数据失败：%s - %s" % (site_name, str(e), traceback.format_exc()))
+            log.error(
+                "【Sites】站点 %s 获取流量数据失败：%s - %s"
+                % (site_name, str(e), traceback.format_exc())
+            )
 
     def __notify_unread_msg(self, site_name, site_user_info, unread_msg_notify):
         if site_user_info.message_unread <= 0:
             return
-        if self._sites_data.get(site_name, {}).get('message_unread') == site_user_info.message_unread:
+        if (
+            self._sites_data.get(site_name, {}).get("message_unread")
+            == site_user_info.message_unread
+        ):
             return
         if not unread_msg_notify:
             return
@@ -335,7 +337,8 @@ class Sites:
                 self.message.send_site_message(title=msg_title, text=msg_text)
         else:
             self.message.send_site_message(
-                title=f"站点 {site_user_info.site_name} 收到 {site_user_info.message_unread} 条新消息，请登陆查看")
+                title=f"站点 {site_user_info.site_name} 收到 {site_user_info.message_unread} 条新消息，请登陆查看"
+            )
 
     def test_connection(self, site_id):
         """
@@ -375,10 +378,11 @@ class Sites:
         else:
             # 计时
             start_time = datetime.now()
-            res = RequestUtils(cookies=site_cookie,
-                               headers=ua,
-                               proxies=Config().get_proxies() if site_info.get("proxy") else None
-                               ).get_res(url=site_url)
+            res = RequestUtils(
+                cookies=site_cookie,
+                headers=ua,
+                proxies=Config().get_proxies() if site_info.get("proxy") else None,
+            ).get_res(url=site_url)
             seconds = int((datetime.now() - start_time).microseconds / 1000)
             if res and res.status_code == 200:
                 if not SiteHelper.is_logged_in(res.text):
@@ -442,8 +446,7 @@ class Sites:
                     if html.xpath(xpath):
                         xpath_str = xpath
                         break
-                if re.search(r'已签|签到已得', html_text, re.IGNORECASE) \
-                        and not xpath_str:
+                if re.search(r"已签|签到已得", html_text, re.IGNORECASE) and not xpath_str:
                     log.info("【Sites】%s 今日已签到" % site)
                     return f"【{site}】今日已签到"
                 if not xpath_str:
@@ -456,7 +459,8 @@ class Sites:
                 # 开始仿真
                 try:
                     checkin_obj = WebDriverWait(driver=chrome.browser, timeout=6).until(
-                        es.element_to_be_clickable((By.XPATH, xpath_str)))
+                        es.element_to_be_clickable((By.XPATH, xpath_str))
+                    )
                     if checkin_obj:
                         checkin_obj.click()
                         log.info("【Sites】%s 仿真签到成功" % site)
@@ -473,10 +477,11 @@ class Sites:
                     checkin_text = "模拟登录"
                 log.info(f"【Sites】开始站点{checkin_text}：{site}")
                 # 访问链接
-                res = RequestUtils(cookies=site_cookie,
-                                   headers=ua,
-                                   proxies=Config().get_proxies() if site_info.get("proxy") else None
-                                   ).get_res(url=site_url)
+                res = RequestUtils(
+                    cookies=site_cookie,
+                    headers=ua,
+                    proxies=Config().get_proxies() if site_info.get("proxy") else None,
+                ).get_res(url=site_url)
                 if res and res.status_code == 200:
                     if not SiteHelper.is_logged_in(res.text):
                         log.warn(f"【Sites】{site} {checkin_text}失败，请检查Cookie")
@@ -530,8 +535,11 @@ class Sites:
         if not sites:
             site_urls = [self.__get_site_strict_url(site) for site in statistic_sites]
         else:
-            site_urls = [self.__get_site_strict_url(site) for site in statistic_sites
-                         if site.get("name") in sites]
+            site_urls = [
+                self.__get_site_strict_url(site)
+                for site in statistic_sites
+                if site.get("name") in sites
+            ]
 
         raw_statistics = self.dbhelper.get_site_user_statistics(strict_urls=site_urls)
         if encoding == "RAW":
@@ -543,21 +551,24 @@ class Sites:
     def __todict(raw_statistics):
         statistics = []
         for site in raw_statistics:
-            statistics.append({"site": site.SITE,
-                               "username": site.USERNAME,
-                               "user_level": site.USER_LEVEL,
-                               "join_at": site.JOIN_AT,
-                               "update_at": site.UPDATE_AT,
-                               "upload": site.UPLOAD,
-                               "download": site.DOWNLOAD,
-                               "ratio": site.RATIO,
-                               "seeding": site.SEEDING,
-                               "leeching": site.LEECHING,
-                               "seeding_size": site.SEEDING_SIZE,
-                               "bonus": site.BONUS,
-                               "url": site.URL,
-                               "msg_unread": site.MSG_UNREAD
-                               })
+            statistics.append(
+                {
+                    "site": site.SITE,
+                    "username": site.USERNAME,
+                    "user_level": site.USER_LEVEL,
+                    "join_at": site.JOIN_AT,
+                    "update_at": site.UPDATE_AT,
+                    "upload": site.UPLOAD,
+                    "download": site.DOWNLOAD,
+                    "ratio": site.RATIO,
+                    "seeding": site.SEEDING,
+                    "leeching": site.LEECHING,
+                    "seeding_size": site.SEEDING_SIZE,
+                    "bonus": site.BONUS,
+                    "url": site.URL,
+                    "msg_unread": site.MSG_UNREAD,
+                }
+            )
         return statistics
 
     def get_pt_site_activity_history(self, site, days=365 * 2):
@@ -570,14 +581,17 @@ class Sites:
         site_activities = [["time", "upload", "download", "bonus", "seeding", "seeding_size"]]
         sql_site_activities = self.dbhelper.get_site_statistics_history(site=site, days=days)
         for sql_site_activity in sql_site_activities:
-            timestamp = datetime.strptime(sql_site_activity.DATE, '%Y-%m-%d').timestamp() * 1000
+            timestamp = datetime.strptime(sql_site_activity.DATE, "%Y-%m-%d").timestamp() * 1000
             site_activities.append(
-                [timestamp,
-                 sql_site_activity.UPLOAD,
-                 sql_site_activity.DOWNLOAD,
-                 sql_site_activity.BONUS,
-                 sql_site_activity.SEEDING,
-                 sql_site_activity.SEEDING_SIZE])
+                [
+                    timestamp,
+                    sql_site_activity.UPLOAD,
+                    sql_site_activity.DOWNLOAD,
+                    sql_site_activity.BONUS,
+                    sql_site_activity.SEEDING,
+                    sql_site_activity.SEEDING_SIZE,
+                ]
+            )
 
         return site_activities
 
@@ -639,7 +653,7 @@ class Sites:
                 headers=ua,
                 cookies=cookie,
                 referer=referer,
-                proxies=Config().get_proxies() if site_info.get("proxy") else None
+                proxies=Config().get_proxies() if site_info.get("proxy") else None,
             ).get_res(url=page_url)
             if req and req.status_code == 200:
                 if req.text:
@@ -666,9 +680,7 @@ class Sites:
                 return chrome.get_html()
         else:
             res = RequestUtils(
-                cookies=cookie,
-                headers=ua,
-                proxies=Config().get_proxies() if proxy else None
+                cookies=cookie, headers=ua, proxies=Config().get_proxies() if proxy else None
             ).get_res(url=url)
             if res and res.status_code == 200:
                 res.encoding = res.apparent_encoding
@@ -694,22 +706,15 @@ class Sites:
         :param proxy: 是否使用代理
         :return: 种子属性，包含FREE 2XFREE HR PEER_COUNT等属性
         """
-        ret_attr = {
-            "free": False,
-            "2xfree": False,
-            "hr": False,
-            "peer_count": 0
-        }
+        ret_attr = {"free": False, "2xfree": False, "hr": False, "peer_count": 0}
         if not torrent_url:
             return ret_attr
         xpath_strs = self.get_grapsite_conf(torrent_url)
         if not xpath_strs:
             return ret_attr
-        html_text = self.__get_site_page_html(url=torrent_url,
-                                              cookie=cookie,
-                                              ua=ua,
-                                              render=xpath_strs.get('RENDER'),
-                                              proxy=proxy)
+        html_text = self.__get_site_page_html(
+            url=torrent_url, cookie=cookie, ua=ua, render=xpath_strs.get("RENDER"), proxy=proxy
+        )
         if not html_text:
             return ret_attr
         try:
@@ -731,12 +736,14 @@ class Sites:
             for xpath_str in xpath_strs.get("PEER_COUNT"):
                 peer_count_dom = html.xpath(xpath_str)
                 if peer_count_dom:
-                    peer_count_str = ''.join(peer_count_dom[0].itertext())
+                    peer_count_str = "".join(peer_count_dom[0].itertext())
                     peer_count_digit_str = ""
                     for m in peer_count_str:
                         if m.isdigit():
                             peer_count_digit_str = peer_count_digit_str + m
-                    ret_attr["peer_count"] = int(peer_count_digit_str) if len(peer_count_digit_str) > 0 else 0
+                    ret_attr["peer_count"] = (
+                        int(peer_count_digit_str) if len(peer_count_digit_str) > 0 else 0
+                    )
         except Exception as err:
             ExceptionUtils.exception_traceback(err)
         # 随机休眼后再返回

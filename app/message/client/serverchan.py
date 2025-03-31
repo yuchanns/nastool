@@ -1,7 +1,7 @@
 from urllib.parse import urlencode
 
 from app.message.client._base import _IMessageClient
-from app.utils import RequestUtils, ExceptionUtils
+from app.utils import ExceptionUtils, RequestUtils
 
 
 class ServerChan(_IMessageClient):
@@ -16,7 +16,7 @@ class ServerChan(_IMessageClient):
 
     def init_config(self):
         if self._client_config:
-            self._sckey = self._client_config.get('sckey')
+            self._sckey = self._client_config.get("sckey")
 
     @classmethod
     def match(cls, ctype):
@@ -36,12 +36,15 @@ class ServerChan(_IMessageClient):
         if not self._sckey:
             return False, "参数未配置"
         try:
-            sc_url = "https://sctapi.ftqq.com/%s.send?%s" % (self._sckey, urlencode({"title": title, "desp": text}))
+            sc_url = "https://sctapi.ftqq.com/%s.send?%s" % (
+                self._sckey,
+                urlencode({"title": title, "desp": text}),
+            )
             res = RequestUtils().get_res(sc_url)
             if res:
                 ret_json = res.json()
-                errno = ret_json.get('code')
-                error = ret_json.get('message')
+                errno = ret_json.get("code")
+                error = ret_json.get("message")
                 if errno == 0:
                     return True, error
                 else:

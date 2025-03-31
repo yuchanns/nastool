@@ -1,9 +1,9 @@
 import log
+from app.downloader.client._base import _IDownloadClient
+from app.downloader.client._py115 import Py115
 from app.utils import StringUtils
 from app.utils.types import DownloaderType
 from config import Config
-from app.downloader.client._base import _IDownloadClient
-from app.downloader.client._py115 import Py115
 
 
 class Client115(_IDownloadClient):
@@ -18,7 +18,7 @@ class Client115(_IDownloadClient):
         if config:
             self._client_config = config
         else:
-            self._client_config = Config().get_config('client115')
+            self._client_config = Config().get_config("client115")
         self.init_config()
         self.connect()
 
@@ -120,18 +120,20 @@ class Client115(_IDownloadClient):
         DispTorrents = []
         for torrent in Torrents:
             # 进度
-            progress = round(torrent.get('percentDone'), 1)
+            progress = round(torrent.get("percentDone"), 1)
             state = "Downloading"
-            _dlspeed = StringUtils.str_filesize(torrent.get('peers'))
-            _upspeed = StringUtils.str_filesize(torrent.get('rateDownload'))
+            _dlspeed = StringUtils.str_filesize(torrent.get("peers"))
+            _upspeed = StringUtils.str_filesize(torrent.get("rateDownload"))
             speed = "%s%sB/s %s%sB/s" % (chr(8595), _dlspeed, chr(8593), _upspeed)
-            DispTorrents.append({
-                'id': torrent.get('info_hash'),
-                'name': torrent.get('name'),
-                'speed': speed,
-                'state': state,
-                'progress': progress
-            })
+            DispTorrents.append(
+                {
+                    "id": torrent.get("info_hash"),
+                    "name": torrent.get("name"),
+                    "speed": speed,
+                    "state": state,
+                    "progress": progress,
+                }
+            )
         return DispTorrents
 
     def set_speed_limit(self, **kwargs):

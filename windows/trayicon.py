@@ -27,7 +27,9 @@ class Balloon(wx.adv.TaskBarIcon):
             if not itemName:  # itemName为空就添加分隔符
                 menu.AppendSeparator()
                 continue
-            menuItem = wx.MenuItem(None, wx.ID_ANY, text=itemName, kind=wx.ITEM_NORMAL)  # 创建菜单项
+            menuItem = wx.MenuItem(
+                None, wx.ID_ANY, text=itemName, kind=wx.ITEM_NORMAL
+            )  # 创建菜单项
             menu.Append(menuItem)  # 将菜单项添加到菜单
             self.Bind(wx.EVT_MENU, itemHandler, menuItem)
         return menu
@@ -41,7 +43,7 @@ class Balloon(wx.adv.TaskBarIcon):
     @staticmethod
     def OnClose(event):
         exe_name = os.path.basename(sys.executable)
-        os.system('taskkill /F /IM ' + exe_name)
+        os.system("taskkill /F /IM " + exe_name)
 
 
 class TrayIcon(wx.Frame):
@@ -56,7 +58,7 @@ class TrayIcon(wx.Frame):
 
 class NullWriter:
     softspace = 0
-    encoding = 'UTF-8'
+    encoding = "UTF-8"
 
     def write(*args):
         pass

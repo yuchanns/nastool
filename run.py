@@ -1,52 +1,51 @@
-from version import APP_VERSION
-from check_config import update_config, check_config
-from app.speedlimiter import SpeedLimiter
-from app.torrentremover import TorrentRemover
-from app.sync import run_monitor, restart_monitor
-from app.scheduler import run_scheduler, restart_scheduler
-from app.rsschecker import RssChecker
-from app.brushtask import BrushTask
-from app.helper import IndexerHelper, DisplayHelper, ChromeHelper
-from app.db import init_db, update_db, init_data
-from app.utils.commons import INSTANCES
-from app.utils import ConfigLoadCache
-from web.main import App
-import log
-from config import Config
 import os
 import sys
 import time
 import warnings
+from typing import Literal, TypedDict, Union, cast
 
-from typing import cast, TypedDict, Union, Literal
-
+from twisted.internet import endpoints, reactor
+from twisted.internet.base import ReactorBase
+from twisted.web.server import Site
+from twisted.web.wsgi import WSGIResource
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-from twisted.web.wsgi import WSGIResource
-from twisted.web.server import Site
-from twisted.internet import reactor, endpoints
-from twisted.internet.base import ReactorBase
+import log
+from app.brushtask import BrushTask
+from app.db import init_data, init_db, update_db
+from app.helper import ChromeHelper, DisplayHelper, IndexerHelper
+from app.rsschecker import RssChecker
+from app.scheduler import restart_scheduler, run_scheduler
+from app.speedlimiter import SpeedLimiter
+from app.sync import restart_monitor, run_monitor
+from app.torrentremover import TorrentRemover
+from app.utils import ConfigLoadCache
+from app.utils.commons import INSTANCES
+from check_config import check_config, update_config
+from config import Config
+from version import APP_VERSION
+from web.main import App
 
-warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore")
 
 # 运行环境判断
-is_windows_exe = getattr(sys, 'frozen', False) and (os.name == "nt")
+is_windows_exe = getattr(sys, "frozen", False) and (os.name == "nt")
 if is_windows_exe:
     # 托盘相关库
     import threading
-    from windows.trayicon import TrayIcon, NullWriter
+
+    from windows.trayicon import NullWriter, TrayIcon
 
     # 初始化环境变量
-    os.environ["NASTOOL_CONFIG"] = os.path.join(os.path.dirname(sys.executable),
-                                                "config",
-                                                "config.yaml").replace("\\", "/")
-    os.environ["NASTOOL_LOG"] = os.path.join(os.path.dirname(sys.executable),
-                                             "config",
-                                             "logs").replace("\\", "/")
+    os.environ["NASTOOL_CONFIG"] = os.path.join(
+        os.path.dirname(sys.executable), "config", "config.yaml"
+    ).replace("\\", "/")
+    os.environ["NASTOOL_LOG"] = os.path.join(
+        os.path.dirname(sys.executable), "config", "logs"
+    ).replace("\\", "/")
     try:
-        config_dir = os.path.join(os.path.dirname(sys.executable),
-                                  "config").replace("\\", "/")
+        config_dir = os.path.join(os.path.dirname(sys.executable), "config").replace("\\", "/")
         if not os.path.exists(config_dir):
             os.makedirs(config_dir)
     except Exception as err:
@@ -63,42 +62,37 @@ class FlaskRunArgs(TypedDict, total=False):
     debug: bool
     threaded: bool
     use_reloader: bool
-    ssl_context: Union[tuple[str, str], Literal['adhoc'], None]
+    ssl_context: Union[tuple[str, str], Literal["adhoc"], None]
 
 
 def get_run_config():
     """
     获取运行配置
     """
-    args: FlaskRunArgs = {
-        'host': '::',
-        'port': 3000,
-        'debug': False,
-        'ssl_context': None
-    }
+    args: FlaskRunArgs = {"host": "::", "port": 3000, "debug": False, "ssl_context": None}
 
-    app_conf = Config().get_config('app')
+    app_conf = Config().get_config("app")
     if app_conf:
-        web_host = app_conf.get('web_host')
-        web_port = str(app_conf.get('web_port', '')).strip()
+        web_host = app_conf.get("web_host")
+        web_port = str(app_conf.get("web_port", "")).strip()
         if web_port.isdigit():
-            args['port'] = int(web_port)
+            args["port"] = int(web_port)
         if web_host is not None:
-            args['host'] = cast(str, web_host.replace('[', '').replace(']', ''))
-        ssl_cert = app_conf.get('ssl_cert')
-        ssl_key = app_conf.get('ssl_key')
+            args["host"] = cast(str, web_host.replace("[", "").replace("]", ""))
+        ssl_cert = app_conf.get("ssl_cert")
+        ssl_key = app_conf.get("ssl_key")
         if ssl_cert is not None and ssl_key is not None:
             _ssl_cert = cast(str, ssl_cert)
             _ssl_key = cast(str, ssl_key)
-            args['ssl_context'] = (_ssl_cert, _ssl_key)
-        args['debug'] = True if app_conf.get("debug") else False
+            args["ssl_context"] = (_ssl_cert, _ssl_key)
+        args["debug"] = True if app_conf.get("debug") else False
 
     return args
 
 
 def init_system():
     # 配置
-    log.console('NAStool 当前版本号：%s' % APP_VERSION)
+    log.console("NAStool 当前版本号：%s" % APP_VERSION)
     # 数据库初始化
     init_db()
     # 数据库更新
@@ -179,12 +173,12 @@ start_service()
 monitor_config()
 
 # 本地运行
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Windows启动托盘
     if is_windows_exe and NullWriter is not None:
-        homepage = Config().get_config('app').get('domain')
+        homepage = Config().get_config("app").get("domain")
         if not homepage:
-            homepage = "http://localhost:%s" % str(Config().get_config('app').get('web_port'))
+            homepage = "http://localhost:%s" % str(Config().get_config("app").get("web_port"))
         log_path = os.environ.get("NASTOOL_LOG")
 
         sys.stdout = NullWriter()
@@ -195,7 +189,15 @@ if __name__ == '__main__':
                 return
             TrayIcon(homepage, log_path)
 
-        if threading is not None and len(os.popen("tasklist| findstr %s" % os.path.basename(sys.executable), 'r').read().splitlines()) <= 2:
+        if (
+            threading is not None
+            and len(
+                os.popen("tasklist| findstr %s" % os.path.basename(sys.executable), "r")
+                .read()
+                .splitlines()
+            )
+            <= 2
+        ):
             p1 = threading.Thread(target=traystart, daemon=True)
             p1.start()
 
@@ -203,18 +205,22 @@ if __name__ == '__main__':
     # Twisted provides better performance and scalability compared to Flask's default server
     typed_reactor = cast(ReactorBase, reactor)
     config = get_run_config()
-    App.debug = config['debug']
+    App.debug = config["debug"]
     resource = WSGIResource(typed_reactor, typed_reactor.getThreadPool(), App)
-    if config['ssl_context'] is None:
-        endpoint = endpoints.TCP4ServerEndpoint(typed_reactor, config['port'], interface=config['host'])
+    if config["ssl_context"] is None:
+        endpoint = endpoints.TCP4ServerEndpoint(
+            typed_reactor, config["port"], interface=config["host"]
+        )
     else:
         from twisted.internet import ssl
+
         factory = ssl.DefaultOpenSSLContextFactory(
-            config['ssl_context'][0],
-            config['ssl_context'][1],
+            config["ssl_context"][0],
+            config["ssl_context"][1],
         )
-        endpoint = endpoints.SSL4ServerEndpoint(typed_reactor, config['port'], factory,
-                                                interface=config['host'])
+        endpoint = endpoints.SSL4ServerEndpoint(
+            typed_reactor, config["port"], factory, interface=config["host"]
+        )
     endpoint.listen(Site(resource))
     log.info(f"Starting server on port {config['port']}")
     typed_reactor.run()

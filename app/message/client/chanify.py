@@ -1,7 +1,7 @@
 from urllib import parse
 
 from app.message.client._base import _IMessageClient
-from app.utils import RequestUtils, StringUtils, ExceptionUtils
+from app.utils import ExceptionUtils, RequestUtils, StringUtils
 
 
 class Chanify(_IMessageClient):
@@ -17,8 +17,8 @@ class Chanify(_IMessageClient):
 
     def init_config(self):
         if self._client_config:
-            self._server = StringUtils.get_base_url(self._client_config.get('server'))
-            self._token = self._client_config.get('token')
+            self._server = StringUtils.get_base_url(self._client_config.get("server"))
+            self._token = self._client_config.get("token")
 
     @classmethod
     def match(cls, ctype):
@@ -41,10 +41,7 @@ class Chanify(_IMessageClient):
                 return False, "参数未配置"
             sc_url = "%s/v1/sender/%s" % (self._server, self._token)
             # 发送文本
-            data = parse.urlencode({
-                    'title': title,
-                    'text': text
-                 }).encode()
+            data = parse.urlencode({"title": title, "text": text}).encode()
             res = RequestUtils().post_res(sc_url, params=data)
             if res:
                 if res.status_code == 200:

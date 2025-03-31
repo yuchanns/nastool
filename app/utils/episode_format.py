@@ -1,5 +1,7 @@
 import re
+
 import parse
+
 from config import SPLIT_CHARS
 
 
@@ -64,7 +66,9 @@ class EpisodeFormat(object):
         if not self._format:
             return None, None
         s, e = self.__handle_single(file_name)
-        return s + self.__offset if s is not None else None, e + self.__offset if e is not None else None
+        return s + self.__offset if s is not None else None, (
+            e + self.__offset if e is not None else None
+        )
 
     def __handle_single(self, file: str):
         if not self._format:
@@ -75,11 +79,15 @@ class EpisodeFormat(object):
         episodes = ret.__getitem__(self._key)
         if not re.compile(r"^(EP)?(\d{1,4})(-(EP)?(\d{1,4}))?$", re.IGNORECASE).match(episodes):
             return None, None
-        episode_splits = list(filter(lambda x: re.compile(r'[a-zA-Z]*\d{1,4}', re.IGNORECASE).match(x),
-                                     re.split(r'%s' % SPLIT_CHARS, episodes)))
+        episode_splits = list(
+            filter(
+                lambda x: re.compile(r"[a-zA-Z]*\d{1,4}", re.IGNORECASE).match(x),
+                re.split(r"%s" % SPLIT_CHARS, episodes),
+            )
+        )
         if len(episode_splits) == 1:
-            return int(re.compile(r'[a-zA-Z]*', re.IGNORECASE).sub("", episode_splits[0])), None
+            return int(re.compile(r"[a-zA-Z]*", re.IGNORECASE).sub("", episode_splits[0])), None
         else:
-            return int(re.compile(r'[a-zA-Z]*', re.IGNORECASE).sub("", episode_splits[0])), int(
-                re.compile(r'[a-zA-Z]*', re.IGNORECASE).sub("", episode_splits[1]))
-
+            return int(re.compile(r"[a-zA-Z]*", re.IGNORECASE).sub("", episode_splits[0])), int(
+                re.compile(r"[a-zA-Z]*", re.IGNORECASE).sub("", episode_splits[1])
+            )

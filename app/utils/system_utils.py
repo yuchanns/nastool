@@ -4,8 +4,8 @@ import platform
 import shutil
 import subprocess
 
-from app.utils.path_utils import PathUtils
 from app.utils.exception_utils import ExceptionUtils
+from app.utils.path_utils import PathUtils
 from app.utils.types import OsType
 from config import WEBDRIVER_PATH
 
@@ -68,9 +68,11 @@ class SystemUtils:
         通过UTC的时间字符串获取时间
         """
         try:
-            utc_date = datetime.datetime.strptime(utc_time_str.replace('0000', ''), '%Y-%m-%dT%H:%M:%S.%fZ')
+            utc_date = datetime.datetime.strptime(
+                utc_time_str.replace("0000", ""), "%Y-%m-%dT%H:%M:%S.%fZ"
+            )
             local_date = utc_date + datetime.timedelta(hours=8)
-            local_date_str = datetime.datetime.strftime(local_date, '%Y-%m-%d %H:%M:%S')
+            local_date_str = datetime.datetime.strftime(local_date, "%Y-%m-%d %H:%M:%S")
         except Exception as e:
             ExceptionUtils.exception_traceback(e)
             return utc_time_str
@@ -83,7 +85,7 @@ class SystemUtils:
         """
         if not pname:
             return False
-        text = subprocess.Popen('ps -ef | grep -v grep | grep %s' % pname, shell=True).communicate()
+        text = subprocess.Popen("ps -ef | grep -v grep | grep %s" % pname, shell=True).communicate()
         return True if text else False
 
     @staticmethod
@@ -100,26 +102,29 @@ class SystemUtils:
 
     @staticmethod
     def is_docker():
-        return os.path.exists('/.dockerenv')
+        return os.path.exists("/.dockerenv")
 
     @staticmethod
     def is_synology():
         if SystemUtils.is_windows():
             return False
-        return True if "synology" in SystemUtils.execute('uname -a') else False
-        
+        return True if "synology" in SystemUtils.execute("uname -a") else False
+
     @staticmethod
     def is_windows():
         return True if os.name == "nt" else False
 
     @staticmethod
     def is_macos():
-        return True if platform.system() == 'Darwin' else False
+        return True if platform.system() == "Darwin" else False
 
     @staticmethod
     def is_lite_version():
-        return True if SystemUtils.is_docker() \
-                       and os.environ.get("NASTOOL_VERSION") == "lite" else False
+        return (
+            True
+            if SystemUtils.is_docker() and os.environ.get("NASTOOL_VERSION") == "lite"
+            else False
+        )
 
     @staticmethod
     def get_webdriver_path():
@@ -146,8 +151,7 @@ class SystemUtils:
         移动
         """
         try:
-            tmp_file = os.path.normpath(os.path.join(os.path.dirname(src),
-                                                     os.path.basename(dest)))
+            tmp_file = os.path.normpath(os.path.join(os.path.dirname(src), os.path.basename(dest)))
             shutil.move(os.path.normpath(src), tmp_file)
             shutil.move(tmp_file, os.path.normpath(dest))
             return 0, ""
@@ -163,8 +167,9 @@ class SystemUtils:
         try:
             if platform.release().find("-z4-") >= 0:
                 # 兼容极空间Z4
-                tmp = os.path.normpath(os.path.join(PathUtils.get_parent_paths(dest, 2),
-                                                    os.path.basename(dest)))
+                tmp = os.path.normpath(
+                    os.path.join(PathUtils.get_parent_paths(dest, 2), os.path.basename(dest))
+                )
                 os.link(os.path.normpath(src), tmp)
                 shutil.move(tmp, os.path.normpath(dest))
             else:
@@ -194,10 +199,10 @@ class SystemUtils:
         try:
             src = os.path.normpath(src)
             dest = dest.replace("\\", "/")
-            retcode = subprocess.run(['rclone', 'moveto',
-                                      src,
-                                      f'NASTOOL:{dest}'],
-                                     startupinfo=SystemUtils.__get_hidden_shell()).returncode
+            retcode = subprocess.run(
+                ["rclone", "moveto", src, f"NASTOOL:{dest}"],
+                startupinfo=SystemUtils.__get_hidden_shell(),
+            ).returncode
             return retcode, ""
         except Exception as err:
             ExceptionUtils.exception_traceback(err)
@@ -211,10 +216,10 @@ class SystemUtils:
         try:
             src = os.path.normpath(src)
             dest = dest.replace("\\", "/")
-            retcode = subprocess.run(['rclone', 'copyto',
-                                      src,
-                                      f'NASTOOL:{dest}'],
-                                     startupinfo=SystemUtils.__get_hidden_shell()).returncode
+            retcode = subprocess.run(
+                ["rclone", "copyto", src, f"NASTOOL:{dest}"],
+                startupinfo=SystemUtils.__get_hidden_shell(),
+            ).returncode
             return retcode, ""
         except Exception as err:
             ExceptionUtils.exception_traceback(err)
@@ -230,11 +235,10 @@ class SystemUtils:
             dest = dest.replace("\\", "/")
             if dest.startswith("/"):
                 dest = dest[1:]
-            retcode = subprocess.run(['mc', 'mv',
-                                      '--recursive',
-                                      src,
-                                      f'NASTOOL/{dest}'],
-                                     startupinfo=SystemUtils.__get_hidden_shell()).returncode
+            retcode = subprocess.run(
+                ["mc", "mv", "--recursive", src, f"NASTOOL/{dest}"],
+                startupinfo=SystemUtils.__get_hidden_shell(),
+            ).returncode
             return retcode, ""
         except Exception as err:
             ExceptionUtils.exception_traceback(err)
@@ -250,11 +254,10 @@ class SystemUtils:
             dest = dest.replace("\\", "/")
             if dest.startswith("/"):
                 dest = dest[1:]
-            retcode = subprocess.run(['mc', 'cp',
-                                      '--recursive',
-                                      src,
-                                      f'NASTOOL/{dest}'],
-                                     startupinfo=SystemUtils.__get_hidden_shell()).returncode
+            retcode = subprocess.run(
+                ["mc", "cp", "--recursive", src, f"NASTOOL/{dest}"],
+                startupinfo=SystemUtils.__get_hidden_shell(),
+            ).returncode
             return retcode, ""
         except Exception as err:
             ExceptionUtils.exception_traceback(err)
@@ -267,7 +270,7 @@ class SystemUtils:
         """
         vols = []
         for i in range(65, 91):
-            vol = chr(i) + ':'
+            vol = chr(i) + ":"
             if os.path.isdir(vol):
                 vols.append(vol)
         return vols
@@ -279,46 +282,42 @@ class SystemUtils:
         ret_files = []
         if os.name == "nt":
             ret = subprocess.run(
-                ['fsutil', 'hardlink', 'list', file],
+                ["fsutil", "hardlink", "list", file],
                 startupinfo=self.__get_hidden_shell(),
-                stdout=subprocess.PIPE
+                stdout=subprocess.PIPE,
             )
             if ret.returncode != 0:
                 return []
             if ret.stdout:
                 drive = os.path.splitdrive(file)[0]
-                link_files = ret.stdout.decode('GBK').replace('\\', '/').split('\r\n')
+                link_files = ret.stdout.decode("GBK").replace("\\", "/").split("\r\n")
                 for link_file in link_files:
-                    if link_file \
-                            and "$RECYCLE.BIN" not in link_file \
-                            and os.path.normpath(file) != os.path.normpath(f'{drive}{link_file}'):
-                        link_file = f'{drive.upper()}{link_file}'
+                    if (
+                        link_file
+                        and "$RECYCLE.BIN" not in link_file
+                        and os.path.normpath(file) != os.path.normpath(f"{drive}{link_file}")
+                    ):
+                        link_file = f"{drive.upper()}{link_file}"
                         file_name = os.path.basename(link_file)
                         file_path = os.path.dirname(link_file)
-                        ret_files.append({
-                            "file": link_file,
-                            "filename": file_name,
-                            "filepath": file_path
-                        })
+                        ret_files.append(
+                            {"file": link_file, "filename": file_name, "filepath": file_path}
+                        )
         else:
             inode = os.stat(file).st_ino
             if not fdir:
                 fdir = os.path.dirname(file)
             stdout = subprocess.run(
-                ['find', fdir, '-inum', str(inode)],
-                stdout=subprocess.PIPE
+                ["find", fdir, "-inum", str(inode)], stdout=subprocess.PIPE
             ).stdout
             if stdout:
-                link_files = stdout.decode('utf-8').split('\n')
+                link_files = stdout.decode("utf-8").split("\n")
                 for link_file in link_files:
-                    if link_file \
-                            and os.path.normpath(file) != os.path.normpath(link_file):
+                    if link_file and os.path.normpath(file) != os.path.normpath(link_file):
                         file_name = os.path.basename(link_file)
                         file_path = os.path.dirname(link_file)
-                        ret_files.append({
-                            "file": link_file,
-                            "filename": file_name,
-                            "filepath": file_path
-                        })
+                        ret_files.append(
+                            {"file": link_file, "filename": file_name, "filepath": file_path}
+                        )
 
         return ret_files

@@ -90,8 +90,12 @@ class PathUtils:
         """
         if not path:
             return True
-        if path.find('/@Recycle/') != -1 or path.find('/#recycle/') != -1 or path.find('/.') != -1 or path.find(
-                '/@eaDir') != -1:
+        if (
+            path.find("/@Recycle/") != -1
+            or path.find("/#recycle/") != -1
+            or path.find("/.") != -1
+            or path.find("/@eaDir") != -1
+        ):
             return True
         return False
 
@@ -125,11 +129,13 @@ class PathUtils:
         if os.path.isdir(path):
             if os.path.exists(os.path.join(path, "BDMV", "index.bdmv")):
                 return path
-            elif os.path.normpath(path).endswith("BDMV") \
-                    and os.path.exists(os.path.join(path, "index.bdmv")):
+            elif os.path.normpath(path).endswith("BDMV") and os.path.exists(
+                os.path.join(path, "index.bdmv")
+            ):
                 return os.path.dirname(path)
-            elif os.path.normpath(path).endswith("STREAM") \
-                    and os.path.exists(os.path.join(os.path.dirname(path), "index.bdmv")):
+            elif os.path.normpath(path).endswith("STREAM") and os.path.exists(
+                os.path.join(os.path.dirname(path), "index.bdmv")
+            ):
                 return PathUtils.get_parent_paths(path, 2)
             else:
                 # 电视剧原盘下会存在多个目录形如：Spider Man 2021/DIsc1, Spider Man 2021/Disc2
@@ -138,9 +144,11 @@ class PathUtils:
                         return path
                 return None
         else:
-            if str(os.path.splitext(path)[-1]).lower() in [".m2ts", ".ts"] \
-                    and os.path.normpath(os.path.dirname(path)).endswith("STREAM") \
-                    and os.path.exists(os.path.join(PathUtils.get_parent_paths(path, 2), "index.bdmv")):
+            if (
+                str(os.path.splitext(path)[-1]).lower() in [".m2ts", ".ts"]
+                and os.path.normpath(os.path.dirname(path)).endswith("STREAM")
+                and os.path.exists(os.path.join(PathUtils.get_parent_paths(path, 2), "index.bdmv"))
+            ):
                 return PathUtils.get_parent_paths(path, 3)
             else:
                 return None

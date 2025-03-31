@@ -1,11 +1,10 @@
 import requests
 
-from app.utils import ExceptionUtils
+from app.helper import IndexerConf
+from app.indexer.client._base import _IIndexClient
+from app.utils import ExceptionUtils, RequestUtils
 from app.utils.types import IndexerType
 from config import Config
-from app.indexer.client._base import _IIndexClient
-from app.utils import RequestUtils
-from app.helper import IndexerConf
 
 
 class Jackett(_IIndexClient):
@@ -19,18 +18,18 @@ class Jackett(_IIndexClient):
         if config:
             self._client_config = config
         else:
-            self._client_config = Config().get_config('jackett')
+            self._client_config = Config().get_config("jackett")
         self.init_config()
 
     def init_config(self):
         if self._client_config:
-            self.api_key = self._client_config.get('api_key')
-            self._password = self._client_config.get('password')
-            self.host = self._client_config.get('host')
+            self.api_key = self._client_config.get("api_key")
+            self._password = self._client_config.get("password")
+            self.host = self._client_config.get("host")
             if self.host:
-                if not self.host.startswith('http'):
+                if not self.host.startswith("http"):
                     self.host = "http://" + self.host
-                if not self.host.endswith('/'):
+                if not self.host.endswith("/"):
                     self.host = self.host + "/"
 
     def get_status(self):
@@ -54,8 +53,9 @@ class Jackett(_IIndexClient):
         # 获取Cookie
         cookie = None
         session = requests.session()
-        res = RequestUtils(session=session).post_res(url=f"{self.host}UI/Dashboard",
-                                                     params={"password": self._password})
+        res = RequestUtils(session=session).post_res(
+            url=f"{self.host}UI/Dashboard", params={"password": self._password}
+        )
         if res and session.cookies:
             cookie = session.cookies.get_dict()
         indexer_query_url = f"{self.host}api/v2.0/indexers?configured=true"
@@ -63,12 +63,18 @@ class Jackett(_IIndexClient):
             ret = RequestUtils(cookies=cookie).get_res(indexer_query_url)
             if not ret or not ret.json():
                 return []
-            return [IndexerConf({"id": v["id"],
-                                 "name": v["name"],
-                                 "domain": f'{self.host}api/v2.0/indexers/{v["id"]}/results/torznab/',
-                                 "public": True if v['type'] == 'public' else False,
-                                 "builtin": False})
-                    for v in ret.json()]
+            return [
+                IndexerConf(
+                    {
+                        "id": v["id"],
+                        "name": v["name"],
+                        "domain": f'{self.host}api/v2.0/indexers/{v["id"]}/results/torznab/',
+                        "public": True if v["type"] == "public" else False,
+                        "builtin": False,
+                    }
+                )
+                for v in ret.json()
+            ]
         except Exception as e2:
             ExceptionUtils.exception_traceback(e2)
             return []

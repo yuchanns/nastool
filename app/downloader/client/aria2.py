@@ -1,11 +1,11 @@
 import os
 import re
 
-from app.utils import RequestUtils, ExceptionUtils, StringUtils
-from app.utils.types import DownloaderType
-from config import Config
 from app.downloader.client._base import _IDownloadClient
 from app.downloader.client._pyaria2 import PyAria2
+from app.utils import ExceptionUtils, RequestUtils, StringUtils
+from app.utils.types import DownloaderType
+from config import Config
 
 
 class Aria2(_IDownloadClient):
@@ -23,7 +23,7 @@ class Aria2(_IDownloadClient):
         if config:
             self._client_config = config
         else:
-            self._client_config = Config().get_config('aria2')
+            self._client_config = Config().get_config("aria2")
         self.init_config()
         self.connect()
 
@@ -31,9 +31,9 @@ class Aria2(_IDownloadClient):
         if self._client_config:
             self.host = self._client_config.get("host")
             if self.host:
-                if not self.host.startswith('http'):
+                if not self.host.startswith("http"):
                     self.host = "http://" + self.host
-                if self.host.endswith('/'):
+                if self.host.endswith("/"):
                     self.host = self.host[:-1]
             self.port = self._client_config.get("port")
             self.secret = self._client_config.get("secret")
@@ -65,7 +65,11 @@ class Aria2(_IDownloadClient):
                 ret_torrents = [self._client.tellStatus(gid=ids)]
         elif status:
             if status == "downloading":
-                ret_torrents = self._client.tellActive() or [] + self._client.tellWaiting(offset=-1, num=100) or []
+                ret_torrents = (
+                    self._client.tellActive()
+                    or [] + self._client.tellWaiting(offset=-1, num=100)
+                    or []
+                )
             else:
                 ret_torrents = self._client.tellStopped(offset=-1, num=1000)
         return ret_torrents
@@ -85,14 +89,14 @@ class Aria2(_IDownloadClient):
         torrents = self.get_completed_torrents()
         trans_tasks = []
         for torrent in torrents:
-            name = torrent.get('bittorrent', {}).get('info', {}).get("name")
+            name = torrent.get("bittorrent", {}).get("info", {}).get("name")
             if not name:
                 continue
             path = torrent.get("dir")
             if not path:
                 continue
             true_path = self.get_replace_path(path)
-            trans_tasks.append({'path': os.path.join(true_path, name), 'id': torrent.get("gid")})
+            trans_tasks.append({"path": os.path.join(true_path, name), "id": torrent.get("gid")})
         return trans_tasks
 
     def get_remove_torrents(self, **kwargs):
@@ -144,20 +148,25 @@ class Aria2(_IDownloadClient):
         for torrent in Torrents:
             # 进度
             try:
-                progress = round(int(torrent.get('completedLength')) / int(torrent.get("totalLength")), 1) * 100
+                progress = (
+                    round(int(torrent.get("completedLength")) / int(torrent.get("totalLength")), 1)
+                    * 100
+                )
             except ZeroDivisionError:
                 progress = 0.0
             state = "Downloading"
-            _dlspeed = StringUtils.str_filesize(torrent.get('downloadSpeed'))
-            _upspeed = StringUtils.str_filesize(torrent.get('uploadSpeed'))
+            _dlspeed = StringUtils.str_filesize(torrent.get("downloadSpeed"))
+            _upspeed = StringUtils.str_filesize(torrent.get("uploadSpeed"))
             speed = "%s%sB/s %s%sB/s" % (chr(8595), _dlspeed, chr(8593), _upspeed)
-            DispTorrents.append({
-                'id': torrent.get('gid'),
-                'name': torrent.get('bittorrent', {}).get('info', {}).get("name"),
-                'speed': speed,
-                'state': state,
-                'progress': progress
-            })
+            DispTorrents.append(
+                {
+                    "id": torrent.get("gid"),
+                    "name": torrent.get("bittorrent", {}).get("info", {}).get("name"),
+                    "speed": speed,
+                    "state": state,
+                    "progress": progress,
+                }
+            )
         return DispTorrents
 
     def set_speed_limit(self, **kwargs):

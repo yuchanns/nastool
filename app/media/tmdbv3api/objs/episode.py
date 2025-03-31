@@ -2,9 +2,7 @@ from app.media.tmdbv3api.tmdb import TMDb
 
 
 class Episode(TMDb):
-    _urls = {
-        "images": "/tv/%s/season/%s/episode/%s/images"
-    }
+    _urls = {"images": "/tv/%s/season/%s/episode/%s/images"}
 
     def images(self, tv_id, season_num, episode_num, include_image_language=None):
         """
@@ -18,7 +16,11 @@ class Episode(TMDb):
         return self._get_obj(
             self._call(
                 self._urls["images"] % (tv_id, season_num, episode_num),
-                "include_image_language=%s" % include_image_language if include_image_language else "",
+                (
+                    "include_image_language=%s" % include_image_language
+                    if include_image_language
+                    else ""
+                ),
             ),
-            "stills"
+            "stills",
         )

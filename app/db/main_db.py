@@ -1,7 +1,8 @@
 import os
 import threading
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.pool import QueuePool
 
 from app.db.models import Base
@@ -16,12 +17,11 @@ _Engine = create_engine(
     pool_pre_ping=True,
     pool_size=50,
     pool_recycle=60 * 10,
-    max_overflow=0
+    max_overflow=0,
 )
-_Session = scoped_session(sessionmaker(bind=_Engine,
-                                       autoflush=True,
-                                       autocommit=False,
-                                       expire_on_commit=False))
+_Session = scoped_session(
+    sessionmaker(bind=_Engine, autoflush=True, autocommit=False, expire_on_commit=False)
+)
 
 
 class MainDb:
@@ -48,7 +48,7 @@ class MainDb:
             if os.path.basename(sql_file) not in init_files:
                 config_flag = True
                 with open(sql_file, "r", encoding="utf-8") as f:
-                    sql_list = f.read().split(';\n')
+                    sql_list = f.read().split(";\n")
                     for sql in sql_list:
                         try:
                             self.excute(sql)
@@ -57,7 +57,7 @@ class MainDb:
                             print(str(err))
                 init_files.append(os.path.basename(sql_file))
         if config_flag:
-            config['app']['init_files'] = init_files
+            config["app"]["init_files"] = init_files
             Config().save_config(config)
 
     def insert(self, data):

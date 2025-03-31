@@ -3,7 +3,7 @@ import re
 
 from lxml import etree
 
-from app.sites.siteuserinfo._base import _ISiteUserInfo, SITE_BASE_ORDER
+from app.sites.siteuserinfo._base import SITE_BASE_ORDER, _ISiteUserInfo
 from app.utils import StringUtils
 from app.utils.types import SiteSchema
 
@@ -14,7 +14,7 @@ class IptSiteUserInfo(_ISiteUserInfo):
 
     @classmethod
     def match(cls, html_text):
-        return 'IPTorrents' in html_text
+        return "IPTorrents" in html_text
 
     def _parse_user_base_info(self, html_text):
         html_text = self._prepare_html_text(html_text)
@@ -32,12 +32,14 @@ class IptSiteUserInfo(_ISiteUserInfo):
 
         tmps = html.xpath('//div[@class = "stats"]/div/div')
         if tmps:
-            self.upload = StringUtils.num_filesize(str(tmps[0].xpath('span/text()')[1]).strip())
-            self.download = StringUtils.num_filesize(str(tmps[0].xpath('span/text()')[2]).strip())
-            self.seeding = StringUtils.str_int(tmps[0].xpath('a')[2].xpath('text()')[0])
-            self.leeching = StringUtils.str_int(tmps[0].xpath('a')[2].xpath('text()')[1])
-            self.ratio = StringUtils.str_float(str(tmps[0].xpath('span/text()')[0]).strip().replace('-', '0'))
-            self.bonus = StringUtils.str_float(tmps[0].xpath('a')[3].xpath('text()')[0])
+            self.upload = StringUtils.num_filesize(str(tmps[0].xpath("span/text()")[1]).strip())
+            self.download = StringUtils.num_filesize(str(tmps[0].xpath("span/text()")[2]).strip())
+            self.seeding = StringUtils.str_int(tmps[0].xpath("a")[2].xpath("text()")[0])
+            self.leeching = StringUtils.str_int(tmps[0].xpath("a")[2].xpath("text()")[1])
+            self.ratio = StringUtils.str_float(
+                str(tmps[0].xpath("span/text()")[0]).strip().replace("-", "0")
+            )
+            self.bonus = StringUtils.str_float(tmps[0].xpath("a")[3].xpath("text()")[0])
 
     def _parse_site_page(self, html_text):
         # TODO
@@ -55,7 +57,7 @@ class IptSiteUserInfo(_ISiteUserInfo):
         # 加入日期
         join_at_text = html.xpath('//tr/th[text()="Join date"]/following-sibling::td[1]/text()')
         if join_at_text:
-            self.join_at = StringUtils.unify_datetime_str(join_at_text[0].split(' (')[0])
+            self.join_at = StringUtils.unify_datetime_str(join_at_text[0].split(" (")[0])
 
     def _parse_user_torrent_seeding_info(self, html_text, multi_page=False):
         html = etree.HTML(html_text)
@@ -64,18 +66,22 @@ class IptSiteUserInfo(_ISiteUserInfo):
         # seeding start
         seeding_end_pos = 3
         if html.xpath('//tr/td[text() = "Leechers"]'):
-            seeding_end_pos = len(html.xpath('//tr/td[text() = "Leechers"]/../preceding-sibling::tr')) + 1
+            seeding_end_pos = (
+                len(html.xpath('//tr/td[text() = "Leechers"]/../preceding-sibling::tr')) + 1
+            )
             seeding_end_pos = seeding_end_pos - 3
 
         page_seeding = 0
         page_seeding_size = 0
-        seeding_torrents = html.xpath('//tr/td[text() = "Seeders"]/../following-sibling::tr/td[position()=6]/text()')
+        seeding_torrents = html.xpath(
+            '//tr/td[text() = "Seeders"]/../following-sibling::tr/td[position()=6]/text()'
+        )
         if seeding_torrents:
             page_seeding = seeding_end_pos
             for per_size in seeding_torrents[:seeding_end_pos]:
-                if '(' in per_size and ')' in per_size:
-                    per_size = per_size.split('(')[-1]
-                    per_size = per_size.split(')')[0]
+                if "(" in per_size and ")" in per_size:
+                    per_size = per_size.split("(")[-1]
+                    per_size = per_size.split(")")[0]
 
                 page_seeding_size += StringUtils.num_filesize(per_size)
 

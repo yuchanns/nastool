@@ -3,7 +3,7 @@ from functools import lru_cache
 import requests
 from lxml import etree
 
-from app.utils import RequestUtils, ExceptionUtils
+from app.utils import ExceptionUtils, RequestUtils
 from app.utils.commons import singleton
 
 
@@ -47,7 +47,7 @@ class DoubanWeb(object):
             "rate": "//strong[@property='v:average']/text()",
             "imdb": "//div[@id='info']/span[contains(text(), 'IMDb:')]/following-sibling::text()",
             "season": "//div[@id='info']/span[contains(text(), '季数')]/following-sibling::text()",
-            "episode_num": "//div[@id='info']/span[contains(text(), '集数')]/following-sibling::text()"
+            "episode_num": "//div[@id='info']/span[contains(text(), '集数')]/following-sibling::text()",
         },
         "nowplaying": {
             "list": "//div[@id='nowplaying']//ul[@class='lists']/li",
@@ -56,8 +56,8 @@ class DoubanWeb(object):
                 "title": "./@data-title",
                 "rate": "./@data-score",
                 "cover": "./li[@class='poster']/a/img/@src",
-                "year": "./@data-release"
-            }
+                "year": "./@data-release",
+            },
         },
         "later": {
             "list": "//div[@id='showing-soon']/div",
@@ -65,8 +65,8 @@ class DoubanWeb(object):
                 "id": "./@data-subject",
                 "title": "./div[@class='intro']/h3/a/text()]",
                 "cover": "./a[class='thumb']/img/@src",
-                "url": "./div[@class='intro']/h3/a/@href"
-            }
+                "url": "./div[@class='intro']/h3/a/@href",
+            },
         },
         "top250": {
             "list": "//ol[@class='grid_view']/li",
@@ -74,8 +74,8 @@ class DoubanWeb(object):
             "item": {
                 "title": "./div[@class='item']/div[@class='pic']/a/img/@alt",
                 "cover": "./div[@class='item']/div[@class='pic']/a/img/@src",
-                "url": "./div[@class='item']/div[@class='pic']/a/@href"
-            }
+                "url": "./div[@class='item']/div[@class='pic']/a/@href",
+            },
         },
         "collect": {
             "list": "//div[@class='grid-view']/div[@class='item']",
@@ -83,8 +83,8 @@ class DoubanWeb(object):
             "item": {
                 "title": "./div[@class='info']/ul/li[@class='title']/a/em/text()",
                 "cover": "./div[@class='pic']/a/img/@src",
-                "url": "./div[@class='info']/ul/li[@class='title']/a/@href"
-            }
+                "url": "./div[@class='info']/ul/li[@class='title']/a/@href",
+            },
         },
         "wish": {
             "list": "//div[@class='grid-view']/div[@class='item']",
@@ -92,16 +92,16 @@ class DoubanWeb(object):
                 "title": "./div[@class='info']/ul/li[@class='title']/a/em/text()",
                 "cover": "./div[@class='pic']/a/img/@src",
                 "url": "./div[@class='info']/ul/li[@class='title']/a/@href",
-                "date": "./div[@class='info']//span[@class='date']/text()"
-            }
+                "date": "./div[@class='info']//span[@class='date']/text()",
+            },
         },
         "do": {
             "list": "//div[@class='grid-view']/div[@class='item']",
             "item": {
                 "title": "./div[@class='info']/ul/li[@class='title']/a/em/text()",
                 "cover": "./div[@class='pic']/a/img/@src",
-                "url": "./div[@class='info']/ul/li[@class='title']/a/@href"
-            }
+                "url": "./div[@class='info']/ul/li[@class='title']/a/@href",
+            },
         },
         "search": {
             "list": "//div[@class='item-root']",
@@ -111,12 +111,10 @@ class DoubanWeb(object):
                 "cover": "./a/img[class='cover']/@src",
                 "intro": "./div[@class='detail']/div[@class='meta abstract']/text()",
                 "rate": "./div[@class='detail']/div[@class='rating']/span[@class='rating_nums']/text()",
-                "actor": "./div[@class='detail']/div[@class='meta abstract_2']/text()"
-            }
+                "actor": "./div[@class='detail']/div[@class='meta abstract_2']/text()",
+            },
         },
-        "user": {
-            "name": "//div[@class='side-info']/div[@class='side-info-txt']/h3/text()"
-        }
+        "user": {"name": "//div[@class='side-info']/div[@class='side-info-txt']/h3/text()"},
     }
 
     _jsonurls = {
@@ -142,17 +140,16 @@ class DoubanWeb(object):
         req_url = cls._weburls.get(url)
         if not req_url:
             return None
-        return RequestUtils(cookies=cookie,
-                            session=cls._session,
-                            timeout=cls._timout).get(url=req_url % kwargs)
+        return RequestUtils(cookies=cookie, session=cls._session, timeout=cls._timout).get(
+            url=req_url % kwargs
+        )
 
     @classmethod
     def __invoke_json(cls, url, *kwargs):
         req_url = cls._jsonurls.get(url)
         if not req_url:
             return None
-        req = RequestUtils(session=cls._session,
-                           timeout=cls._timout).get_res(url=req_url % kwargs)
+        req = RequestUtils(session=cls._session, timeout=cls._timout).get_res(url=req_url % kwargs)
         return req.json() if req else None
 
     @staticmethod

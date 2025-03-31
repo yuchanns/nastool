@@ -1,9 +1,9 @@
-from app.db import MainDb, DbPersist
+from app.db import DbPersist, MainDb
 from app.db.models import SYSTEMDICT
 
 
 class DictHelper:
-    
+
     _db = MainDb()
 
     @DbPersist(_db)
@@ -19,19 +19,13 @@ class DictHelper:
         if not dtype or not key or not value:
             return False
         if self.exists(dtype, key):
-            return self._db.query(SYSTEMDICT).filter(SYSTEMDICT.TYPE == dtype,
-                                                     SYSTEMDICT.KEY == key).update(
-                {
-                    "VALUE": value
-                }
+            return (
+                self._db.query(SYSTEMDICT)
+                .filter(SYSTEMDICT.TYPE == dtype, SYSTEMDICT.KEY == key)
+                .update({"VALUE": value})
             )
         else:
-            return self._db.insert(SYSTEMDICT(
-                TYPE=dtype,
-                KEY=key,
-                VALUE=value,
-                NOTE=note
-            ))
+            return self._db.insert(SYSTEMDICT(TYPE=dtype, KEY=key, VALUE=value, NOTE=note))
 
     def get(self, dtype, key):
         """
@@ -42,8 +36,11 @@ class DictHelper:
         """
         if not dtype or not key:
             return ""
-        ret = self._db.query(SYSTEMDICT.VALUE).filter(SYSTEMDICT.TYPE == dtype,
-                                                      SYSTEMDICT.KEY == key).first()
+        ret = (
+            self._db.query(SYSTEMDICT.VALUE)
+            .filter(SYSTEMDICT.TYPE == dtype, SYSTEMDICT.KEY == key)
+            .first()
+        )
         if ret:
             return ret[0]
         else:
@@ -59,8 +56,11 @@ class DictHelper:
         """
         if not dtype or not key:
             return False
-        return self._db.query(SYSTEMDICT).filter(SYSTEMDICT.TYPE == dtype,
-                                                 SYSTEMDICT.KEY == key).delete()
+        return (
+            self._db.query(SYSTEMDICT)
+            .filter(SYSTEMDICT.TYPE == dtype, SYSTEMDICT.KEY == key)
+            .delete()
+        )
 
     def exists(self, dtype, key):
         """
@@ -71,8 +71,11 @@ class DictHelper:
         """
         if not dtype or not key:
             return False
-        ret = self._db.query(SYSTEMDICT).filter(SYSTEMDICT.TYPE == dtype,
-                                                SYSTEMDICT.KEY == key).count()
+        ret = (
+            self._db.query(SYSTEMDICT)
+            .filter(SYSTEMDICT.TYPE == dtype, SYSTEMDICT.KEY == key)
+            .count()
+        )
         if ret > 0:
             return True
         else:

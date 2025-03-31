@@ -25,6 +25,7 @@ class MetaHelper(object):
         "type": MediaType
     }
     """
+
     _meta_data = {}
 
     _meta_path = None
@@ -34,10 +35,10 @@ class MetaHelper(object):
         self.init_config()
 
     def init_config(self):
-        laboratory = Config().get_config('laboratory')
+        laboratory = Config().get_config("laboratory")
         if laboratory:
             self._tmdb_cache_expire = laboratory.get("tmdb_cache_expire")
-        self._meta_path = os.path.join(Config().get_config_path(), 'tmdb.dat')
+        self._meta_path = os.path.join(Config().get_config_path(), "tmdb.dat")
         self._meta_data = self.__load_meta_data(self._meta_path)
 
     def clear_meta_data(self):
@@ -82,16 +83,31 @@ class MetaHelper(object):
             begin_pos = (page - 1) * num
 
         with lock:
-            search_metas = [(k, {
-                "id": v.get("id"),
-                "title": v.get("title"),
-                "year": v.get("year"),
-                "media_type": v.get("type").value if isinstance(v.get("type"), Enum) else v.get("type"),
-                "poster_path": v.get("poster_path"),
-                "backdrop_path": v.get("backdrop_path")
-            },  str(k).replace("[电影]", "").replace("[电视剧]", "").replace("[未知]", "").replace("-None", ""))
-                for k, v in self._meta_data.items() if search.lower() in k.lower() and v.get("id") != 0]
-            return len(search_metas), search_metas[begin_pos: begin_pos + num]
+            search_metas = [
+                (
+                    k,
+                    {
+                        "id": v.get("id"),
+                        "title": v.get("title"),
+                        "year": v.get("year"),
+                        "media_type": (
+                            v.get("type").value
+                            if isinstance(v.get("type"), Enum)
+                            else v.get("type")
+                        ),
+                        "poster_path": v.get("poster_path"),
+                        "backdrop_path": v.get("backdrop_path"),
+                    },
+                    str(k)
+                    .replace("[电影]", "")
+                    .replace("[电视剧]", "")
+                    .replace("[未知]", "")
+                    .replace("-None", ""),
+                )
+                for k, v in self._meta_data.items()
+                if search.lower() in k.lower() and v.get("id") != 0
+            ]
+            return len(search_metas), search_metas[begin_pos : begin_pos + num]
 
     def delete_meta_data(self, key):
         """
@@ -116,7 +132,7 @@ class MetaHelper(object):
         清除未识别的缓存记录，以便重新检索TMDB
         """
         for key in list(self._meta_data):
-            if str(self._meta_data.get(key, {}).get("id")) == '0':
+            if str(self._meta_data.get(key, {}).get("id")) == "0":
                 with lock:
                     self._meta_data.pop(key)
 
@@ -129,8 +145,10 @@ class MetaHelper(object):
         """
         with lock:
             if self._meta_data.get(key):
-                self._meta_data[key]['title'] = title
-                self._meta_data[key][CACHE_EXPIRE_TIMESTAMP_STR] = int(time.time()) + EXPIRE_TIMESTAMP
+                self._meta_data[key]["title"] = title
+                self._meta_data[key][CACHE_EXPIRE_TIMESTAMP_STR] = (
+                    int(time.time()) + EXPIRE_TIMESTAMP
+                )
             return self._meta_data.get(key)
 
     @staticmethod
@@ -140,7 +158,7 @@ class MetaHelper(object):
         """
         try:
             if os.path.exists(path):
-                with open(path, 'rb') as f:
+                with open(path, "rb") as f:
                     data = pickle.load(f)
                 return data
             return {}
@@ -165,14 +183,16 @@ class MetaHelper(object):
         保存缓存数据到文件
         """
         meta_data = self.__load_meta_data(self._meta_path)
-        new_meta_data = {k: v for k, v in self._meta_data.items() if str(v.get("id")) != '0'}
+        new_meta_data = {k: v for k, v in self._meta_data.items() if str(v.get("id")) != "0"}
 
-        if not force \
-                and not self._random_sample(new_meta_data) \
-                and meta_data.keys() == new_meta_data.keys():
+        if (
+            not force
+            and not self._random_sample(new_meta_data)
+            and meta_data.keys() == new_meta_data.keys()
+        ):
             return
 
-        with open(self._meta_path, 'wb') as f:
+        with open(self._meta_path, "wb") as f:
             pickle.dump(new_meta_data, f, pickle.HIGHEST_PROTOCOL)
 
     def _random_sample(self, new_meta_data):
@@ -226,4 +246,4 @@ class MetaHelper(object):
         cache_media_info = self._meta_data.get(key)
         if not cache_media_info:
             return
-        self._meta_data[key]['title'] = cn_title
+        self._meta_data[key]["title"] = cn_title

@@ -23,8 +23,7 @@ class MediaServer:
 
     def __init__(self):
         self._mediaserver_schemas = SubmoduleHelper.import_submodules(
-            'app.mediaserver.client',
-            filter_func=lambda _, obj: hasattr(obj, 'schema')
+            "app.mediaserver.client", filter_func=lambda _, obj: hasattr(obj, "schema")
         )
         log.debug(f"【MediaServer】: 已经加载的媒体服务器：{self._mediaserver_schemas}")
         self.init_config()
@@ -33,7 +32,7 @@ class MediaServer:
         self.mediadb = MediaDb()
         self.progress = ProgressHelper()
         # 当前使用的媒体库服务器
-        _type = Config().get_config('media').get('media_server') or 'emby'
+        _type = Config().get_config("media").get("media_server") or "emby"
         self._server_type = ModuleConf.MEDIASERVER_DICT.get(_type)
         self._server = None
 
@@ -107,9 +106,7 @@ class MediaServer:
             return None
         return self.server.get_image_by_id(item_id, image_type)
 
-    def get_no_exists_episodes(self, meta_info,
-                               season_number,
-                               episode_count):
+    def get_no_exists_episodes(self, meta_info, season_number, episode_count):
         """
         根据标题、年份、季、总集数，查询媒体服务器中缺少哪几集
         :param meta_info: 已识别的需要查询的媒体信息
@@ -119,9 +116,7 @@ class MediaServer:
         """
         if not self.server:
             return None
-        return self.server.get_no_exists_episodes(meta_info,
-                                                  season_number,
-                                                  episode_count)
+        return self.server.get_no_exists_episodes(meta_info, season_number, episode_count)
 
     def get_movies(self, title, year=None):
         """
@@ -181,30 +176,35 @@ class MediaServer:
             self.mediadb.empty()
             for library in self.get_libraries():
                 # 获取媒体库所有项目
-                self.progress.update(ptype="mediasync",
-                                     text="正在获取 %s 数据..." % (library.get("name")))
+                self.progress.update(
+                    ptype="mediasync", text="正在获取 %s 数据..." % (library.get("name"))
+                )
                 for item in self.get_items(library.get("id")):
                     if not item:
                         continue
                     if self.mediadb.insert(self._server_type.value, item):
                         total_count += 1
-                        if item.get("type") in ['Movie', 'movie']:
+                        if item.get("type") in ["Movie", "movie"]:
                             movie_count += 1
-                        elif item.get("type") in ['Series', 'show']:
+                        elif item.get("type") in ["Series", "show"]:
                             tv_count += 1
-                        self.progress.update(ptype="mediasync",
-                                             text="正在同步 %s，已完成：%s / %s ..." % (
-                                                 library.get("name"), total_count, total_media_count),
-                                             value=round(100 * total_count / total_media_count, 1))
+                        self.progress.update(
+                            ptype="mediasync",
+                            text="正在同步 %s，已完成：%s / %s ..."
+                            % (library.get("name"), total_count, total_media_count),
+                            value=round(100 * total_count / total_media_count, 1),
+                        )
             # 更新总体同步情况
-            self.mediadb.statistics(server_type=self._server_type.value,
-                                    total_count=total_count,
-                                    movie_count=movie_count,
-                                    tv_count=tv_count)
+            self.mediadb.statistics(
+                server_type=self._server_type.value,
+                total_count=total_count,
+                movie_count=movie_count,
+                tv_count=tv_count,
+            )
             # 结束进度条
-            self.progress.update(ptype="mediasync",
-                                 value=100,
-                                 text="媒体库数据同步完成，同步数量：%s" % total_count)
+            self.progress.update(
+                ptype="mediasync", value=100, text="媒体库数据同步完成，同步数量：%s" % total_count
+            )
             self.progress.end("mediasync")
             log.info("【MediaServer】媒体库数据同步完成，同步数量：%s" % total_count)
 
@@ -212,10 +212,9 @@ class MediaServer:
         """
         检查媒体库是否已存在某项目，非实时同步数据，仅用于展示
         """
-        return self.mediadb.exists(server_type=self._server_type.value,
-                                   title=title,
-                                   year=year,
-                                   tmdbid=tmdbid)
+        return self.mediadb.exists(
+            server_type=self._server_type.value, title=title, year=year, tmdbid=tmdbid
+        )
 
     def get_mediasync_status(self):
         """
@@ -225,7 +224,11 @@ class MediaServer:
         if not status:
             return {}
         else:
-            return {"movie_count": status.MOVIE_COUNT, "tv_count": status.TV_COUNT, "time": status.UPDATE_TIME}
+            return {
+                "movie_count": status.MOVIE_COUNT,
+                "tv_count": status.TV_COUNT,
+                "time": status.UPDATE_TIME,
+            }
 
     def get_iteminfo(self, itemid):
         """

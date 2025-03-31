@@ -2,7 +2,7 @@ import requests
 
 import log
 from app.helper import ChromeHelper, SubmoduleHelper
-from app.utils import RequestUtils, ExceptionUtils
+from app.utils import ExceptionUtils, RequestUtils
 from app.utils.commons import singleton
 from config import Config
 
@@ -11,8 +11,9 @@ from config import Config
 class SiteUserInfoFactory(object):
 
     def __init__(self):
-        self._site_schema = SubmoduleHelper.import_submodules('app.sites.siteuserinfo',
-                                                              filter_func=lambda _, obj: hasattr(obj, 'schema'))
+        self._site_schema = SubmoduleHelper.import_submodules(
+            "app.sites.siteuserinfo", filter_func=lambda _, obj: hasattr(obj, "schema")
+        )
         self._site_schema.sort(key=lambda x: x.order)
         log.debug(f"【Sites】: 已经加载的站点解析 {self._site_schema}")
 
@@ -46,11 +47,9 @@ class SiteUserInfoFactory(object):
             html_text = chrome.get_html()
         else:
             proxies = Config().get_proxies() if proxy else None
-            res = RequestUtils(cookies=site_cookie,
-                               session=session,
-                               headers=ua,
-                               proxies=proxies
-                               ).get_res(url=url)
+            res = RequestUtils(
+                cookies=site_cookie, session=session, headers=ua, proxies=proxies
+            ).get_res(url=url)
             if res and res.status_code == 200:
                 if "charset=utf-8" in res.text or "charset=UTF-8" in res.text:
                     res.encoding = "UTF-8"
@@ -62,13 +61,12 @@ class SiteUserInfoFactory(object):
                     i = html_text.find("window.location")
                     if i == -1:
                         return None
-                    tmp_url = url + html_text[i:html_text.find(";")] \
-                        .replace("\"", "").replace("+", "").replace(" ", "").replace("window.location=", "")
-                    res = RequestUtils(cookies=site_cookie,
-                                       session=session,
-                                       headers=ua,
-                                       proxies=proxies
-                                       ).get_res(url=tmp_url)
+                    tmp_url = url + html_text[i : html_text.find(";")].replace('"', "").replace(
+                        "+", ""
+                    ).replace(" ", "").replace("window.location=", "")
+                    res = RequestUtils(
+                        cookies=site_cookie, session=session, headers=ua, proxies=proxies
+                    ).get_res(url=tmp_url)
                     if res and res.status_code == 200:
                         if "charset=utf-8" in res.text or "charset=UTF-8" in res.text:
                             res.encoding = "UTF-8"
@@ -78,16 +76,17 @@ class SiteUserInfoFactory(object):
                         if not html_text:
                             return None
                     else:
-                        log.error("【Sites】站点 %s 被反爬限制：%s, 状态码：%s" % (site_name, url, res.status_code))
+                        log.error(
+                            "【Sites】站点 %s 被反爬限制：%s, 状态码：%s"
+                            % (site_name, url, res.status_code)
+                        )
                         return None
 
                 # 兼容假首页情况，假首页通常没有 <link rel="search" 属性
                 if '"search"' not in html_text and '"csrf-token"' not in html_text:
-                    res = RequestUtils(cookies=site_cookie,
-                                       session=session,
-                                       headers=ua,
-                                       proxies=proxies
-                                       ).get_res(url=url + "/index.php")
+                    res = RequestUtils(
+                        cookies=site_cookie, session=session, headers=ua, proxies=proxies
+                    ).get_res(url=url + "/index.php")
                     if res and res.status_code == 200:
                         if "charset=utf-8" in res.text or "charset=UTF-8" in res.text:
                             res.encoding = "UTF-8"

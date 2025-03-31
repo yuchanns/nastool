@@ -1,7 +1,7 @@
 from pypushdeer import PushDeer
 
 from app.message.client._base import _IMessageClient
-from app.utils import StringUtils, ExceptionUtils
+from app.utils import ExceptionUtils, StringUtils
 
 
 class PushDeerClient(_IMessageClient):
@@ -17,8 +17,8 @@ class PushDeerClient(_IMessageClient):
 
     def init_config(self):
         if self._client_config:
-            self._server = StringUtils.get_base_url(self._client_config.get('server'))
-            self._apikey = self._client_config.get('apikey')
+            self._server = StringUtils.get_base_url(self._client_config.get("server"))
+            self._apikey = self._client_config.get("apikey")
 
     @classmethod
     def match(cls, ctype):

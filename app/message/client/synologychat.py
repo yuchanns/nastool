@@ -1,6 +1,6 @@
 import json
-from urllib.parse import quote
 from threading import Lock
+from urllib.parse import quote
 
 from app.message.client._base import _IMessageClient
 from app.utils import ExceptionUtils, RequestUtils, StringUtils
@@ -32,7 +32,7 @@ class SynologyChat(_IMessageClient):
             self._webhook_url = self._client_config.get("webhook_url")
             if self._webhook_url:
                 self._domain = StringUtils.get_base_url(self._webhook_url)
-            self._token = self._client_config.get('token')
+            self._token = self._client_config.get("token")
 
     @classmethod
     def match(cls, ctype):
@@ -57,13 +57,13 @@ class SynologyChat(_IMessageClient):
             return False, "参数未配置"
         try:
             # 拼装消息内容
-            titles = str(title).split('\n')
+            titles = str(title).split("\n")
             if len(titles) > 1:
                 title = titles[0]
                 if not text:
                     text = "\n".join(titles[1:])
                 else:
-                    text = f"%s\n%s" % ("\n".join(titles[1:]), text)
+                    text = "%s\n%s" % ("\n".join(titles[1:]), text)
 
             if text:
                 caption = "*%s*\n%s" % (title, text.replace("\n\n", "\n"))
@@ -71,16 +71,16 @@ class SynologyChat(_IMessageClient):
                 caption = title
             if url and image:
                 caption = f"{caption}\n\n<{url}|查看详情>"
-            payload_data = {'text': quote(caption)}
+            payload_data = {"text": quote(caption)}
             if image:
-                payload_data['file_url'] = quote(image)
+                payload_data["file_url"] = quote(image)
             if user_id:
-                payload_data['user_ids'] = [int(user_id)]
+                payload_data["user_ids"] = [int(user_id)]
             else:
                 userids = self.__get_bot_users()
                 if not userids:
                     return False, "机器人没有对任何用户可见"
-                payload_data['user_ids'] = userids
+                payload_data["user_ids"] = userids
             return self.__send_request(payload_data)
 
         except Exception as msg_e:
@@ -103,29 +103,29 @@ class SynologyChat(_IMessageClient):
                 if not image:
                     image = media.get_message_image()
                 if media.get_vote_string():
-                    caption = "%s\n%s. <%s|%s>\n%s，%s" % (caption,
-                                                          index,
-                                                          media.get_detail_url(),
-                                                          media.get_title_string(),
-                                                          media.get_type_string(),
-                                                          media.get_vote_string())
+                    caption = "%s\n%s. <%s|%s>\n%s，%s" % (
+                        caption,
+                        index,
+                        media.get_detail_url(),
+                        media.get_title_string(),
+                        media.get_type_string(),
+                        media.get_vote_string(),
+                    )
                 else:
-                    caption = "%s\n%s. <%s|%s>\n%s" % (caption,
-                                                       index,
-                                                       media.get_detail_url(),
-                                                       media.get_title_string(),
-                                                       media.get_type_string())
+                    caption = "%s\n%s. <%s|%s>\n%s" % (
+                        caption,
+                        index,
+                        media.get_detail_url(),
+                        media.get_title_string(),
+                        media.get_type_string(),
+                    )
                 index += 1
 
             if user_id:
                 user_ids = [int(user_id)]
             else:
                 user_ids = self.__get_bot_users()
-            payload_data = {
-                "text": quote(caption),
-                "file_url": quote(image),
-                "user_ids": user_ids
-            }
+            payload_data = {"text": quote(caption), "file_url": quote(image), "user_ids": user_ids}
             return self.__send_request(payload_data)
         except Exception as msg_e:
             ExceptionUtils.exception_traceback(msg_e)
@@ -137,9 +137,11 @@ class SynologyChat(_IMessageClient):
         """
         if not self._domain or not self._token:
             return []
-        req_url = f"{self._domain}" \
-                  f"/webapi/entry.cgi?api=SYNO.Chat.External&method=user_list&version=2&token=" \
-                  f"{self._token}"
+        req_url = (
+            f"{self._domain}"
+            f"/webapi/entry.cgi?api=SYNO.Chat.External&method=user_list&version=2&token="
+            f"{self._token}"
+        )
         ret = self._req.get_res(url=req_url)
         if ret and ret.status_code == 200:
             users = ret.json().get("data", {}).get("users", []) or []
@@ -156,8 +158,8 @@ class SynologyChat(_IMessageClient):
         if ret and ret.status_code == 200:
             result = ret.json()
             if result:
-                errno = result.get('error', {}).get('code')
-                errmsg = result.get('error', {}).get('errors')
+                errno = result.get("error", {}).get("code")
+                errmsg = result.get("error", {}).get("errors")
                 if not errno:
                     return True, ""
                 return False, f"{errno}-{errmsg}"

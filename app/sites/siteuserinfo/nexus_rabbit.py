@@ -20,11 +20,13 @@ class NexusRabbitSiteUserInfo(NexusPhpSiteUserInfo):
             return False
 
         printable_text = html.xpath("string(.)") if html else ""
-        return 'Style by Rabbit' in printable_text
+        return "Style by Rabbit" in printable_text
 
     def _parse_site_page(self, html_text):
         super()._parse_site_page(html_text)
-        self._torrent_seeding_page = f"getusertorrentlistajax.php?page=1&limit=5000000&type=seeding&uid={self.userid}"
+        self._torrent_seeding_page = (
+            f"getusertorrentlistajax.php?page=1&limit=5000000&type=seeding&uid={self.userid}"
+        )
         self._torrent_seeding_headers = {"Accept": "application/json, text/javascript, */*; q=0.01"}
 
     def _parse_user_torrent_seeding_info(self, html_text, multi_page=False):
@@ -36,7 +38,7 @@ class NexusRabbitSiteUserInfo(NexusPhpSiteUserInfo):
         """
 
         try:
-            torrents = json.loads(html_text).get('data')
+            torrents = json.loads(html_text).get("data")
         except Exception as e:
             ExceptionUtils.exception_traceback(e)
             return
@@ -46,9 +48,9 @@ class NexusRabbitSiteUserInfo(NexusPhpSiteUserInfo):
 
         page_seeding = len(torrents)
         for torrent in torrents:
-            seeders = int(torrent.get('seeders', 0))
-            size = int(torrent.get('size', 0))
-            page_seeding_size += int(torrent.get('size', 0))
+            seeders = int(torrent.get("seeders", 0))
+            size = int(torrent.get("size", 0))
+            page_seeding_size += int(torrent.get("size", 0))
 
             page_seeding_info.append([seeders, size])
 

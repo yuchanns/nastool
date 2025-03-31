@@ -37,13 +37,17 @@ class Bangumi(object):
         """
         获取每日放送
         """
-        return self.__invoke(self._urls["calendar"], _ts=datetime.strftime(datetime.now(), '%Y%m%d'))
+        return self.__invoke(
+            self._urls["calendar"], _ts=datetime.strftime(datetime.now(), "%Y%m%d")
+        )
 
     def detail(self, bid):
         """
         获取番剧详情
         """
-        return self.__invoke(self._urls["detail"] % bid, _ts=datetime.strftime(datetime.now(), '%Y%m%d'))
+        return self.__invoke(
+            self._urls["detail"] % bid, _ts=datetime.strftime(datetime.now(), "%Y%m%d")
+        )
 
     @staticmethod
     def __dict_item(item, weekday):
@@ -63,20 +67,20 @@ class Bangumi(object):
         if images:
             image = images.get("large")
         else:
-            image = ''
+            image = ""
         summary = item.get("summary")
         return {
-            'id': "BG:%s" % bid,
-            'orgid': bid,
-            'title': title,
-            'year': air_date[:4] if air_date else "",
-            'type': 'TV',
-            'media_type': MediaType.TV.value,
-            'vote': score,
-            'image': image,
-            'overview': summary,
-            'url': detail,
-            'weekday': weekday
+            "id": "BG:%s" % bid,
+            "orgid": bid,
+            "title": title,
+            "year": air_date[:4] if air_date else "",
+            "type": "TV",
+            "media_type": MediaType.TV.value,
+            "vote": score,
+            "image": image,
+            "overview": summary,
+            "url": detail,
+            "weekday": weekday,
         }
 
     def get_bangumi_calendar(self, page=1, week=None):

@@ -22,9 +22,11 @@ class Rarbg:
     def __get_token(self):
         if self._token:
             return
-        res = self._req.get_res(url=self._api_url, params={'app_id': self._appid, 'get_token': 'get_token'})
+        res = self._req.get_res(
+            url=self._api_url, params={"app_id": self._appid, "get_token": "get_token"}
+        )
         if res and res.json():
-            self._token = res.json().get('token')
+            self._token = res.json().get("token")
 
     def search(self, keyword, indexer, imdb_id=None):
         if not keyword:
@@ -33,29 +35,39 @@ class Rarbg:
         if not self._token:
             log.warn(f"【INDEXER】{indexer.name} 未获取到token，无法搜索")
             return []
-        params = {'app_id': self._appid, 'mode': 'search', 'token': self._token, 'format': 'json_extended', 'limit': 100}
+        params = {
+            "app_id": self._appid,
+            "mode": "search",
+            "token": self._token,
+            "format": "json_extended",
+            "limit": 100,
+        }
         if imdb_id:
-            params['search_imdb'] = imdb_id
+            params["search_imdb"] = imdb_id
         else:
-            params['search_string'] = keyword
+            params["search_string"] = keyword
         res = self._req.get_res(url=self._api_url, params=params)
         torrents = []
         if res and res.status_code == 200:
-            results = res.json().get('torrent_results') or []
+            results = res.json().get("torrent_results") or []
             for result in results:
-                if not result or not result.get('title'):
+                if not result or not result.get("title"):
                     continue
-                torrent = {'indexer': indexer.id,
-                           'title': result.get('title'),
-                           'enclosure': result.get('download'),
-                           'size': result.get('size'),
-                           'seeders': result.get('seeders'),
-                           'peers': result.get('leechers'),
-                           'freeleech': True,
-                           'downloadvolumefactor': 0.0,
-                           'uploadvolumefactor': 1.0,
-                           'page_url': result.get('info_page'),
-                           'imdbid': result.get('episode_info').get('imdb') if result.get('episode_info') else ''}
+                torrent = {
+                    "indexer": indexer.id,
+                    "title": result.get("title"),
+                    "enclosure": result.get("download"),
+                    "size": result.get("size"),
+                    "seeders": result.get("seeders"),
+                    "peers": result.get("leechers"),
+                    "freeleech": True,
+                    "downloadvolumefactor": 0.0,
+                    "uploadvolumefactor": 1.0,
+                    "page_url": result.get("info_page"),
+                    "imdbid": (
+                        result.get("episode_info").get("imdb") if result.get("episode_info") else ""
+                    ),
+                }
                 torrents.append(torrent)
         elif res is not None:
             log.warn(f"【INDEXER】{indexer.name} 搜索失败，错误码：{res.status_code}")

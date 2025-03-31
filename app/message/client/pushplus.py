@@ -2,7 +2,7 @@ import time
 from urllib.parse import urlencode
 
 from app.message.client._base import _IMessageClient
-from app.utils import RequestUtils, ExceptionUtils
+from app.utils import ExceptionUtils, RequestUtils
 
 
 class PushPlus(_IMessageClient):
@@ -20,10 +20,10 @@ class PushPlus(_IMessageClient):
 
     def init_config(self):
         if self._client_config:
-            self._token = self._client_config.get('token')
-            self._topic = self._client_config.get('topic')
-            self._channel = self._client_config.get('channel')
-            self._webhook = self._client_config.get('webhook')
+            self._token = self._client_config.get("token")
+            self._topic = self._client_config.get("topic")
+            self._channel = self._client_config.get("channel")
+            self._webhook = self._client_config.get("webhook")
 
     @classmethod
     def match(cls, ctype):
@@ -52,7 +52,7 @@ class PushPlus(_IMessageClient):
                 "webhook": self._webhook,
                 "title": title,
                 "content": text,
-                "timestamp": time.time_ns() + 60
+                "timestamp": time.time_ns() + 60,
             }
             sc_url = "http://www.pushplus.plus/send?%s" % urlencode(values)
             res = RequestUtils().get_res(sc_url)

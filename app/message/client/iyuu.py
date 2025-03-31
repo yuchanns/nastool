@@ -1,7 +1,7 @@
 from urllib.parse import urlencode
 
 from app.message.client._base import _IMessageClient
-from app.utils import RequestUtils, ExceptionUtils
+from app.utils import ExceptionUtils, RequestUtils
 
 
 class IyuuMsg(_IMessageClient):
@@ -16,7 +16,7 @@ class IyuuMsg(_IMessageClient):
 
     def init_config(self):
         if self._client_config:
-            self._token = self._client_config.get('token')
+            self._token = self._client_config.get("token")
 
     @classmethod
     def match(cls, ctype):
@@ -36,12 +36,15 @@ class IyuuMsg(_IMessageClient):
         if not self._token:
             return False, "参数未配置"
         try:
-            sc_url = "http://iyuu.cn/%s.send?%s" % (self._token, urlencode({"text": title, "desp": text}))
+            sc_url = "http://iyuu.cn/%s.send?%s" % (
+                self._token,
+                urlencode({"text": title, "desp": text}),
+            )
             res = RequestUtils().get_res(sc_url)
             if res:
                 ret_json = res.json()
-                errno = ret_json.get('errcode')
-                error = ret_json.get('errmsg')
+                errno = ret_json.get("errcode")
+                error = ret_json.get("errmsg")
                 if errno == 0:
                     return True, error
                 else:

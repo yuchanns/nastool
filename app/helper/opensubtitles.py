@@ -21,13 +21,17 @@ class OpenSubtitles:
         if query.get("imdbid"):
             return self.__search_subtitles_by_imdbid(query.get("imdbid"))
         else:
-            return self.__search_subtitles_by_keyword("%s %s" % (query.get("name"), query.get("year")))
+            return self.__search_subtitles_by_keyword(
+                "%s %s" % (query.get("name"), query.get("year"))
+            )
 
     def __search_subtitles_by_imdbid(self, imdbid):
         """
         按TMDBID搜索OpenSubtitles
         """
-        return self.__parse_opensubtitles_results(url=self._url_imdbid % str(imdbid).replace("tt", ""))
+        return self.__parse_opensubtitles_results(
+            url=self._url_imdbid % str(imdbid).replace("tt", "")
+        )
 
     def __search_subtitles_by_keyword(self, keyword):
         """
@@ -56,8 +60,8 @@ class OpenSubtitles:
         # 解析列表
         ret_subtitles = []
         html_doc = PyQuery(html_text)
-        global_season = ''
-        for tr in html_doc('#search_results > tbody > tr:not([style])'):
+        global_season = ""
+        for tr in html_doc("#search_results > tbody > tr:not([style])"):
             tr_doc = PyQuery(tr)
             # 季
             season = tr_doc('span[id^="season-"] > a > b').text()
@@ -67,13 +71,13 @@ class OpenSubtitles:
             # 集
             episode = tr_doc('span[itemprop="episodeNumber"]').text()
             # 标题
-            title = tr_doc('strong > a.bnone').text()
+            title = tr_doc("strong > a.bnone").text()
             # 描述 下载链接
             if not global_season:
-                description = tr_doc('td:nth-child(1)').text()
+                description = tr_doc("td:nth-child(1)").text()
                 if description and len(description.split("\n")) > 1:
                     description = description.split("\n")[1]
-                link = tr_doc('td:nth-child(5) > a').attr("href")
+                link = tr_doc("td:nth-child(5) > a").attr("href")
             else:
                 description = tr_doc('span[itemprop="name"]').text()
                 link = tr_doc('a[href^="/download/"]').attr("href")
@@ -81,13 +85,15 @@ class OpenSubtitles:
                 link = "https://www.opensubtitles.org%s" % link
             else:
                 continue
-            ret_subtitles.append({
-                "season": global_season,
-                "episode": episode,
-                "title": title,
-                "description": description,
-                "link": link
-            })
+            ret_subtitles.append(
+                {
+                    "season": global_season,
+                    "episode": episode,
+                    "title": title,
+                    "description": description,
+                    "link": link,
+                }
+            )
         return ret_subtitles
 
     def get_cookie(self):

@@ -1,5 +1,5 @@
 # coding: utf-8
-from sqlalchemy import Column, Float, Index, Integer, Text, text, Sequence
+from sqlalchemy import Column, Float, Index, Integer, Sequence, Text, text
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -7,18 +7,18 @@ BaseMedia = declarative_base()
 
 
 class CONFIGFILTERGROUP(Base):
-    __tablename__ = 'CONFIG_FILTER_GROUP'
+    __tablename__ = "CONFIG_FILTER_GROUP"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     GROUP_NAME = Column(Text)
     IS_DEFAULT = Column(Text)
     NOTE = Column(Text)
 
 
 class CONFIGFILTERRULES(Base):
-    __tablename__ = 'CONFIG_FILTER_RULES'
+    __tablename__ = "CONFIG_FILTER_RULES"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     GROUP_ID = Column(Text, index=True)
     ROLE_NAME = Column(Text)
     PRIORITY = Column(Text)
@@ -29,9 +29,9 @@ class CONFIGFILTERRULES(Base):
 
 
 class CONFIGRSSPARSER(Base):
-    __tablename__ = 'CONFIG_RSS_PARSER'
+    __tablename__ = "CONFIG_RSS_PARSER"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     NAME = Column(Text, index=True)
     TYPE = Column(Text)
     FORMAT = Column(Text)
@@ -41,9 +41,9 @@ class CONFIGRSSPARSER(Base):
 
 
 class CONFIGSITE(Base):
-    __tablename__ = 'CONFIG_SITE'
+    __tablename__ = "CONFIG_SITE"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     NAME = Column(Text)
     PRI = Column(Text)
     RSSURL = Column(Text)
@@ -56,9 +56,9 @@ class CONFIGSITE(Base):
 
 
 class CONFIGSYNCPATHS(Base):
-    __tablename__ = 'CONFIG_SYNC_PATHS'
+    __tablename__ = "CONFIG_SYNC_PATHS"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     SOURCE = Column(Text)
     DEST = Column(Text)
     UNKNOWN = Column(Text)
@@ -69,18 +69,18 @@ class CONFIGSYNCPATHS(Base):
 
 
 class CONFIGUSERS(Base):
-    __tablename__ = 'CONFIG_USERS'
+    __tablename__ = "CONFIG_USERS"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     NAME = Column(Text, index=True)
     PASSWORD = Column(Text)
     PRIS = Column(Text)
 
 
 class CONFIGUSERRSS(Base):
-    __tablename__ = 'CONFIG_USER_RSS'
+    __tablename__ = "CONFIG_USER_RSS"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     NAME = Column(Text, index=True)
     ADDRESS = Column(Text)
     PARSER = Column(Text)
@@ -103,9 +103,9 @@ class CONFIGUSERRSS(Base):
 
 
 class CUSTOMWORDS(Base):
-    __tablename__ = 'CUSTOM_WORDS'
+    __tablename__ = "CUSTOM_WORDS"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     REPLACED = Column(Text)
     REPLACE = Column(Text)
     FRONT = Column(Text)
@@ -121,9 +121,9 @@ class CUSTOMWORDS(Base):
 
 
 class CUSTOMWORDGROUPS(Base):
-    __tablename__ = 'CUSTOM_WORD_GROUPS'
+    __tablename__ = "CUSTOM_WORD_GROUPS"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     TITLE = Column(Text)
     YEAR = Column(Text)
     TYPE = Column(Integer)
@@ -133,12 +133,10 @@ class CUSTOMWORDGROUPS(Base):
 
 
 class DOUBANMEDIAS(Base):
-    __tablename__ = 'DOUBAN_MEDIAS'
-    __table_args__ = (
-        Index('INDX_DOUBAN_MEDIAS_NAME', 'NAME', 'YEAR'),
-    )
+    __tablename__ = "DOUBAN_MEDIAS"
+    __table_args__ = (Index("INDX_DOUBAN_MEDIAS_NAME", "NAME", "YEAR"),)
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     NAME = Column(Text)
     YEAR = Column(Text)
     TYPE = Column(Text)
@@ -152,9 +150,9 @@ class DOUBANMEDIAS(Base):
 
 
 class DOWNLOADHISTORY(Base):
-    __tablename__ = 'DOWNLOAD_HISTORY'
+    __tablename__ = "DOWNLOAD_HISTORY"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     TITLE = Column(Text, index=True)
     YEAR = Column(Text)
     TYPE = Column(Text)
@@ -173,9 +171,9 @@ class DOWNLOADHISTORY(Base):
 
 
 class DOWNLOADSETTING(Base):
-    __tablename__ = 'DOWNLOAD_SETTING'
+    __tablename__ = "DOWNLOAD_SETTING"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     NAME = Column(Text)
     CATEGORY = Column(Text)
     TAGS = Column(Text)
@@ -190,9 +188,9 @@ class DOWNLOADSETTING(Base):
 
 
 class MESSAGECLIENT(Base):
-    __tablename__ = 'MESSAGE_CLIENT'
+    __tablename__ = "MESSAGE_CLIENT"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     NAME = Column(Text)
     TYPE = Column(Text)
     CONFIG = Column(Text)
@@ -203,9 +201,9 @@ class MESSAGECLIENT(Base):
 
 
 class RSSHISTORY(Base):
-    __tablename__ = 'RSS_HISTORY'
+    __tablename__ = "RSS_HISTORY"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     TYPE = Column(Text)
     RSSID = Column(Text, index=True)
     NAME = Column(Text)
@@ -224,9 +222,9 @@ class RSSHISTORY(Base):
 
 
 class RSSMOVIES(Base):
-    __tablename__ = 'RSS_MOVIES'
+    __tablename__ = "RSS_MOVIES"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     NAME = Column(Text, index=True)
     YEAR = Column(Text)
     KEYWORD = Column(Text)
@@ -252,12 +250,10 @@ class RSSMOVIES(Base):
 
 
 class RSSTORRENTS(Base):
-    __tablename__ = 'RSS_TORRENTS'
-    __table_args__ = (
-        Index('INDX_RSS_TORRENTS_NAME', 'TITLE', 'YEAR', 'SEASON', 'EPISODE'),
-    )
+    __tablename__ = "RSS_TORRENTS"
+    __table_args__ = (Index("INDX_RSS_TORRENTS_NAME", "TITLE", "YEAR", "SEASON", "EPISODE"),)
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     TORRENT_NAME = Column(Text)
     ENCLOSURE = Column(Text, index=True)
     TYPE = Column(Text)
@@ -268,9 +264,9 @@ class RSSTORRENTS(Base):
 
 
 class RSSTVS(Base):
-    __tablename__ = 'RSS_TVS'
+    __tablename__ = "RSS_TVS"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     NAME = Column(Text, index=True)
     YEAR = Column(Text)
     KEYWORD = Column(Text)
@@ -301,17 +297,17 @@ class RSSTVS(Base):
 
 
 class RSSTVEPISODES(Base):
-    __tablename__ = 'RSS_TV_EPISODES'
+    __tablename__ = "RSS_TV_EPISODES"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     RSSID = Column(Text, index=True)
     EPISODES = Column(Text)
 
 
 class TORRENTREMOVETASK(Base):
-    __tablename__ = 'TORRENT_REMOVE_TASK'
+    __tablename__ = "TORRENT_REMOVE_TASK"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     NAME = Column(Text)
     ACTION = Column(Integer)
     INTERVAL = Column(Integer)
@@ -324,9 +320,9 @@ class TORRENTREMOVETASK(Base):
 
 
 class SEARCHRESULTINFO(Base):
-    __tablename__ = 'SEARCH_RESULT_INFO'
+    __tablename__ = "SEARCH_RESULT_INFO"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     TORRENT_NAME = Column(Text)
     ENCLOSURE = Column(Text)
     DESCRIPTION = Column(Text)
@@ -356,9 +352,9 @@ class SEARCHRESULTINFO(Base):
 
 
 class SITEBRUSHDOWNLOADERS(Base):
-    __tablename__ = 'SITE_BRUSH_DOWNLOADERS'
+    __tablename__ = "SITE_BRUSH_DOWNLOADERS"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     NAME = Column(Text)
     TYPE = Column(Text)
     HOST = Column(Text)
@@ -373,9 +369,9 @@ class SITEBRUSHDOWNLOADERS(Base):
 
 
 class SITEBRUSHTASK(Base):
-    __tablename__ = 'SITE_BRUSH_TASK'
+    __tablename__ = "SITE_BRUSH_TASK"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     NAME = Column(Text, index=True)
     SITE = Column(Text)
     FREELEECH = Column(Text)
@@ -396,9 +392,9 @@ class SITEBRUSHTASK(Base):
 
 
 class SITEBRUSHTORRENTS(Base):
-    __tablename__ = 'SITE_BRUSH_TORRENTS'
+    __tablename__ = "SITE_BRUSH_TORRENTS"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     TASK_ID = Column(Text, index=True)
     TORRENT_NAME = Column(Text)
     TORRENT_SIZE = Column(Text)
@@ -412,13 +408,13 @@ class SITEBRUSHTORRENTS(Base):
 
 
 class SITESTATISTICSHISTORY(Base):
-    __tablename__ = 'SITE_STATISTICS_HISTORY'
+    __tablename__ = "SITE_STATISTICS_HISTORY"
     __table_args__ = (
-        Index('INDX_SITE_STATISTICS_HISTORY_DS', 'DATE', 'URL'),
-        Index('UN_INDX_SITE_STATISTICS_HISTORY_DS', 'DATE', 'URL', unique=True)
+        Index("INDX_SITE_STATISTICS_HISTORY_DS", "DATE", "URL"),
+        Index("UN_INDX_SITE_STATISTICS_HISTORY_DS", "DATE", "URL", unique=True),
     )
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     SITE = Column(Text)
     DATE = Column(Text)
     USER_LEVEL = Column(Text)
@@ -433,12 +429,10 @@ class SITESTATISTICSHISTORY(Base):
 
 
 class SITEUSERINFOSTATS(Base):
-    __tablename__ = 'SITE_USER_INFO_STATS'
-    __table_args__ = (
-        Index('INDX_SITE_USER_INFO_STATS_URL', 'URL'),
-    )
+    __tablename__ = "SITE_USER_INFO_STATS"
+    __table_args__ = (Index("INDX_SITE_USER_INFO_STATS_URL", "URL"),)
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     SITE = Column(Text, index=True)
     USERNAME = Column(Text)
     USER_LEVEL = Column(Text)
@@ -457,7 +451,7 @@ class SITEUSERINFOSTATS(Base):
 
 
 class SITEFAVICON(Base):
-    __tablename__ = 'SITE_FAVICON'
+    __tablename__ = "SITE_FAVICON"
 
     SITE = Column(Text, primary_key=True)
     URL = Column(Text)
@@ -465,9 +459,9 @@ class SITEFAVICON(Base):
 
 
 class SITEUSERSEEDINGINFO(Base):
-    __tablename__ = 'SITE_USER_SEEDING_INFO'
+    __tablename__ = "SITE_USER_SEEDING_INFO"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     SITE = Column(Text, index=True)
     SEEDING_INFO = Column(Text, server_default=text("'[]'"))
     UPDATE_AT = Column(Text)
@@ -475,21 +469,19 @@ class SITEUSERSEEDINGINFO(Base):
 
 
 class SYNCHISTORY(Base):
-    __tablename__ = 'SYNC_HISTORY'
+    __tablename__ = "SYNC_HISTORY"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     PATH = Column(Text, index=True)
     SRC = Column(Text)
     DEST = Column(Text)
 
 
 class SYSTEMDICT(Base):
-    __tablename__ = 'SYSTEM_DICT'
-    __table_args__ = (
-        Index('INDX_SYSTEM_DICT', 'TYPE', 'KEY'),
-    )
+    __tablename__ = "SYSTEM_DICT"
+    __table_args__ = (Index("INDX_SYSTEM_DICT", "TYPE", "KEY"),)
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     TYPE = Column(Text)
     KEY = Column(Text)
     VALUE = Column(Text)
@@ -497,16 +489,16 @@ class SYSTEMDICT(Base):
 
 
 class TRANSFERBLACKLIST(Base):
-    __tablename__ = 'TRANSFER_BLACKLIST'
+    __tablename__ = "TRANSFER_BLACKLIST"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     PATH = Column(Text, index=True)
 
 
 class TRANSFERHISTORY(Base):
-    __tablename__ = 'TRANSFER_HISTORY'
+    __tablename__ = "TRANSFER_HISTORY"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     MODE = Column(Text)
     TYPE = Column(Text)
     CATEGORY = Column(Text)
@@ -527,9 +519,9 @@ class TRANSFERHISTORY(Base):
 
 
 class TRANSFERUNKNOWN(Base):
-    __tablename__ = 'TRANSFER_UNKNOWN'
+    __tablename__ = "TRANSFER_UNKNOWN"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     PATH = Column(Text, index=True)
     DEST = Column(Text)
     MODE = Column(Text)
@@ -537,9 +529,9 @@ class TRANSFERUNKNOWN(Base):
 
 
 class USERRSSTASKHISTORY(Base):
-    __tablename__ = 'USERRSS_TASK_HISTORY'
+    __tablename__ = "USERRSS_TASK_HISTORY"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     TASK_ID = Column(Text, index=True)
     TITLE = Column(Text)
     DOWNLOADER = Column(Text)
@@ -547,12 +539,10 @@ class USERRSSTASKHISTORY(Base):
 
 
 class MEDIASYNCITEMS(BaseMedia):
-    __tablename__ = 'MEDIASYNC_ITEMS'
-    __table_args__ = (
-        Index('INDX_MEDIASYNC_ITEMS_SL', 'SERVER', 'LIBRARY'),
-    )
+    __tablename__ = "MEDIASYNC_ITEMS"
+    __table_args__ = (Index("INDX_MEDIASYNC_ITEMS_SL", "SERVER", "LIBRARY"),)
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     SERVER = Column(Text)
     LIBRARY = Column(Text)
     ITEM_ID = Column(Text, index=True)
@@ -568,9 +558,9 @@ class MEDIASYNCITEMS(BaseMedia):
 
 
 class MEDIASYNCSTATISTIC(BaseMedia):
-    __tablename__ = 'MEDIASYNC_STATISTICS'
+    __tablename__ = "MEDIASYNC_STATISTICS"
 
-    ID = Column(Integer, Sequence('ID'), primary_key=True)
+    ID = Column(Integer, Sequence("ID"), primary_key=True)
     SERVER = Column(Text, index=True)
     TOTAL_COUNT = Column(Text)
     MOVIE_COUNT = Column(Text)

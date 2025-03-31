@@ -18,7 +18,7 @@ class SystemConfig:
         # 用户自定义CSS/JavsScript
         "CustomScript": {},
         # 播放限速设置
-        "SpeedLimit": {}
+        "SpeedLimit": {},
     }
 
     def __init__(self):
@@ -28,9 +28,9 @@ class SystemConfig:
         """
         缓存系统设置
         """
+
         def __set_value(_key, _value):
-            if isinstance(_value, dict) \
-                    or isinstance(_value, list):
+            if isinstance(_value, dict) or isinstance(_value, list):
                 dict_value = DictHelper().get("SystemConfig", _key)
                 if dict_value:
                     self.systemconfig[_key] = json.loads(dict_value)
@@ -49,8 +49,7 @@ class SystemConfig:
         """
         设置系统设置
         """
-        if isinstance(value, dict) \
-                or isinstance(value, list):
+        if isinstance(value, dict) or isinstance(value, list):
             if value:
                 value = json.dumps(value)
             else:

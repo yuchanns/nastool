@@ -4,7 +4,7 @@ from urllib import parse
 
 import requests
 
-from app.utils import RequestUtils, ExceptionUtils
+from app.utils import ExceptionUtils, RequestUtils
 
 
 class Py115:
@@ -30,23 +30,23 @@ class Py115:
     # 获取目录ID
     def getdirid(self, tdir):
         try:
-            url = "https://webapi.115.com/files/getid?path=" + parse.quote(tdir or '/')
+            url = "https://webapi.115.com/files/getid?path=" + parse.quote(tdir or "/")
             p = self.req.get_res(url=url)
             if p:
                 rootobject = p.json()
                 if not rootobject.get("state"):
                     self.err = "获取目录 [{}]ID 错误：{}".format(tdir, rootobject["error"])
-                    return False, ''
+                    return False, ""
                 return True, rootobject.get("id")
         except Exception as result:
             ExceptionUtils.exception_traceback(result)
             self.err = "异常错误：{}".format(result)
-        return False, ''
+        return False, ""
 
     # 获取sign
     def getsign(self):
         try:
-            self.sign = ''
+            self.sign = ""
             url = "https://115.com/?ct=offline&ac=space&_=" + str(round(time.time() * 1000))
             p = self.req.get_res(url=url)
             if p:
@@ -64,7 +64,7 @@ class Py115:
     # 获取UID
     def getuid(self):
         try:
-            self.uid = ''
+            self.uid = ""
             url = "https://webapi.115.com/files?aid=1&cid=0&o=user_ptime&asc=0&offset=0&show_dir=1&limit=30&code=&scid=&snap=0&natsort=1&star=1&source=&format=json"
             p = self.req.get_res(url=url)
             if p:
@@ -85,9 +85,10 @@ class Py115:
             tasks = []
             url = "https://115.com/web/lixian/?ct=lixian&ac=task_lists"
             while True:
-                postdata = "page={}&uid={}&sign={}&time={}".format(page, self.uid, self.sign,
-                                                                   str(round(time.time() * 1000)))
-                p = self.req.post_res(url=url, params=postdata.encode('utf-8'))
+                postdata = "page={}&uid={}&sign={}&time={}".format(
+                    page, self.uid, self.sign, str(round(time.time() * 1000))
+                )
+                p = self.req.post_res(url=url, params=postdata.encode("utf-8"))
                 if p:
                     rootobject = p.json()
                     if not rootobject.get("state"):
@@ -109,7 +110,7 @@ class Py115:
         try:
             ret, dirid = self.getdirid(tdir)
             if not ret:
-                return False, ''
+                return False, ""
 
             # 转换为磁力
             if re.match("^https*://", content):
@@ -119,31 +120,36 @@ class Py115:
                         content = p.headers.get("Location")
                 except Exception as result:
                     ExceptionUtils.exception_traceback(result)
-                    content = str(result).replace("No connection adapters were found for '", "").replace("'", "")
+                    content = (
+                        str(result)
+                        .replace("No connection adapters were found for '", "")
+                        .replace("'", "")
+                    )
 
             url = "https://115.com/web/lixian/?ct=lixian&ac=add_task_url"
-            postdata = "url={}&savepath=&wp_path_id={}&uid={}&sign={}&time={}".format(parse.quote(content), dirid,
-                                                                                      self.uid, self.sign,
-                                                                                      str(round(time.time() * 1000)))
-            p = self.req.post_res(url=url, params=postdata.encode('utf-8'))
+            postdata = "url={}&savepath=&wp_path_id={}&uid={}&sign={}&time={}".format(
+                parse.quote(content), dirid, self.uid, self.sign, str(round(time.time() * 1000))
+            )
+            p = self.req.post_res(url=url, params=postdata.encode("utf-8"))
             if p:
                 rootobject = p.json()
                 if not rootobject.get("state"):
                     self.err = rootobject.get("error_msg")
-                    return False, ''
+                    return False, ""
                 return True, rootobject.get("info_hash")
         except Exception as result:
             ExceptionUtils.exception_traceback(result)
             self.err = "异常错误：{}".format(result)
-        return False, ''
+        return False, ""
 
     # 删除任务
     def deltask(self, thash):
         try:
             url = "https://115.com/web/lixian/?ct=lixian&ac=task_del"
-            postdata = "hash[0]={}&uid={}&sign={}&time={}".format(thash, self.uid, self.sign,
-                                                                  str(round(time.time() * 1000)))
-            p = self.req.post_res(url=url, params=postdata.encode('utf-8'))
+            postdata = "hash[0]={}&uid={}&sign={}&time={}".format(
+                thash, self.uid, self.sign, str(round(time.time() * 1000))
+            )
+            p = self.req.post_res(url=url, params=postdata.encode("utf-8"))
             if p:
                 rootobject = p.json()
                 if not rootobject.get("state"):
@@ -158,9 +164,10 @@ class Py115:
     # 根据ID获取文件夹路径
     def getiddir(self, tid):
         try:
-            path = '/'
+            path = "/"
             url = "https://aps.115.com/natsort/files.php?aid=1&cid={}&o=file_name&asc=1&offset=0&show_dir=1&limit=40&code=&scid=&snap=0&natsort=1&record_open_time=1&source=&format=json&fc_mix=0&type=&star=&is_share=&suffix=&custom_order=0".format(
-                tid)
+                tid
+            )
             p = self.req.get_res(url=url)
             if p:
                 rootobject = p.json()
@@ -171,7 +178,7 @@ class Py115:
                 for pathobject in patharray:
                     if pathobject.get("cid") == 0:
                         continue
-                    path += pathobject.get("name") + '/'
+                    path += pathobject.get("name") + "/"
                 if path == "/":
                     self.err = "文件路径不存在"
                     return False, path
@@ -179,4 +186,4 @@ class Py115:
         except Exception as result:
             ExceptionUtils.exception_traceback(result)
             self.err = "异常错误：{}".format(result)
-        return False, '/'
+        return False, "/"

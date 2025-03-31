@@ -31,16 +31,15 @@ class TNodeSpider(object):
         self.init_config()
 
     def init_config(self):
-        self._size = Config().get_config('pt').get('site_search_result_num') or 100
+        self._size = Config().get_config("pt").get("site_search_result_num") or 100
         self.__get_token()
 
     def __get_token(self):
         if not self._domain:
             return
-        res = RequestUtils(headers=self._ua,
-                           cookies=self._cookie,
-                           proxies=self._proxy,
-                           timeout=15).get_res(url=self._domain)
+        res = RequestUtils(
+            headers=self._ua, cookies=self._cookie, proxies=self._proxy, timeout=15
+        ).get_res(url=self._domain)
         if res and res.status_code == 200:
             csrf_token = re.search(r'<meta name="x-csrf-token" content="(.+?)">', res.text)
             if csrf_token:
@@ -63,36 +62,36 @@ class TNodeSpider(object):
             "videoCoding": [],
             "audioCoding": [],
             "resolution": [],
-            "group": []
+            "group": [],
         }
         res = RequestUtils(
             headers={
-                'X-CSRF-TOKEN': self._token,
+                "X-CSRF-TOKEN": self._token,
                 "Content-Type": "application/json; charset=utf-8",
-                "User-Agent": f"{self._ua}"
+                "User-Agent": f"{self._ua}",
             },
             cookies=self._cookie,
             proxies=self._proxy,
-            timeout=30
+            timeout=30,
         ).post_res(url=self._searchurl, json=params)
         torrents = []
         if res and res.status_code == 200:
-            results = res.json().get('data', {}).get("torrents") or []
+            results = res.json().get("data", {}).get("torrents") or []
             for result in results:
                 torrent = {
-                    'indexer': self._indexerid,
-                    'title': result.get('title'),
-                    'description': result.get('subtitle'),
-                    'enclosure': self._downloadurl % (self._domain, result.get('id')),
-                    'pubdate': StringUtils.timestamp_to_date(result.get('upload_time')),
-                    'size': result.get('size'),
-                    'seeders': result.get('seeding'),
-                    'peers': result.get('leeching'),
-                    'grabs': result.get('complete'),
-                    'downloadvolumefactor': result.get('downloadRate'),
-                    'uploadvolumefactor': result.get('uploadRate'),
-                    'page_url': self._pageurl % (self._domain, result.get('id')),
-                    'imdbid': result.get('imdb')
+                    "indexer": self._indexerid,
+                    "title": result.get("title"),
+                    "description": result.get("subtitle"),
+                    "enclosure": self._downloadurl % (self._domain, result.get("id")),
+                    "pubdate": StringUtils.timestamp_to_date(result.get("upload_time")),
+                    "size": result.get("size"),
+                    "seeders": result.get("seeding"),
+                    "peers": result.get("leeching"),
+                    "grabs": result.get("complete"),
+                    "downloadvolumefactor": result.get("downloadRate"),
+                    "uploadvolumefactor": result.get("uploadRate"),
+                    "page_url": self._pageurl % (self._domain, result.get("id")),
+                    "imdbid": result.get("imdb"),
                 }
                 torrents.append(torrent)
         elif res is not None:

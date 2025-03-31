@@ -2,14 +2,14 @@ import re
 from threading import Lock
 
 import requests
+from slack_bolt import App
+from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk.errors import SlackApiError
 
 import log
 from app.message.client._base import _IMessageClient
 from app.utils import ExceptionUtils
 from config import Config
-from slack_bolt import App
-from slack_bolt.adapter.socket_mode import SocketModeHandler
 
 lock = Lock()
 
@@ -45,32 +45,39 @@ class Slack(_IMessageClient):
             @slack_app.event("message")
             def slack_message(message):
                 local_res = requests.post(self._ds_url, json=message, timeout=10)
-                log.debug("【Slack】message: %s processed, response is: %s" % (message, local_res.text))
+                log.debug(
+                    "【Slack】message: %s processed, response is: %s" % (message, local_res.text)
+                )
 
             @slack_app.action(re.compile(r"actionId-\d+"))
             def slack_action(ack, body):
                 ack()
                 local_res = requests.post(self._ds_url, json=body, timeout=60)
-                log.debug("【Slack】message: %s processed, response is: %s" % (body, local_res.text))
+                log.debug(
+                    "【Slack】message: %s processed, response is: %s" % (body, local_res.text)
+                )
 
             @slack_app.event("app_mention")
             def slack_mention(say, body):
                 say(f"收到，请稍等... <@{body.get('event', {}).get('user')}>")
                 local_res = requests.post(self._ds_url, json=body, timeout=10)
-                log.debug("【Slack】message: %s processed, response is: %s" % (body, local_res.text))
+                log.debug(
+                    "【Slack】message: %s processed, response is: %s" % (body, local_res.text)
+                )
 
             @slack_app.shortcut(re.compile(r"/*"))
             def slack_shortcut(ack, body):
                 ack()
                 local_res = requests.post(self._ds_url, json=body, timeout=10)
-                log.debug("【Slack】message: %s processed, response is: %s" % (body, local_res.text))
+                log.debug(
+                    "【Slack】message: %s processed, response is: %s" % (body, local_res.text)
+                )
 
             # 启动服务
             if self._interactive:
                 try:
                     self._service = SocketModeHandler(
-                        slack_app,
-                        self._client_config.get("app_token")
+                        slack_app, self._client_config.get("app_token")
                     )
                     self._service.connect()
                     log.info("Slack消息接收服务启动")
@@ -111,51 +118,40 @@ class Slack(_IMessageClient):
                 # 消息广播
                 channel = self.__find_public_channel()
             # 拼装消息内容
-            titles = str(title).split('\n')
+            titles = str(title).split("\n")
             if len(titles) > 1:
                 title = titles[0]
                 if not text:
                     text = "\n".join(titles[1:])
                 else:
                     text = "%s\n%s" % ("\n".join(titles[1:]), text)
-            block = {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": f"*{title}*\n{text}"
-                }
-            }
+            block = {"type": "section", "text": {"type": "mrkdwn", "text": f"*{title}*\n{text}"}}
             # 消息图片
             if image:
-                block['accessory'] = {
+                block["accessory"] = {
                     "type": "image",
                     "image_url": f"{image}",
-                    "alt_text": f"{title}"
+                    "alt_text": f"{title}",
                 }
             blocks = [block]
             # 链接
             if image and url:
-                blocks.append({
-                    "type": "actions",
-                    "elements": [
-                        {
-                            "type": "button",
-                            "text": {
-                                "type": "plain_text",
-                                "text": "查看详情",
-                                "emoji": True
-                            },
-                            "value": "click_me_url",
-                            "url": f"{url}",
-                            "action_id": "actionId-url"
-                        }
-                    ]
-                })
+                blocks.append(
+                    {
+                        "type": "actions",
+                        "elements": [
+                            {
+                                "type": "button",
+                                "text": {"type": "plain_text", "text": "查看详情", "emoji": True},
+                                "value": "click_me_url",
+                                "url": f"{url}",
+                                "action_id": "actionId-url",
+                            }
+                        ],
+                    }
+                )
             # 发送
-            result = self._client.chat_postMessage(
-                channel=channel,
-                blocks=blocks
-            )
+            result = self._client.chat_postMessage(channel=channel, blocks=blocks)
             return True, result
         except Exception as msg_e:
             ExceptionUtils.exception_traceback(msg_e)
@@ -177,43 +173,36 @@ class Slack(_IMessageClient):
                 channel = self.__find_public_channel()
             title = f"共找到{len(medias)}条相关信息，请选择"
             # 消息主体
-            title_section = {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": f"*{title}*"
-                }
-            }
+            title_section = {"type": "section", "text": {"type": "mrkdwn", "text": f"*{title}*"}}
             blocks = [title_section]
             # 列表
             if medias:
-                blocks.append({
-                    "type": "divider"
-                })
+                blocks.append({"type": "divider"})
                 index = 1
                 for media in medias:
                     if media.get_poster_image():
                         if media.get_star_string():
-                            text = f"{index}. *<{media.get_detail_url()}|{media.get_title_string()}>*" \
-                                   f"\n{media.get_type_string()}" \
-                                   f"\n{media.get_star_string()}" \
-                                   f"\n{media.get_overview_string(50)}"
+                            text = (
+                                f"{index}. *<{media.get_detail_url()}|{media.get_title_string()}>*"
+                                f"\n{media.get_type_string()}"
+                                f"\n{media.get_star_string()}"
+                                f"\n{media.get_overview_string(50)}"
+                            )
                         else:
-                            text = f"{index}. *<{media.get_detail_url()}|{media.get_title_string()}>*" \
-                                   f"\n{media.get_type_string()}" \
-                                   f"\n{media.get_overview_string(50)}"
+                            text = (
+                                f"{index}. *<{media.get_detail_url()}|{media.get_title_string()}>*"
+                                f"\n{media.get_type_string()}"
+                                f"\n{media.get_overview_string(50)}"
+                            )
                         blocks.append(
                             {
                                 "type": "section",
-                                "text": {
-                                    "type": "mrkdwn",
-                                    "text": text
-                                },
+                                "text": {"type": "mrkdwn", "text": text},
                                 "accessory": {
                                     "type": "image",
                                     "image_url": f"{media.get_poster_image()}",
-                                    "alt_text": f"{media.get_title_string()}"
-                                }
+                                    "alt_text": f"{media.get_title_string()}",
+                                },
                             }
                         )
                         blocks.append(
@@ -225,20 +214,17 @@ class Slack(_IMessageClient):
                                         "text": {
                                             "type": "plain_text",
                                             "text": "选择",
-                                            "emoji": True
+                                            "emoji": True,
                                         },
                                         "value": f"{index}",
-                                        "action_id": f"actionId-{index}"
+                                        "action_id": f"actionId-{index}",
                                     }
-                                ]
+                                ],
                             }
                         )
                         index += 1
             # 发送
-            result = self._client.chat_postMessage(
-                channel=channel,
-                blocks=blocks
-            )
+            result = self._client.chat_postMessage(channel=channel, blocks=blocks)
             return True, result
         except Exception as msg_e:
             ExceptionUtils.exception_traceback(msg_e)

@@ -1,6 +1,6 @@
+import datetime
 import os.path
 import re
-import datetime
 from urllib.parse import quote, unquote
 
 from bencode import bdecode
@@ -29,7 +29,7 @@ trackers = [
     "https://tracker.lilithraws.org:443/announce",
     "https://tr.burnabyhighstar.com:443/announce",
     "http://tracker.mywaifu.best:6969/announce",
-    "http://bt.okmp3.ru:2710/announce"
+    "http://bt.okmp3.ru:2710/announce",
 ]
 
 
@@ -57,11 +57,9 @@ class Torrent:
             return None, url, "", [], f"{url} 为磁力链接"
         try:
             # 下载保存种子文件
-            file_path, content, errmsg = self.save_torrent_file(url=url,
-                                                                cookie=cookie,
-                                                                ua=ua,
-                                                                referer=referer,
-                                                                proxy=proxy)
+            file_path, content, errmsg = self.save_torrent_file(
+                url=url, cookie=cookie, ua=ua, referer=referer, proxy=proxy
+            )
             if not file_path:
                 return None, content, "", [], errmsg
             # 解析种子文件
@@ -81,17 +79,17 @@ class Torrent:
             headers=ua,
             cookies=cookie,
             referer=referer,
-            proxies=Config().get_proxies() if proxy else None
+            proxies=Config().get_proxies() if proxy else None,
         ).get_res(url=url, allow_redirects=False)
         while req and req.status_code in [301, 302]:
-            url = req.headers['Location']
+            url = req.headers["Location"]
             if url and url.startswith("magnet:"):
                 return None, url, f"获取到磁力链接：{url}"
             req = RequestUtils(
                 headers=ua,
                 cookies=cookie,
                 referer=referer,
-                proxies=Config().get_proxies() if proxy else None
+                proxies=Config().get_proxies() if proxy else None,
             ).get_res(url=url, allow_redirects=False)
         if req and req.status_code == 200:
             if not req.content:
@@ -104,7 +102,11 @@ class Torrent:
                     bdecode(req.content)
                 except Exception as err:
                     print(str(err))
-                    return None, None, "种子数据有误，请确认链接是否正确，如为PT站点则需手工在站点下载一次种子"
+                    return (
+                        None,
+                        None,
+                        "种子数据有误，请确认链接是否正确，如为PT站点则需手工在站点下载一次种子",
+                    )
             # 读取种子文件名
             file_name = self.__get_url_torrent_filename(req, url)
             # 种子文件路径
@@ -112,7 +114,7 @@ class Torrent:
             # 种子内容
             file_content = req.content
             # 写入磁盘
-            with open(file_path, 'wb') as f:
+            with open(file_path, "wb") as f:
                 f.write(file_content)
         elif req is None:
             return None, None, "无法打开链接：%s" % url
@@ -130,13 +132,13 @@ class Torrent:
         """
         if not hash_text or not title:
             return None
-        hash_text = re.search(r'[0-9a-z]+', hash_text, re.IGNORECASE)
+        hash_text = re.search(r"[0-9a-z]+", hash_text, re.IGNORECASE)
         if not hash_text:
             return None
         hash_text = hash_text.group(0)
-        ret_magnet = f'magnet:?xt=urn:btih:{hash_text}&dn={quote(title)}'
+        ret_magnet = f"magnet:?xt=urn:btih:{hash_text}&dn={quote(title)}"
         for tracker in trackers:
-            ret_magnet = f'{ret_magnet}&tr={quote(tracker)}'
+            ret_magnet = f"{ret_magnet}&tr={quote(tracker)}"
         return ret_magnet
 
     @staticmethod
@@ -148,9 +150,9 @@ class Torrent:
             return None
         ret_magnet = url
         if title and url.find("&dn=") == -1:
-            ret_magnet = f'{ret_magnet}&dn={quote(title)}'
+            ret_magnet = f"{ret_magnet}&dn={quote(title)}"
         for tracker in trackers:
-            ret_magnet = f'{ret_magnet}&tr={quote(tracker)}'
+            ret_magnet = f"{ret_magnet}&tr={quote(tracker)}"
         return ret_magnet
 
     @staticmethod
@@ -164,7 +166,7 @@ class Torrent:
         file_names = []
         file_folder = ""
         try:
-            torrent = bdecode(open(path, 'rb').read())
+            torrent = bdecode(open(path, "rb").read())
             if torrent.get("info"):
                 files = torrent.get("info", {}).get("files") or []
                 if files:
@@ -188,7 +190,7 @@ class Torrent:
         content, retmsg, file_folder, files = None, "", "", []
         try:
             # 读取种子文件内容
-            with open(path, 'rb') as f:
+            with open(path, "rb") as f:
                 content = f.read()
             # 解析种子文件
             file_folder, files, retmsg = self.get_torrent_files(path)
@@ -203,10 +205,12 @@ class Torrent:
         """
         if not req:
             return ""
-        disposition = req.headers.get('content-disposition') or ""
+        disposition = req.headers.get("content-disposition") or ""
         file_name = re.findall(r"filename=\"?(.+)\"?", disposition)
         if file_name:
-            file_name = unquote(str(file_name[0].encode('ISO-8859-1').decode()).split(";")[0].strip())
+            file_name = unquote(
+                str(file_name[0].encode("ISO-8859-1").decode()).split(";")[0].strip()
+            )
             if file_name.endswith('"'):
                 file_name = file_name[:-1]
         elif url and url.endswith(".torrent"):
@@ -253,7 +257,8 @@ class Torrent:
                 target_episodes = source_info.get("episodes")
                 target[title][index]["episodes"] = target_episodes
                 continue
-            target_episodes = list(set(target_info.get("episodes")).intersection(set(source_info.get("episodes"))))
+            target_episodes = list(
+                set(target_info.get("episodes")).intersection(set(source_info.get("episodes")))
+            )
             target[title][index]["episodes"] = target_episodes
         return target
-

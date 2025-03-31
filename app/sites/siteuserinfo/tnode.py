@@ -2,7 +2,7 @@
 import json
 import re
 
-from app.sites.siteuserinfo._base import _ISiteUserInfo, SITE_BASE_ORDER
+from app.sites.siteuserinfo._base import SITE_BASE_ORDER, _ISiteUserInfo
 from app.utils import StringUtils
 from app.utils.types import SiteSchema
 
@@ -13,7 +13,7 @@ class TNodeSiteUserInfo(_ISiteUserInfo):
 
     @classmethod
     def match(cls, html_text):
-        return 'Powered By TNode' in html_text
+        return "Powered By TNode" in html_text
 
     def _parse_site_page(self, html_text):
         html_text = self._prepare_html_text(html_text)
@@ -21,9 +21,11 @@ class TNodeSiteUserInfo(_ISiteUserInfo):
         # <meta name="x-csrf-token" content="fd169876a7b4846f3a7a16fcd5cccf8d">
         csrf_token = re.search(r'<meta name="x-csrf-token" content="(.+?)">', html_text)
         if csrf_token:
-            self._addition_headers = {'X-CSRF-TOKEN': csrf_token.group(1)}
+            self._addition_headers = {"X-CSRF-TOKEN": csrf_token.group(1)}
             self._user_detail_page = "api/user/getMainInfo"
-            self._torrent_seeding_page = "api/user/listTorrentActivity?id=&type=seeding&page=1&size=20000"
+            self._torrent_seeding_page = (
+                "api/user/listTorrentActivity?id=&type=seeding&page=1&size=20000"
+            )
 
     def _parse_logged_in(self, html_text):
         """
@@ -57,8 +59,11 @@ class TNodeSiteUserInfo(_ISiteUserInfo):
         self.ratio = 0 if self.download <= 0 else round(self.upload / self.download, 3)
         self.bonus = user_info.get("bonus")
 
-        self.message_unread = user_info.get("unreadAdmin", 0) + user_info.get("unreadInbox", 0) + user_info.get(
-            "unreadSystem", 0)
+        self.message_unread = (
+            user_info.get("unreadAdmin", 0)
+            + user_info.get("unreadInbox", 0)
+            + user_info.get("unreadSystem", 0)
+        )
         pass
 
     def _parse_user_torrent_seeding_info(self, html_text, multi_page=False):

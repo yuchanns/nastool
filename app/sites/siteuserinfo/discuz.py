@@ -3,7 +3,7 @@ import re
 
 from lxml import etree
 
-from app.sites.siteuserinfo._base import _ISiteUserInfo, SITE_BASE_ORDER
+from app.sites.siteuserinfo._base import SITE_BASE_ORDER, _ISiteUserInfo
 from app.utils import StringUtils
 from app.utils.types import SiteSchema
 
@@ -19,7 +19,7 @@ class DiscuzUserInfo(_ISiteUserInfo):
             return False
 
         printable_text = html.xpath("string(.)") if html else ""
-        return 'Powered by Discuz!' in printable_text
+        return "Powered by Discuz!" in printable_text
 
     def _parse_user_base_info(self, html_text):
         html_text = self._prepare_html_text(html_text)
@@ -27,11 +27,11 @@ class DiscuzUserInfo(_ISiteUserInfo):
 
         user_info = html.xpath('//a[contains(@href, "&uid=")]')
         if user_info:
-            user_id_match = re.search(r"&uid=(\d+)", user_info[0].attrib['href'])
+            user_id_match = re.search(r"&uid=(\d+)", user_info[0].attrib["href"])
             if user_id_match and user_id_match.group().strip():
                 self.userid = user_id_match.group(1)
-                self._torrent_seeding_page = f"forum.php?&mod=torrents&cat_5up=on"
-                self._user_detail_page = user_info[0].attrib['href']
+                self._torrent_seeding_page = "forum.php?&mod=torrents&cat_5up=on"
+                self._user_detail_page = user_info[0].attrib["href"]
                 self.username = user_info[0].text.strip()
 
     def _parse_site_page(self, html_text):
@@ -73,12 +73,12 @@ class DiscuzUserInfo(_ISiteUserInfo):
         # 上传
         upload_text = html.xpath('//li[em[contains(text(),"上传量")]]/text()')
         if upload_text:
-            self.upload = StringUtils.num_filesize(upload_text[0].strip().split('/')[-1])
+            self.upload = StringUtils.num_filesize(upload_text[0].strip().split("/")[-1])
 
         # 下载
         download_text = html.xpath('//li[em[contains(text(),"下载量")]]/text()')
         if download_text:
-            self.download = StringUtils.num_filesize(download_text[0].strip().split('/')[-1])
+            self.download = StringUtils.num_filesize(download_text[0].strip().split("/")[-1])
 
     def _parse_user_torrent_seeding_info(self, html_text, multi_page=False):
         """
@@ -95,18 +95,32 @@ class DiscuzUserInfo(_ISiteUserInfo):
         seeders_col = 4
         # 搜索size列
         if html.xpath('//tr[position()=1]/td[.//img[@class="size"] and .//img[@alt="size"]]'):
-            size_col = len(html.xpath('//tr[position()=1]/td[.//img[@class="size"] '
-                                      'and .//img[@alt="size"]]/preceding-sibling::td')) + 1
+            size_col = (
+                len(
+                    html.xpath(
+                        '//tr[position()=1]/td[.//img[@class="size"] '
+                        'and .//img[@alt="size"]]/preceding-sibling::td'
+                    )
+                )
+                + 1
+            )
         # 搜索seeders列
         if html.xpath('//tr[position()=1]/td[.//img[@class="seeders"] and .//img[@alt="seeders"]]'):
-            seeders_col = len(html.xpath('//tr[position()=1]/td[.//img[@class="seeders"] '
-                                         'and .//img[@alt="seeders"]]/preceding-sibling::td')) + 1
+            seeders_col = (
+                len(
+                    html.xpath(
+                        '//tr[position()=1]/td[.//img[@class="seeders"] '
+                        'and .//img[@alt="seeders"]]/preceding-sibling::td'
+                    )
+                )
+                + 1
+            )
 
         page_seeding = 0
         page_seeding_size = 0
         page_seeding_info = []
-        seeding_sizes = html.xpath(f'//tr[position()>1]/td[{size_col}]')
-        seeding_seeders = html.xpath(f'//tr[position()>1]/td[{seeders_col}]//text()')
+        seeding_sizes = html.xpath(f"//tr[position()>1]/td[{size_col}]")
+        seeding_seeders = html.xpath(f"//tr[position()>1]/td[{seeders_col}]//text()")
         if seeding_sizes and seeding_seeders:
             page_seeding = len(seeding_sizes)
 
@@ -123,7 +137,9 @@ class DiscuzUserInfo(_ISiteUserInfo):
 
         # 是否存在下页数据
         next_page = None
-        next_page_text = html.xpath('//a[contains(.//text(), "下一页") or contains(.//text(), "下一頁")]/@href')
+        next_page_text = html.xpath(
+            '//a[contains(.//text(), "下一页") or contains(.//text(), "下一頁")]/@href'
+        )
         if next_page_text:
             next_page = next_page_text[-1].strip()
 

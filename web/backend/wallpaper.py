@@ -3,17 +3,17 @@ import datetime
 from functools import lru_cache
 
 from app.media import Media
-from app.utils import RequestUtils, ExceptionUtils
+from app.utils import ExceptionUtils, RequestUtils
 from config import Config
 
 
 @lru_cache(maxsize=1)
-def get_login_wallpaper(today=datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d')):
+def get_login_wallpaper(today=datetime.datetime.strftime(datetime.datetime.now(), "%Y%m%d")):
     """
     获取Base64编码的壁纸图片
     """
-    wallpaper = Config().get_config('app').get('wallpaper')
-    tmdbkey = Config().get_config('app').get('rmt_tmdbkey')
+    wallpaper = Config().get_config("app").get("wallpaper")
+    tmdbkey = Config().get_config("app").get("rmt_tmdbkey")
     if (not wallpaper or wallpaper == "themoviedb") and tmdbkey:
         img_url = __get_themoviedb_wallpaper(today)
     else:
@@ -44,6 +44,6 @@ def __get_bing_wallpaper(today):
         return ""
     if resp and resp.status_code == 200:
         if resp.json():
-            for image in resp.json().get('images') or []:
+            for image in resp.json().get("images") or []:
                 return f"https://cn.bing.com{image.get('url')}"
     return ""

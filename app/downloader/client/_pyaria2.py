@@ -2,9 +2,9 @@
 
 import xmlrpc.client
 
-DEFAULT_HOST = 'localhost'
+DEFAULT_HOST = "localhost"
 DEFAULT_PORT = 6800
-SERVER_URI_FORMAT = '%s:%s/rpc'
+SERVER_URI_FORMAT = "%s:%s/rpc"
 
 
 class PyAria2(object):
@@ -46,7 +46,9 @@ class PyAria2(object):
 
         return: This method returns GID of registered download.
         """
-        return self.server.aria2.addTorrent(self._secret, xmlrpc.client.Binary(torrent), uris, options, position)
+        return self.server.aria2.addTorrent(
+            self._secret, xmlrpc.client.Binary(torrent), uris, options, position
+        )
 
     def addMetalink(self, metalink, options=None, position=None):
         """
@@ -58,8 +60,9 @@ class PyAria2(object):
 
         return: This method returns list of GID of registered download.
         """
-        return self.server.aria2.addMetalink(self._secret, xmlrpc.client.Binary(open(metalink, 'rb').read()), options,
-                                             position)
+        return self.server.aria2.addMetalink(
+            self._secret, xmlrpc.client.Binary(open(metalink, "rb").read()), options, position
+        )
 
     def remove(self, gid):
         """

@@ -3,7 +3,7 @@ import threading
 from datetime import datetime
 
 from app.message.client._base import _IMessageClient
-from app.utils import RequestUtils, ExceptionUtils
+from app.utils import ExceptionUtils, RequestUtils
 from config import DEFAULT_WECHAT_PROXY
 
 lock = threading.Lock()
@@ -33,10 +33,10 @@ class WeChat(_IMessageClient):
 
     def init_config(self):
         if self._client_config:
-            self._corpid = self._client_config.get('corpid')
-            self._corpsecret = self._client_config.get('corpsecret')
-            self._agent_id = self._client_config.get('agentid')
-            self._default_proxy = self._client_config.get('default_proxy')
+            self._corpid = self._client_config.get("corpid")
+            self._corpsecret = self._client_config.get("corpsecret")
+            self._agent_id = self._client_config.get("agentid")
+            self._default_proxy = self._client_config.get("default_proxy")
         if self._default_proxy:
             if isinstance(self._default_proxy, bool):
                 self._send_msg_url = f"{DEFAULT_WECHAT_PROXY}/cgi-bin/message/send?access_token=%s"
@@ -71,9 +71,9 @@ class WeChat(_IMessageClient):
                 res = RequestUtils().get_res(token_url)
                 if res:
                     ret_json = res.json()
-                    if ret_json.get('errcode') == 0:
-                        self._access_token = ret_json.get('access_token')
-                        self._expires_in = ret_json.get('expires_in')
+                    if ret_json.get("errcode") == 0:
+                        self._access_token = ret_json.get("access_token")
+                        self._expires_in = ret_json.get("expires_in")
                         self._access_token_time = datetime.now()
             except Exception as e:
                 ExceptionUtils.exception_traceback(e)
@@ -101,12 +101,10 @@ class WeChat(_IMessageClient):
             "touser": user_id,
             "msgtype": "text",
             "agentid": self._agent_id,
-            "text": {
-                "content": conent
-            },
+            "text": {"content": conent},
             "safe": 0,
             "enable_id_trans": 0,
-            "enable_duplicate_check": 0
+            "enable_duplicate_check": 0,
         }
         return self.__post_request(message_url, req_json)
 
@@ -132,15 +130,8 @@ class WeChat(_IMessageClient):
             "msgtype": "news",
             "agentid": self._agent_id,
             "news": {
-                "articles": [
-                    {
-                        "title": title,
-                        "description": text,
-                        "picurl": image_url,
-                        "url": url
-                    }
-                ]
-            }
+                "articles": [{"title": title, "description": text, "picurl": image_url, "url": url}]
+            },
         }
         return self.__post_request(message_url, req_json)
 
@@ -180,20 +171,20 @@ class WeChat(_IMessageClient):
                 title = f"{index}. {media.get_title_string()}\n{media.get_type_string()}，{media.get_vote_string()}"
             else:
                 title = f"{index}. {media.get_title_string()}\n{media.get_type_string()}"
-            articles.append({
-                "title": title,
-                "description": "",
-                "picurl": media.get_message_image() if index == 1 else media.get_poster_image(),
-                "url": media.get_detail_url()
-            })
+            articles.append(
+                {
+                    "title": title,
+                    "description": "",
+                    "picurl": media.get_message_image() if index == 1 else media.get_poster_image(),
+                    "url": media.get_detail_url(),
+                }
+            )
             index += 1
         req_json = {
             "touser": user_id,
             "msgtype": "news",
             "agentid": self._agent_id,
-            "news": {
-                "articles": articles
-            }
+            "news": {"articles": articles},
         }
         return self.__post_request(message_url, req_json)
 
@@ -201,18 +192,19 @@ class WeChat(_IMessageClient):
         """
         向微信发送请求
         """
-        headers = {'content-type': 'application/json'}
+        headers = {"content-type": "application/json"}
         try:
-            res = RequestUtils(headers=headers).post(message_url,
-                                                     params=json.dumps(req_json, ensure_ascii=False).encode('utf-8'))
+            res = RequestUtils(headers=headers).post(
+                message_url, params=json.dumps(req_json, ensure_ascii=False).encode("utf-8")
+            )
             if res:
                 ret_json = res.json()
-                if ret_json.get('errcode') == 0:
-                    return True, ret_json.get('errmsg')
+                if ret_json.get("errcode") == 0:
+                    return True, ret_json.get("errmsg")
                 else:
-                    if ret_json.get('errcode') == 42001:
+                    if ret_json.get("errcode") == 42001:
                         self.__get_access_token(force=True)
-                    return False, ret_json.get('errmsg')
+                    return False, ret_json.get("errmsg")
             else:
                 return False, None
         except Exception as err:

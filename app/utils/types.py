@@ -2,18 +2,18 @@ from enum import Enum
 
 
 class MediaType(Enum):
-    TV = '电视剧'
-    MOVIE = '电影'
-    ANIME = '动漫'
-    UNKNOWN = '未知'
+    TV = "电视剧"
+    MOVIE = "电影"
+    ANIME = "动漫"
+    UNKNOWN = "未知"
 
 
 class DownloaderType(Enum):
-    QB = 'Qbittorrent'
-    TR = 'Transmission'
-    Client115 = '115网盘'
-    Aria2 = 'Aria2'
-    PikPak = 'PikPak'
+    QB = "Qbittorrent"
+    TR = "Transmission"
+    Client115 = "115网盘"
+    Aria2 = "Aria2"
+    PikPak = "PikPak"
 
 
 class SyncType(Enum):
@@ -95,5 +95,5 @@ class SiteSchema(Enum):
     TNode = "TNode"
 
 
-MovieTypes = ['MOV', '电影']
-TvTypes = ['TV', '电视剧']
+MovieTypes = ["MOV", "电影"]
+TvTypes = ["TV", "电视剧"]

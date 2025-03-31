@@ -64,10 +64,12 @@ class TorrentRemover(object):
         for task in self._remove_tasks.values():
             if task.get("enabled") and task.get("interval") and task.get("config"):
                 remove_flag = True
-                self._scheduler.add_job(func=self.auto_remove_torrents,
-                                        args=[task.get("id")],
-                                        trigger='interval',
-                                        seconds=int(task.get("interval")) * 60)
+                self._scheduler.add_job(
+                    func=self.auto_remove_torrents,
+                    args=[task.get("id")],
+                    trigger="interval",
+                    seconds=int(task.get("interval")) * 60,
+                )
         if remove_flag:
             self._scheduler.print_jobs()
             self._scheduler.start()
@@ -109,14 +111,17 @@ class TorrentRemover(object):
             try:
                 lock.acquire()
                 # 获取需删除种子列表
-                downloader_type = ModuleConf.TORRENTREMOVER_DICT.get(task.get("downloader")).get("downloader_type")
+                downloader_type = ModuleConf.TORRENTREMOVER_DICT.get(task.get("downloader")).get(
+                    "downloader_type"
+                )
                 task.get("config")["samedata"] = task.get("samedata")
                 task.get("config")["onlynastool"] = task.get("onlynastool")
                 torrents = self.downloader.get_remove_torrents(
-                    downloader=downloader_type,
-                    config=task.get("config")
+                    downloader=downloader_type, config=task.get("config")
                 )
-                log.info(f"【TorrentRemover】自动删种任务：{task.get('name')} 获取符合处理条件种子数 {len(torrents)}")
+                log.info(
+                    f"【TorrentRemover】自动删种任务：{task.get('name')} 获取符合处理条件种子数 {len(torrents)}"
+                )
                 title = f"自动删种任务：{task.get('name')}"
                 text = ""
                 if task.get("action") == 1:
@@ -124,13 +129,14 @@ class TorrentRemover(object):
                     for torrent in torrents:
                         name = torrent.get("name")
                         site = torrent.get("site")
-                        size = round(torrent.get("size")/1021/1024/1024, 3)
+                        size = round(torrent.get("size") / 1021 / 1024 / 1024, 3)
                         text_item = f"{name} 来自站点：{site} 大小：{size} GB"
                         log.info(f"【TorrentRemover】暂停种子：{text_item}")
                         text = f"{text}\n{text_item}"
                         # 暂停种子
-                        self.downloader.stop_torrents(downloader=downloader_type,
-                                                      ids=[torrent.get("id")])
+                        self.downloader.stop_torrents(
+                            downloader=downloader_type, ids=[torrent.get("id")]
+                        )
                 elif task.get("action") == 2:
                     text = f"共删除{len(torrents)}个种子"
                     for torrent in torrents:
@@ -141,9 +147,9 @@ class TorrentRemover(object):
                         log.info(f"【TorrentRemover】删除种子：{text_item}")
                         text = f"{text}\n{text_item}"
                         # 删除种子
-                        self.downloader.delete_torrents(downloader=downloader_type,
-                                                        delete_file=False,
-                                                        ids=[torrent.get("id")])
+                        self.downloader.delete_torrents(
+                            downloader=downloader_type, delete_file=False, ids=[torrent.get("id")]
+                        )
                 elif task.get("action") == 3:
                     text = f"共删除{len(torrents)}个种子（及文件）"
                     for torrent in torrents:
@@ -154,9 +160,9 @@ class TorrentRemover(object):
                         log.info(f"【TorrentRemover】删除种子及文件：{text_item}")
                         text = f"{text}\n{text_item}"
                         # 删除种子
-                        self.downloader.delete_torrents(downloader=downloader_type,
-                                                        delete_file=True,
-                                                        ids=[torrent.get("id")])
+                        self.downloader.delete_torrents(
+                            downloader=downloader_type, delete_file=True, ids=[torrent.get("id")]
+                        )
                 if torrents and title and text:
                     self.message.send_brushtask_remove_message(title=title, text=text)
             except Exception as e:
@@ -233,7 +239,10 @@ class TorrentRemover(object):
             qb_state = [state for state in qb_state if state]
             if qb_state:
                 for qb_state_item in qb_state:
-                    if qb_state_item not in ModuleConf.TORRENTREMOVER_DICT.get("Qb").get("torrent_state").keys():
+                    if (
+                        qb_state_item
+                        not in ModuleConf.TORRENTREMOVER_DICT.get("Qb").get("torrent_state").keys()
+                    ):
                         return False, "种子状态参数不合法"
             qb_category = data.get("qb_category")
             qb_category = qb_category.split(";") if qb_category else []
@@ -248,7 +257,10 @@ class TorrentRemover(object):
             tr_state = [state for state in tr_state if state]
             if tr_state:
                 for tr_state_item in tr_state:
-                    if tr_state_item not in ModuleConf.TORRENTREMOVER_DICT.get("Tr").get("torrent_state").keys():
+                    if (
+                        tr_state_item
+                        not in ModuleConf.TORRENTREMOVER_DICT.get("Tr").get("torrent_state").keys()
+                    ):
                         return False, "种子状态参数不合法"
             tr_error_key = data.get("tr_error_key")
         config = {
@@ -299,7 +311,9 @@ class TorrentRemover(object):
             task.get("config")["samedata"] = task.get("samedata")
             task.get("config")["onlynastool"] = task.get("onlynastool")
             torrents = self.downloader.get_remove_torrents(
-                downloader=ModuleConf.TORRENTREMOVER_DICT.get(task.get("downloader")).get("downloader_type"),
-                config=task.get("config")
+                downloader=ModuleConf.TORRENTREMOVER_DICT.get(task.get("downloader")).get(
+                    "downloader_type"
+                ),
+                config=task.get("config"),
             )
             return True, torrents

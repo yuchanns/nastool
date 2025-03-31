@@ -117,9 +117,13 @@ class _ISiteUserInfo(metaclass=ABCMeta):
         self._parse_user_base_info(self._index_html)
         self._pase_unread_msgs()
         if self._user_traffic_page:
-            self._parse_user_traffic_info(self._get_page_content(urljoin(self._base_url, self._user_traffic_page)))
+            self._parse_user_traffic_info(
+                self._get_page_content(urljoin(self._base_url, self._user_traffic_page))
+            )
         if self._user_detail_page:
-            self._parse_user_detail_info(self._get_page_content(urljoin(self._base_url, self._user_detail_page)))
+            self._parse_user_detail_info(
+                self._get_page_content(urljoin(self._base_url, self._user_detail_page))
+            )
 
         self._parse_seeding_pages()
         self.seeding_info = json.dumps(self.seeding_info)
@@ -138,17 +142,21 @@ class _ISiteUserInfo(metaclass=ABCMeta):
 
                 msg_links = []
                 next_page = self._parse_message_unread_links(
-                    self._get_page_content(urljoin(self._base_url, link)), msg_links)
+                    self._get_page_content(urljoin(self._base_url, link)), msg_links
+                )
                 while next_page:
                     next_page = self._parse_message_unread_links(
-                        self._get_page_content(urljoin(self._base_url, next_page)), msg_links)
+                        self._get_page_content(urljoin(self._base_url, next_page)), msg_links
+                    )
 
                 unread_msg_links.extend(msg_links)
 
         for msg_link in unread_msg_links:
             print(msg_link)
             log.debug(f"【Sites】{self.site_name} 信息链接 {msg_link}")
-            head, date, content = self._parse_message_content(self._get_page_content(urljoin(self._base_url, msg_link)))
+            head, date, content = self._parse_message_content(
+                self._get_page_content(urljoin(self._base_url, msg_link))
+            )
             log.debug(f"【Sites】{self.site_name} 标题 {head} 时间 {date} 内容 {content}")
             self.message_unread_contents.append((head, date, content))
 
@@ -163,17 +171,23 @@ class _ISiteUserInfo(metaclass=ABCMeta):
             for seeding_page in seeding_pages:
                 # 第一页
                 next_page = self._parse_user_torrent_seeding_info(
-                    self._get_page_content(urljoin(self._base_url, seeding_page),
-                                           self._torrent_seeding_params,
-                                           self._torrent_seeding_headers))
+                    self._get_page_content(
+                        urljoin(self._base_url, seeding_page),
+                        self._torrent_seeding_params,
+                        self._torrent_seeding_headers,
+                    )
+                )
 
                 # 其他页处理
                 while next_page:
                     next_page = self._parse_user_torrent_seeding_info(
-                        self._get_page_content(urljoin(urljoin(self._base_url, seeding_page), next_page),
-                                               self._torrent_seeding_params,
-                                               self._torrent_seeding_headers),
-                        multi_page=True)
+                        self._get_page_content(
+                            urljoin(urljoin(self._base_url, seeding_page), next_page),
+                            self._torrent_seeding_params,
+                            self._torrent_seeding_headers,
+                        ),
+                        multi_page=True,
+                    )
 
     @staticmethod
     def _prepare_html_text(html_text):
@@ -203,8 +217,9 @@ class _ISiteUserInfo(metaclass=ABCMeta):
             if fav_link:
                 self._favicon_url = urljoin(self._base_url, fav_link[0])
 
-        res = RequestUtils(cookies=self._site_cookie, session=self._session, timeout=60, headers=self._ua).get_res(
-            url=self._favicon_url)
+        res = RequestUtils(
+            cookies=self._site_cookie, session=self._session, timeout=60, headers=self._ua
+        ).get_res(url=self._favicon_url)
         if res:
             self.site_favicon = base64.b64encode(res.content).decode()
 
@@ -222,10 +237,12 @@ class _ISiteUserInfo(metaclass=ABCMeta):
                 req_headers.update(headers)
 
             if isinstance(self._ua, str):
-                req_headers.update({
-                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                    "User-Agent": f"{self._ua}"
-                })
+                req_headers.update(
+                    {
+                        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                        "User-Agent": f"{self._ua}",
+                    }
+                )
             else:
                 req_headers.update(self._ua)
 
@@ -233,13 +250,13 @@ class _ISiteUserInfo(metaclass=ABCMeta):
                 req_headers.update(self._addition_headers)
 
         if params:
-            res = RequestUtils(cookies=self._site_cookie, session=self._session, timeout=60,
-                               headers=req_headers).post_res(
-                url=url, params=params)
+            res = RequestUtils(
+                cookies=self._site_cookie, session=self._session, timeout=60, headers=req_headers
+            ).post_res(url=url, params=params)
         else:
-            res = RequestUtils(cookies=self._site_cookie, session=self._session, timeout=60,
-                               headers=req_headers).get_res(
-                url=url)
+            res = RequestUtils(
+                cookies=self._site_cookie, session=self._session, timeout=60, headers=req_headers
+            ).get_res(url=url)
         if res is not None and res.status_code in (200, 500):
             if "charset=utf-8" in res.text or "charset=UTF-8" in res.text:
                 res.encoding = "UTF-8"

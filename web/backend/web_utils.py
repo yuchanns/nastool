@@ -1,8 +1,8 @@
 import cn2an
 
-from app.media import Media, Bangumi, DouBan
+from app.media import Bangumi, DouBan, Media
 from app.media.meta import MetaInfo
-from app.utils import StringUtils, ExceptionUtils, SystemUtils, RequestUtils
+from app.utils import ExceptionUtils, RequestUtils, StringUtils, SystemUtils
 from app.utils.types import MediaType
 from config import Config
 from version import APP_VERSION
@@ -15,11 +15,13 @@ class WebUtils:
         """
         根据IP址查询真实地址
         """
-        url = 'https://sp0.baidu.com/8aQDcjqpAAV3otqbppnN2DJv/api.php?co=&resource_id=6006&t=1529895387942&ie=utf8' \
-              '&oe=gbk&cb=op_aladdin_callback&format=json&tn=baidu&' \
-              'cb=jQuery110203920624944751099_1529894588086&_=1529894588088&query=%s' % ip
+        url = (
+            "https://sp0.baidu.com/8aQDcjqpAAV3otqbppnN2DJv/api.php?co=&resource_id=6006&t=1529895387942&ie=utf8"
+            "&oe=gbk&cb=op_aladdin_callback&format=json&tn=baidu&"
+            "cb=jQuery110203920624944751099_1529894588086&_=1529894588088&query=%s" % ip
+        )
         r = RequestUtils().get_res(url)
-        r.encoding = 'gbk'
+        r.encoding = "gbk"
         html = r.text
         try:
             c1 = html.split('location":"')[1]
@@ -34,7 +36,7 @@ class WebUtils:
         """
         获取当前版本号
         """
-        commit_id = SystemUtils.execute('git rev-parse HEAD')
+        commit_id = SystemUtils.execute("git rev-parse HEAD")
         if commit_id and len(commit_id) > 7:
             commit_id = commit_id[:7]
         return "%s %s" % (APP_VERSION, commit_id)
@@ -46,9 +48,11 @@ class WebUtils:
         """
         try:
             version_res = RequestUtils(proxies=Config().get_proxies()).get_res(
-                "https://api.github.com/repos/jxxghp/nas-tools/releases/latest")
+                "https://api.github.com/repos/jxxghp/nas-tools/releases/latest"
+            )
             commit_res = RequestUtils(proxies=Config().get_proxies()).get_res(
-                "https://api.github.com/repos/jxxghp/nas-tools/commits/master")
+                "https://api.github.com/repos/jxxghp/nas-tools/commits/master"
+            )
             if version_res and commit_res:
                 ver_json = version_res.json()
                 commit_json = commit_res.json()
@@ -77,13 +81,13 @@ class WebUtils:
             original_title = info.get("original_title")
             year = info.get("year")
             if original_title:
-                media_info = Media().get_media_info(title=f"{original_title} {year}",
-                                                    mtype=mtype,
-                                                    append_to_response="all")
+                media_info = Media().get_media_info(
+                    title=f"{original_title} {year}", mtype=mtype, append_to_response="all"
+                )
             if not media_info or not media_info.tmdb_info:
-                media_info = Media().get_media_info(title=f"{title} {year}",
-                                                    mtype=mtype,
-                                                    append_to_response="all")
+                media_info = Media().get_media_info(
+                    title=f"{title} {year}", mtype=mtype, append_to_response="all"
+                )
             media_info.douban_id = doubanid
         elif str(mediaid).startswith("BG:"):
             # BANGUMI
@@ -94,21 +98,21 @@ class WebUtils:
             title = info.get("name")
             title_cn = info.get("name_cn")
             year = info.get("date")[:4] if info.get("date") else ""
-            media_info = Media().get_media_info(title=f"{title} {year}",
-                                                mtype=MediaType.TV,
-                                                append_to_response="all")
+            media_info = Media().get_media_info(
+                title=f"{title} {year}", mtype=MediaType.TV, append_to_response="all"
+            )
             if not media_info or not media_info.tmdb_info:
-                media_info = Media().get_media_info(title=f"{title_cn} {year}",
-                                                    mtype=MediaType.TV,
-                                                    append_to_response="all")
+                media_info = Media().get_media_info(
+                    title=f"{title_cn} {year}", mtype=MediaType.TV, append_to_response="all"
+                )
         else:
             # TMDB
-            info = Media().get_tmdb_info(tmdbid=mediaid,
-                                         mtype=mtype,
-                                         append_to_response="all")
+            info = Media().get_tmdb_info(tmdbid=mediaid, mtype=mtype, append_to_response="all")
             if not info:
                 return None
-            media_info = MetaInfo(title=info.get("title") if mtype == MediaType.MOVIE else info.get("name"))
+            media_info = MetaInfo(
+                title=info.get("title") if mtype == MediaType.MOVIE else info.get("name")
+            )
             media_info.set_tmdb_info(info)
 
         return media_info
@@ -124,7 +128,9 @@ class WebUtils:
         """
         if not keyword:
             return []
-        mtype, key_word, season_num, episode_num, _, content = StringUtils.get_keyword_from_string(keyword)
+        mtype, key_word, season_num, episode_num, _, content = StringUtils.get_keyword_from_string(
+            keyword
+        )
         if source == "tmdb":
             use_douban_titles = False
         elif source == "douban":
@@ -132,17 +138,14 @@ class WebUtils:
         else:
             use_douban_titles = Config().get_config("laboratory").get("use_douban_titles")
         if use_douban_titles:
-            medias = DouBan().search_douban_medias(keyword=key_word,
-                                                   mtype=mtype,
-                                                   season=season_num,
-                                                   episode=episode_num,
-                                                   page=page)
+            medias = DouBan().search_douban_medias(
+                keyword=key_word, mtype=mtype, season=season_num, episode=episode_num, page=page
+            )
         else:
             meta_info = MetaInfo(title=content)
-            tmdbinfos = Media().get_tmdb_infos(title=meta_info.get_name(),
-                                               year=meta_info.year,
-                                               mtype=mtype,
-                                               page=page)
+            tmdbinfos = Media().get_tmdb_infos(
+                title=meta_info.get_name(), year=meta_info.year, mtype=mtype, page=page
+            )
             medias = []
             for tmdbinfo in tmdbinfos:
                 tmp_info = MetaInfo(title=keyword)
@@ -150,7 +153,10 @@ class WebUtils:
                 if meta_info.type != MediaType.MOVIE and tmp_info.type == MediaType.MOVIE:
                     continue
                 if tmp_info.begin_season:
-                    tmp_info.title = "%s 第%s季" % (tmp_info.title, cn2an.an2cn(meta_info.begin_season, mode='low'))
+                    tmp_info.title = "%s 第%s季" % (
+                        tmp_info.title,
+                        cn2an.an2cn(meta_info.begin_season, mode="low"),
+                    )
                 if tmp_info.begin_episode:
                     tmp_info.title = "%s 第%s集" % (tmp_info.title, meta_info.begin_episode)
                 medias.append(tmp_info)
