@@ -24,6 +24,8 @@ from app.utils import ExceptionUtils, RequestUtils, StringUtils
 from app.utils.commons import singleton
 from config import Config
 
+from typing import Optional
+
 
 lock = Lock()
 
@@ -665,7 +667,7 @@ class Sites:
             site_info.update(public_site)
         return site_info
 
-    def parse_site_download_url(self, page_url, xpath):
+    def parse_site_download_url(self, page_url: Optional[str]=None, xpath: Optional[str]=None):
         """
         从站点详情页面中解析中下载链接
         :param page_url: 详情页面地址

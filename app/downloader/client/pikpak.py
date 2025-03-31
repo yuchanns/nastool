@@ -26,10 +26,12 @@ class PikPak(_IDownloadClient):
         self.connect()
 
     def init_config(self):
-        if self._client_config:
+        username = self._client_config.get("username")
+        password = self._client_config.get("password")
+        if username and password:
             self.downclient = PikPakApi(
-                username=self._client_config.get("username"),
-                password=self._client_config.get("password"),
+                username=username,
+                password=password,
                 proxy=self._client_config.get("proxy"),
             )
 
