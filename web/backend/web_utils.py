@@ -35,9 +35,7 @@ class WebUtils:
         """
         获取当前版本号
         """
-        commit_id = SystemUtils.execute("git rev-parse HEAD")
-        if commit_id and len(commit_id) > 7:
-            commit_id = commit_id[:7]
+        commit_id = ""
         return "%s %s" % (APP_VERSION, commit_id)
 
     @staticmethod
@@ -45,21 +43,6 @@ class WebUtils:
         """
         获取最新版本号
         """
-        try:
-            version_res = RequestUtils(proxies=Config().get_proxies()).get_res(
-                "https://api.github.com/repos/jxxghp/nas-tools/releases/latest"
-            )
-            commit_res = RequestUtils(proxies=Config().get_proxies()).get_res(
-                "https://api.github.com/repos/jxxghp/nas-tools/commits/master"
-            )
-            if version_res and commit_res:
-                ver_json = version_res.json()
-                commit_json = commit_res.json()
-                version = f"{ver_json['tag_name']} {commit_json['sha'][:7]}"
-                url = ver_json["html_url"]
-                return version, url, True
-        except Exception as e:
-            ExceptionUtils.exception_traceback(e)
         return None, None, False
 
     @staticmethod
