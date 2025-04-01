@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:1c9076e86c506ccc9788a1a6eaf93e1c20b3657698e1f07d463abbdd23549692"
+content_hash = "sha256:150ce99d02b233a48c73357fef834e6e36c716d6b5bc8094e74374a8b1c3464d"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -1397,14 +1397,14 @@ files = [
 
 [[package]]
 name = "tqdm"
-version = "4.64.0"
+version = "4.67.1"
 summary = ""
 dependencies = [
     "colorama; sys_platform == \"win32\"",
 ]
 files = [
-    {file = "tqdm-4.64.0-py2.py3-none-any.whl", hash = "sha256:74a2cdefe14d11442cedf3ba4e21a3b84ff9a2dbdc6cfae2c34addb2a14a5ea6"},
-    {file = "tqdm-4.64.0.tar.gz", hash = "sha256:40be55d30e200777a307a7585aee69e4eabb46b4ec6a4b4a5f2d9f11e7d5408d"},
+    {file = "tqdm-4.67.1-py3-none-any.whl", hash = "sha256:26445eca388f82e72884e0d580d5464cd801a3ea01e63e5601bdff9ba6a48de2"},
+    {file = "tqdm-4.67.1.tar.gz", hash = "sha256:f8aef9c52c08c13a65f30ea34f4e5aac3fd1a34959879d7e59e63027286627f2"},
 ]
 
 [[package]]
