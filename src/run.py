@@ -94,7 +94,8 @@ def get_run_config():
         if ssl_cert is not None and ssl_key is not None:
             _ssl_cert = cast(str, ssl_cert)
             _ssl_key = cast(str, ssl_key)
-            args["ssl_context"] = (_ssl_cert, _ssl_key)
+            if _ssl_cert != "" and _ssl_key != "":
+                args["ssl_context"] = (_ssl_cert, _ssl_key)
         args["debug"] = True if app_conf.get("debug") else False
 
     return args
