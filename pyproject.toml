@@ -68,7 +68,7 @@ dependencies = [
     "Pygments==2.13.0",
     "PyJWT==2.5.0",
     "pymongo==4.2.0",
-    "PyMySQL==1.0.2",
+    "pymysql>=1.1.1",
     "pyperclip==1.8.2",
     "pypushdeer==0.0.3",
     "pyquery==1.4.3",
