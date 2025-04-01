@@ -3,6 +3,7 @@
 
 [![Image Tags](https://ghcr-badge.yuchanns.xyz/yuchanns/nastool/tags?ignore=latest)](https://github.com/yuchanns/nastool/pkgs/container/nastool)
 ![Image Size](https://ghcr-badge.yuchanns.xyz/yuchanns/nastool/size)
+[![CodeQL](https://github.com/yuchanns/nastool/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/yuchanns/nastool/actions/workflows/github-code-scanning/codeql)
 
 ## Development
 
