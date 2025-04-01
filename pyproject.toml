@@ -1,6 +1,6 @@
 [project]
 name = "nas-tools"
-version = "2.10.0-alpha.1"
+version = "2.10.0-alpha.2"
 description = "Default template for PDM package"
 authors = [
     {name = "Hanchin Hsieh", email = "me@yuchanns.xyz"},
