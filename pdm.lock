@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:6815ec3f1f63350e94a9e305c702aaa0eb190eb3a4bc643c02d7b93b9f9c4766"
+content_hash = "sha256:1c9076e86c506ccc9788a1a6eaf93e1c20b3657698e1f07d463abbdd23549692"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -962,11 +962,11 @@ files = [
 
 [[package]]
 name = "pygments"
-version = "2.13.0"
+version = "2.19.1"
 summary = ""
 files = [
-    {file = "Pygments-2.13.0-py3-none-any.whl", hash = "sha256:f643f331ab57ba3c9d89212ee4a2dabc6e94f117cf4eefde99a0574720d14c42"},
-    {file = "Pygments-2.13.0.tar.gz", hash = "sha256:56a8508ae95f98e2b9bdf93a6be5ae3f7d8af858b43e02c5a2ff083726be40c1"},
+    {file = "pygments-2.19.1-py3-none-any.whl", hash = "sha256:9ea1544ad55cecf4b8242fab6dd35a93bbce657034b0611ee383099054ab6d8c"},
+    {file = "pygments-2.19.1.tar.gz", hash = "sha256:61c16d2a8576dc0649d9f39e089b5f02bcd27fba10d8fb4dcc28173f7a45151f"},
 ]
 
 [[package]]

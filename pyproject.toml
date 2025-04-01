@@ -65,7 +65,7 @@ dependencies = [
     "pure-eval==0.2.2",
     "pycparser==2.21",
     "pycryptodome>=3.22.0",
-    "Pygments==2.13.0",
+    "Pygments>=2.19.1",
     "PyJWT==2.5.0",
     "pymongo>=4.11.3",
     "pymysql>=1.1.1",
