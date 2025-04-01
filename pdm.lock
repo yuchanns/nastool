@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:bc4cc43ab39638e8302fb39b3ab87b7accb1f858e4f14237c607f03f38abc988"
+content_hash = "sha256:37e7764dbaa3da350f2c7c006cb567ee14251f81e565a620ae4bc05eabedb719"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -48,17 +48,14 @@ files = [
 
 [[package]]
 name = "apscheduler"
-version = "3.9.1"
+version = "3.11.0"
 summary = ""
 dependencies = [
-    "pytz",
-    "setuptools",
-    "six",
     "tzlocal",
 ]
 files = [
-    {file = "APScheduler-3.9.1-py2.py3-none-any.whl", hash = "sha256:ddc25a0ddd899de44d7f451f4375fb971887e65af51e41e5dcf681f59b8b2c9a"},
-    {file = "APScheduler-3.9.1.tar.gz", hash = "sha256:65e6574b6395498d371d045f2a8a7e4f7d50c6ad21ef7313d15b1c7cf20df1e3"},
+    {file = "APScheduler-3.11.0-py3-none-any.whl", hash = "sha256:fc134ca32e50f5eadcc4938e3a4545ab19131435e851abb40b34d63d5141c6da"},
+    {file = "apscheduler-3.11.0.tar.gz", hash = "sha256:4c622d250b0955a65d5d0eb91c33e6d43fd879834bf541e0a18661ae60460133"},
 ]
 
 [[package]]
@@ -140,6 +137,15 @@ dependencies = [
 files = [
     {file = "better_exceptions-0.3.3-py3-none-any.whl", hash = "sha256:9c70b1c61d5a179b84cd2c9d62c3324b667d74286207343645ed4306fdaad976"},
     {file = "better_exceptions-0.3.3.tar.gz", hash = "sha256:e4e6bc18444d5f04e6e894b10381e5e921d3d544240418162c7db57e9eb3453b"},
+]
+
+[[package]]
+name = "blinker"
+version = "1.9.0"
+summary = ""
+files = [
+    {file = "blinker-1.9.0-py3-none-any.whl", hash = "sha256:ba0efaa9080b619ff2f3459d1d500c57bddea4a6b424b60a91141db6fd2f08bc"},
+    {file = "blinker-1.9.0.tar.gz", hash = "sha256:b4ce2265a7abece45e7cc896e98dbebe6cead56bcf805a3d23136d145f5445bf"},
 ]
 
 [[package]]
@@ -402,17 +408,18 @@ files = [
 
 [[package]]
 name = "flask"
-version = "2.1.2"
+version = "3.1.0"
 summary = ""
 dependencies = [
+    "blinker",
     "click",
     "itsdangerous",
     "jinja2",
     "werkzeug",
 ]
 files = [
-    {file = "Flask-2.1.2-py3-none-any.whl", hash = "sha256:fad5b446feb0d6db6aec0c3184d16a8c1f6c3e464b511649c8918a9be100b4fe"},
-    {file = "Flask-2.1.2.tar.gz", hash = "sha256:315ded2ddf8a6281567edb27393010fe3406188bafbfe65a3339d5787d89e477"},
+    {file = "flask-3.1.0-py3-none-any.whl", hash = "sha256:d667207822eb83f1c4b50949b1623c8fc8d51f2341d65f72e1a1815397551136"},
+    {file = "flask-3.1.0.tar.gz", hash = "sha256:5f873c5184c897c8d9d1b05df1e3d01b14910ce69607a117bd3277098a5836ac"},
 ]
 
 [[package]]
@@ -430,32 +437,32 @@ files = [
 
 [[package]]
 name = "flask-login"
-version = "0.6.2"
+version = "0.6.3"
 summary = ""
 dependencies = [
     "flask",
     "werkzeug",
 ]
 files = [
-    {file = "Flask-Login-0.6.2.tar.gz", hash = "sha256:c0a7baa9fdc448cdd3dd6f0939df72eec5177b2f7abe6cb82fc934d29caac9c3"},
-    {file = "Flask_Login-0.6.2-py3-none-any.whl", hash = "sha256:1ef79843f5eddd0f143c2cd994c1b05ac83c0401dc6234c143495af9a939613f"},
+    {file = "Flask-Login-0.6.3.tar.gz", hash = "sha256:5e23d14a607ef12806c699590b89d0f0e0d67baeec599d75947bf9c147330333"},
+    {file = "Flask_Login-0.6.3-py3-none-any.whl", hash = "sha256:849b25b82a436bf830a054e74214074af59097171562ab10bfa999e6b78aae5d"},
 ]
 
 [[package]]
 name = "flask-restx"
-version = "0.5.1"
+version = "1.3.0"
 summary = ""
 dependencies = [
     "aniso8601",
     "flask",
+    "importlib-resources",
     "jsonschema",
     "pytz",
-    "six",
     "werkzeug",
 ]
 files = [
-    {file = "flask-restx-0.5.1.tar.gz", hash = "sha256:63c69a61999a34f1774eaccc6fc8c7f504b1aad7d56a8ec672264e52d9ac05f4"},
-    {file = "flask_restx-0.5.1-py2.py3-none-any.whl", hash = "sha256:96157547acaa8892adcefd8c60abf9040212ac2a8634937a82946e07b46147fd"},
+    {file = "flask-restx-1.3.0.tar.gz", hash = "sha256:4f3d3fa7b6191fcc715b18c201a12cd875176f92ba4acc61626ccfd571ee1728"},
+    {file = "flask_restx-1.3.0-py2.py3-none-any.whl", hash = "sha256:636c56c3fb3f2c1df979e748019f084a938c4da2035a3e535a4673e4fc177691"},
 ]
 
 [[package]]
@@ -544,6 +551,15 @@ files = [
 ]
 
 [[package]]
+name = "importlib-resources"
+version = "6.5.2"
+summary = ""
+files = [
+    {file = "importlib_resources-6.5.2-py3-none-any.whl", hash = "sha256:789cfdc3ed28c78b67a06acb8126751ced69a3d5f79c095a98298cd8a760ccec"},
+    {file = "importlib_resources-6.5.2.tar.gz", hash = "sha256:185f87adef5bcc288449d98fb4fba07cea78bc036455dd44c5fc4a2fe78fed2c"},
+]
+
+[[package]]
 name = "incremental"
 version = "24.7.2"
 summary = ""
@@ -574,11 +590,11 @@ files = [
 
 [[package]]
 name = "itsdangerous"
-version = "2.1.2"
+version = "2.2.0"
 summary = ""
 files = [
-    {file = "itsdangerous-2.1.2-py3-none-any.whl", hash = "sha256:2c2349112351b88699d8d4b6b075022c0808887cb7ad10069318a8b0bc88db44"},
-    {file = "itsdangerous-2.1.2.tar.gz", hash = "sha256:5dbbc68b317e5e42f327f9021763545dc3fc3bfe22e6deb96aaf1fc38874156a"},
+    {file = "itsdangerous-2.2.0-py3-none-any.whl", hash = "sha256:c6242fc49e35958c8b15141343aa660db5fc54d4f13a1db01a3f5891b98700ef"},
+    {file = "itsdangerous-2.2.0.tar.gz", hash = "sha256:e0050c0b7da1eea53ffaf149c0cfbb5c6e2e2b69c4bef22c81fa6eb73e5f6173"},
 ]
 
 [[package]]
@@ -1762,11 +1778,14 @@ files = [
 
 [[package]]
 name = "werkzeug"
-version = "2.1.2"
+version = "3.1.3"
 summary = ""
+dependencies = [
+    "markupsafe",
+]
 files = [
-    {file = "Werkzeug-2.1.2-py3-none-any.whl", hash = "sha256:72a4b735692dd3135217911cbeaa1be5fa3f62bffb8745c5215420a03dc55255"},
-    {file = "Werkzeug-2.1.2.tar.gz", hash = "sha256:1ce08e8093ed67d638d63879fd1ba3735817f7a80de3674d293f5984f25fb6e6"},
+    {file = "werkzeug-3.1.3-py3-none-any.whl", hash = "sha256:54b78bf3716d19a65be4fceccc0d1d7b89e608834989dfae50ea87564639213e"},
+    {file = "werkzeug-3.1.3.tar.gz", hash = "sha256:60723ce945c19328679790e3282cc758aa4a6040e4bb330f53d30fa546d44746"},
 ]
 
 [[package]]
