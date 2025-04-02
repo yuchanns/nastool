@@ -13,3 +13,4 @@ out/
 gen/
 .pdm-python
 *.db
+tests
