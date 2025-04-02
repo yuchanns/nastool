@@ -17,15 +17,21 @@ RUN pip install -U pip setuptools wheel && \
 COPY pyproject.toml pdm.lock ./
 
 # Install production dependencies
-RUN pdm install --prod --no-lock --no-editable
+RUN --mount=type=cache,target=/root/.cache/pdm pdm install --prod --no-lock --no-editable
 
 # Final stage
 FROM python:3.10-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+ENV PUID=65534
+ENV PGID=65534
+ENV UMASK_SET=022
+
 # Create non-root user
-RUN groupadd -r nastools && useradd -r -g nastools nastools
+RUN set -e \
+    && getent group nogroup || groupadd -g ${PGID} nogroup \
+    && getent passwd nobody || useradd -u ${PUID} -g nogroup -s /bin/bash -m nobody
 
 # Install runtime dependencies
 RUN apt update && apt install -y curl unzip \
@@ -43,10 +49,7 @@ ENV LANG="C.UTF-8" \
     NASTOOL_CN_UPDATE=true \
     NASTOOL_VERSION=master \
     PS1="\u@\h:\w \$ " \
-    PUID=0 \
-    PGID=0 \
-    UMASK=000 \
-    WORKDIR="/nas-tools" \
+    WORKDIR="/nastool" \
     PYTHONPATH="/app/.venv/lib/python3.10/site-packages" \
     VIRTUAL_ENV="/app/.venv" \
     PATH="/app/.venv/bin:$PATH"
@@ -64,14 +67,14 @@ RUN ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime \
     && echo 'fs.inotify.max_user_instances=524288' >> /etc/sysctl.conf \
     && mkdir -p /config
 
-COPY ./src /nas-tools
+COPY ./src /nastool
 
 # Change ownership of application files
-RUN chown -R nastools:nastools ${WORKDIR} \
-      && chown -R nastools:nastools /config
+RUN chown -R nobody:nogroup ${WORKDIR} \
+      && chown -R nobody:nogroup /config
 
 # Switch to non-root user
-USER nastools
+USER nobody
 
 EXPOSE 3000
 VOLUME ["/config"]

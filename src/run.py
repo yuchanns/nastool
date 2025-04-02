@@ -216,9 +216,9 @@ if __name__ == "__main__":
                     log.info(f"Stopping process {Process().name}...")
                     typed_reactor.stop()
                 else:
-                    typed_reactor.callLater(1, check_shutdown)
+                    typed_reactor.callLater(10, check_shutdown)
 
-            typed_reactor.callLater(1, check_shutdown)
+            typed_reactor.callLater(10, check_shutdown)
 
             run_server(config, typed_reactor)
         except Exception as e:
