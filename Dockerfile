@@ -17,7 +17,7 @@ RUN pip install -U pip setuptools wheel && \
 COPY pyproject.toml pdm.lock ./
 
 # Install production dependencies
-RUN --mount=type=cache,target=/root/.cache/pdm pdm install --prod --no-lock --no-editable
+RUN --mount=type=cache,target=/root/.cache/pdm pdm install --prod --frozen-lockfile --no-editable
 
 # Final stage
 FROM python:3.10-slim
