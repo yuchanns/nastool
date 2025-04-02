@@ -1,5 +1,4 @@
 import os
-import sys
 import time
 import warnings
 
@@ -31,34 +30,6 @@ from web.main import App
 
 
 warnings.filterwarnings("ignore")
-
-# 运行环境判断
-is_windows_exe = getattr(sys, "frozen", False) and (os.name == "nt")
-if is_windows_exe:
-    # 托盘相关库
-    import threading
-
-    from windows.trayicon import NullWriter, TrayIcon
-
-    # 初始化环境变量
-    os.environ["NASTOOL_CONFIG"] = os.path.join(
-        os.path.dirname(sys.executable), "config", "config.yaml"
-    ).replace("\\", "/")
-    os.environ["NASTOOL_LOG"] = os.path.join(
-        os.path.dirname(sys.executable), "config", "logs"
-    ).replace("\\", "/")
-    try:
-        config_dir = os.path.join(os.path.dirname(sys.executable), "config").replace(
-            "\\", "/"
-        )
-        if not os.path.exists(config_dir):
-            os.makedirs(config_dir)
-    except Exception as err:
-        print(str(err))
-else:
-    NullWriter = None
-    TrayIcon = None
-    threading = None
 
 
 def get_run_config():
@@ -137,8 +108,7 @@ def start_service():
     # 加载索引器配置
     IndexerHelper()
     # 初始化浏览器
-    if not is_windows_exe:
-        ChromeHelper().init_driver()
+    ChromeHelper().init_driver()
 
 
 def monitor_config():
@@ -183,45 +153,13 @@ def monitor_config():
     _observer.start()
 
 
-# 系统初始化
-init_system()
-
-# 启动服务
-start_service()
-
-# 监听配置文件变化
-monitor_config()
-
 # 本地运行
 if __name__ == "__main__":
-    # Windows启动托盘
-    if is_windows_exe and NullWriter is not None:
-        homepage = Config().get_config("app").get("domain")
-        if not homepage:
-            homepage = "http://localhost:%s" % str(
-                Config().get_config("app").get("web_port")
-            )
-        log_path = os.environ.get("NASTOOL_LOG")
+    # 系统初始化
+    init_system()
 
-        sys.stdout = NullWriter()
-        sys.stderr = NullWriter()
-
-        def traystart():
-            if TrayIcon is None:
-                return
-            TrayIcon(homepage, log_path)
-
-        if (
-            threading is not None
-            and len(
-                os.popen("tasklist| findstr %s" % os.path.basename(sys.executable), "r")
-                .read()
-                .splitlines()
-            )
-            <= 2
-        ):
-            p1 = threading.Thread(target=traystart, daemon=True)
-            p1.start()
+    # 启动服务
+    start_service()
 
     # Initialize Twisted WSGI server for handling web requests
     # Twisted provides better performance and scalability compared to Flask's default server
