@@ -61,25 +61,27 @@ else:
     threading = None
 
 
-class FlaskRunArgs(TypedDict, total=False):
-    host: str
-    port: int
-    debug: bool
-    threaded: bool
-    use_reloader: bool
-    ssl_context: Union[tuple[str, str], Literal["adhoc"], None]
-
-
 def get_run_config():
     """
     获取运行配置
     """
-    args: FlaskRunArgs = {
-        "host": "::",
-        "port": 3000,
-        "debug": False,
-        "ssl_context": None,
-    }
+    args = TypedDict(
+        "FlaskRunArgs",
+        {
+            "host": str,
+            "port": int,
+            "debug": bool,
+            "ssl_context": Union[tuple[str, str], Literal["adhoc"], None],
+        },
+        total=True,
+    )(
+        {
+            "host": "::",
+            "port": 3000,
+            "debug": False,
+            "ssl_context": None,
+        }
+    )
 
     app_conf = Config().get_config("app")
     if app_conf:
