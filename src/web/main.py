@@ -26,6 +26,7 @@ from flask import (
 )
 from flask_compress import Compress
 from flask_login import LoginManager, current_user, login_required, login_user
+from flask_sqlalchemy import SQLAlchemy
 
 import log
 
@@ -47,6 +48,7 @@ from app.torrentremover import TorrentRemover
 from app.utils import DomUtils, ExceptionUtils, StringUtils, SystemUtils
 from app.utils.types import DownloaderType, MediaType, OsType, SearchType
 from config import PT_TRANSFER_INTERVAL, Config
+from flask_session import Session
 from web.action import WebAction
 from web.apiv1 import apiv1_bp
 from web.backend.user import User
@@ -69,6 +71,14 @@ App.permanent_session_lifetime = datetime.timedelta(days=30)
 Compress(App)
 
 # 登录管理模块
+App.config["SESSION_TYPE"] = "sqlalchemy"
+App.config["SQLALCHEMY_DATABASE_URI"] = (
+    f"sqlite:///{os.path.join(Config().get_config_path(), 'session.db')}?check_same_thread=False"
+)
+
+db = SQLAlchemy(App)
+App.config["SESSION_SQLALCHEMY"] = db
+Session(App)
 LoginManager = LoginManager()
 LoginManager.login_view = "login"
 LoginManager.init_app(App)

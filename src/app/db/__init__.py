@@ -5,6 +5,7 @@ from alembic.config import Config as AlembicConfig
 
 import log
 
+from app.db.session_db import SessionDb
 from config import Config
 
 from .main_db import DbPersist, MainDb
@@ -18,6 +19,7 @@ def init_db():
     log.console("开始初始化数据库...")
     MediaDb().init_db()
     MainDb().init_db()
+    SessionDb().init_db()
     log.console("数据库初始化完成")
 
 

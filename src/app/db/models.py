@@ -1,10 +1,22 @@
 # coding: utf-8
-from sqlalchemy import Column, Float, Index, Integer, Sequence, Text, text
+from sqlalchemy import (
+    BLOB,
+    DATETIME,
+    VARCHAR,
+    Column,
+    Float,
+    Index,
+    Integer,
+    Sequence,
+    Text,
+    text,
+)
 from sqlalchemy.ext.declarative import declarative_base
 
 
 Base = declarative_base()
 BaseMedia = declarative_base()
+BaseSession = declarative_base()
 
 
 class CONFIGFILTERGROUP(Base):
@@ -569,3 +581,12 @@ class MEDIASYNCSTATISTIC(BaseMedia):
     MOVIE_COUNT = Column(Text)
     TV_COUNT = Column(Text)
     UPDATE_TIME = Column(Text)
+
+
+class SESSIONS(BaseSession):
+    __tablename__ = "sessions"
+
+    ID = Column(Integer, Sequence("id"), primary_key=True)
+    SESSION_ID = Column(VARCHAR(255), Sequence("session_id"), index=True)
+    DATA = Column(BLOB, Sequence("data"))
+    EXPIRY = Column(DATETIME, Sequence("expiry"))

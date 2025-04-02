@@ -1,40 +1,21 @@
-import os
-import time
+import socket
 import warnings
 
-from typing import Literal, TypedDict, Union, cast
-
-from twisted.internet import endpoints, reactor
+from twisted.internet import ssl, tcp
 from twisted.internet.base import ReactorBase
-from twisted.web.server import Site
-from twisted.web.wsgi import WSGIResource
-from watchdog.events import FileSystemEventHandler
-from watchdog.observers import Observer
-
-import log
-
-from app.brushtask import BrushTask
-from app.db import init_data, init_db, update_db
-from app.helper import ChromeHelper, DisplayHelper, IndexerHelper
-from app.rsschecker import RssChecker
-from app.scheduler import restart_scheduler, run_scheduler
-from app.speedlimiter import SpeedLimiter
-from app.sync import restart_monitor, run_monitor
-from app.torrentremover import TorrentRemover
-from app.utils import ConfigLoadCache
-from app.utils.commons import INSTANCES
-from check_config import check_config, update_config
-from config import Config
-from version import APP_VERSION
-from web.main import App
 
 
 warnings.filterwarnings("ignore")
 
 
 def get_run_config():
+    from multiprocessing import cpu_count
+    from typing import Literal, TypedDict, Union, cast
+
+    from config import Config
+
     """
-    获取运行配置
+    Get runtime configuration
     """
     args = TypedDict(
         "FlaskRunArgs",
@@ -43,6 +24,7 @@ def get_run_config():
             "port": int,
             "debug": bool,
             "ssl_context": Union[tuple[str, str], Literal["adhoc"], None],
+            "process_num": int,
         },
         total=True,
     )(
@@ -51,6 +33,7 @@ def get_run_config():
             "port": 3000,
             "debug": False,
             "ssl_context": None,
+            "process_num": cpu_count(),
         }
     )
 
@@ -70,106 +53,123 @@ def get_run_config():
             if _ssl_cert != "" and _ssl_key != "":
                 args["ssl_context"] = (_ssl_cert, _ssl_key)
         args["debug"] = True if app_conf.get("debug") else False
+        process_num = app_conf.get("process_num")
+        if process_num is not None and process_num > 0:
+            args["process_num"] = min(process_num, args["process_num"])
 
     return args
 
 
 def init_system():
-    # 配置
+    import log
+
+    from app.db import init_data, init_db, update_db
+    from check_config import check_config, update_config
+    from version import APP_VERSION
+
+    # Configuration
     log.console("NAStool 当前版本号：%s" % APP_VERSION)
-    # 数据库初始化
+    # Initialize database
     init_db()
-    # 数据库更新
+    # Update database
     update_db()
-    # 数据初始化
+    # Initialize data
     init_data()
-    # 升级配置文件
+    # Upgrade configuration file
     update_config()
-    # 检查配置文件
+    # Check configuration file
     check_config()
 
 
 def start_service():
+    import log
+
+    from app.brushtask import BrushTask
+    from app.helper import ChromeHelper, DisplayHelper, IndexerHelper
+    from app.rsschecker import RssChecker
+    from app.scheduler import run_scheduler
+    from app.speedlimiter import SpeedLimiter
+    from app.sync import run_monitor
+    from app.torrentremover import TorrentRemover
+
     log.console("开始启动服务...")
-    # 启动虚拟显示
+    # Start virtual display
     DisplayHelper()
-    # 启动定时服务
+    # Start scheduler service
     run_scheduler()
-    # 启动监控服务
+    # Start monitoring service
     run_monitor()
-    # 启动刷流服务
+    # Start brush task service
     BrushTask()
-    # 启动自定义订阅服务
+    # Start custom RSS service
     RssChecker()
-    # 启动自动删种服务
+    # Start auto torrent removal service
     TorrentRemover()
-    # 启动播放限速服务
+    # Start playback speed limit service
     SpeedLimiter()
-    # 加载索引器配置
+    # Load indexer configuration
     IndexerHelper()
-    # 初始化浏览器
+    # Initialize browser
     ChromeHelper().init_driver()
 
 
-def monitor_config():
-    class _ConfigHandler(FileSystemEventHandler):
-        """
-        配置文件变化响应
-        """
+class ReusablePort(tcp.Port):
+    def __init__(self, port, factory, reuse=False, **kwargs):
+        super().__init__(port, factory, **kwargs)
+        self.reuse = reuse
 
-        def __init__(self):
-            FileSystemEventHandler.__init__(self)
+    def createInternetSocket(self):
+        s = super().createInternetSocket()
+        if self.reuse:
+            import sys
 
-        def on_modified(self, event):
-            if (
-                not event.is_directory
-                and os.path.basename(event.src_path) == "config.yaml"
-            ):
-                # 10秒内只能加载一次
-                if ConfigLoadCache.get(event.src_path):
-                    return
-                ConfigLoadCache.set(event.src_path, True)
-                log.console(
-                    "进程 %s 检测到配置文件已修改，正在重新加载..." % os.getpid()
-                )
-                time.sleep(1)
-                # 重新加载配置
-                Config().init_config()
-                # 重载singleton服务
-                for instance in INSTANCES.values():
-                    if hasattr(instance, "init_config"):
-                        instance.init_config()
-                # 重启定时服务
-                restart_scheduler()
-                # 重启监控服务
-                restart_monitor()
-
-    # 配置文件监听
-    _observer = Observer(timeout=10)
-    _observer.schedule(
-        _ConfigHandler(), path=Config().get_config_path(), recursive=False
-    )
-    _observer.daemon = True
-    _observer.start()
+            platform = sys.platform
+            if platform in ("linux", "darwin") or "bsd" in platform:
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+            elif platform == "win32":
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            else:
+                raise RuntimeError(f"Unsupported platform: {platform}")
+        return s
 
 
-# 本地运行
-if __name__ == "__main__":
-    # 系统初始化
-    init_system()
+class ReusableSSLPort(ssl.Port):
+    def __init__(self, port, factory, ctxFactory, reuse=False, **kwargs):
+        super().__init__(port, factory, ctxFactory, **kwargs)
+        self.reuse = reuse
 
-    # 启动服务
-    start_service()
+    def createInternetSocket(self):
+        s = super().createInternetSocket()
+        if self.reuse:
+            import sys
+
+            platform = sys.platform
+            if platform in ("linux", "darwin") or "bsd" in platform:
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+            elif platform == "win32":
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            else:
+                raise RuntimeError(f"Unsupported platform: {platform}")
+        return s
+
+
+def run_server(config, typed_reactor: ReactorBase):
+    from twisted.web.server import Site
+    from twisted.web.wsgi import WSGIResource
+
+    from web.main import App
 
     # Initialize Twisted WSGI server for handling web requests
     # Twisted provides better performance and scalability compared to Flask's default server
-    typed_reactor = cast(ReactorBase, reactor)
-    config = get_run_config()
     App.debug = config["debug"]
     resource = WSGIResource(typed_reactor, typed_reactor.getThreadPool(), App)
     if config["ssl_context"] is None:
-        endpoint = endpoints.TCP4ServerEndpoint(
-            typed_reactor, config["port"], interface=config["host"]
+        listener = ReusablePort(
+            config["port"],
+            Site(resource),
+            reuse=True,
         )
     else:
         from twisted.internet import ssl
@@ -178,9 +178,71 @@ if __name__ == "__main__":
             config["ssl_context"][0],
             config["ssl_context"][1],
         )
-        endpoint = endpoints.SSL4ServerEndpoint(
-            typed_reactor, config["port"], factory, interface=config["host"]
+        listener = ReusableSSLPort(
+            config["port"],
+            Site(resource),
+            factory,
+            reuse=True,
         )
-    endpoint.listen(Site(resource))
-    log.info(f"Starting server on port {config['port']}")
+
+    listener.startListening()
     typed_reactor.run()
+    log.info("reactor stopped, exiting...")
+
+
+if __name__ == "__main__":
+    import signal
+    import sys
+
+    from multiprocessing import Event, Process
+
+    import log
+
+    # Create an event to notify child processes to exit
+    shutdown_event = Event()
+    processes = []
+
+    def run_server_wrapper(config, shutdown_event):
+        try:
+            from typing import cast
+
+            from twisted.internet import reactor
+            from twisted.internet.base import ReactorBase
+
+            typed_reactor = cast(ReactorBase, reactor)
+
+            def check_shutdown():
+                if shutdown_event.is_set():
+                    log.info(f"Stopping process {Process().name}...")
+                    typed_reactor.stop()
+                else:
+                    typed_reactor.callLater(1, check_shutdown)
+
+            typed_reactor.callLater(1, check_shutdown)
+
+            run_server(config, typed_reactor)
+        except Exception as e:
+            log.error(f"Process error: {str(e)}")
+            sys.exit(1)
+
+    init_system()
+    start_service()
+    config = get_run_config()
+
+    for i in range(config["process_num"]):
+        p = Process(
+            target=run_server_wrapper,
+            args=(config, shutdown_event),
+            name=f"NASTool-{i + 1}",
+        )
+        processes.append(p)
+        p.start()
+
+    log.info(f"Started {config['process_num']} server processes")
+    log.info(f"Starting server on port {config['port']}")
+
+    signal.sigwait([signal.SIGINT, signal.SIGTERM])
+    shutdown_event.set()
+
+    for p in processes:
+        p.join()

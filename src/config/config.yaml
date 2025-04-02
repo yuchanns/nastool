@@ -53,6 +53,8 @@ app:
   wallpaper: bing
   # Debug mode
   debug: true
+  # 进程数
+  process_num: 4
 
 # 【配置媒体库信息】
 

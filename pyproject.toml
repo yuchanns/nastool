@@ -114,6 +114,8 @@ dependencies = [
     "twisted>=24.7.0",
     "pyOpenSSL>=24.3.0",
     "service-identity>=24.2.0",
+    "flask-session>=0.8.0",
+    "flask-sqlalchemy>=3.0.5",
 ]
 requires-python = "==3.10.*"
 readme = "README.md"
