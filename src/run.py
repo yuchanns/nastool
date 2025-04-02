@@ -113,6 +113,23 @@ def start_service():
     ChromeHelper().init_driver()
 
 
+def reuseSocket(s: socket.socket):
+    import sys
+
+    platform = sys.platform
+    if platform in ("linux", "darwin") or "bsd" in platform:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        from typing import TYPE_CHECKING
+
+        if not TYPE_CHECKING:
+            s.setsockopt(socket.SOL_SOCKET, SO_REUSEPORT, 1)  # noqa: F821
+    elif platform == "win32":
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    else:
+        raise RuntimeError(f"Unsupported platform: {platform}")
+    return s
+
+
 class ReusablePort(tcp.Port):
     def __init__(self, port, factory, reuse=False, **kwargs):
         super().__init__(port, factory, **kwargs)
@@ -121,16 +138,7 @@ class ReusablePort(tcp.Port):
     def createInternetSocket(self):
         s = super().createInternetSocket()
         if self.reuse:
-            import sys
-
-            platform = sys.platform
-            if platform in ("linux", "darwin") or "bsd" in platform:
-                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-            elif platform == "win32":
-                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            else:
-                raise RuntimeError(f"Unsupported platform: {platform}")
+            s = reuseSocket(s)
         return s
 
 
@@ -142,22 +150,15 @@ class ReusableSSLPort(ssl.Port):
     def createInternetSocket(self):
         s = super().createInternetSocket()
         if self.reuse:
-            import sys
-
-            platform = sys.platform
-            if platform in ("linux", "darwin") or "bsd" in platform:
-                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-            elif platform == "win32":
-                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            else:
-                raise RuntimeError(f"Unsupported platform: {platform}")
+            s = reuseSocket(s)
         return s
 
 
 def run_server(config, typed_reactor: ReactorBase):
     from twisted.web.server import Site
     from twisted.web.wsgi import WSGIResource
+
+    import log
 
     from web.main import App
 
@@ -190,9 +191,36 @@ def run_server(config, typed_reactor: ReactorBase):
     log.info("reactor stopped, exiting...")
 
 
+def run_server_wrapper(config, shutdown_event):
+    import sys
+
+    import log
+
+    try:
+        from typing import cast
+
+        from twisted.internet import reactor
+        from twisted.internet.base import ReactorBase
+
+        typed_reactor = cast(ReactorBase, reactor)
+
+        def check_shutdown():
+            if shutdown_event.is_set():
+                log.info(f"Stopping process {Process().name}...")
+                typed_reactor.stop()
+            else:
+                typed_reactor.callLater(10, check_shutdown)
+
+        typed_reactor.callLater(10, check_shutdown)
+
+        run_server(config, typed_reactor)
+    except Exception as e:
+        log.error(f"Process error: {str(e)}")
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     import signal
-    import sys
 
     from multiprocessing import Event, Process
 
@@ -201,29 +229,6 @@ if __name__ == "__main__":
     # Create an event to notify child processes to exit
     shutdown_event = Event()
     processes = []
-
-    def run_server_wrapper(config, shutdown_event):
-        try:
-            from typing import cast
-
-            from twisted.internet import reactor
-            from twisted.internet.base import ReactorBase
-
-            typed_reactor = cast(ReactorBase, reactor)
-
-            def check_shutdown():
-                if shutdown_event.is_set():
-                    log.info(f"Stopping process {Process().name}...")
-                    typed_reactor.stop()
-                else:
-                    typed_reactor.callLater(10, check_shutdown)
-
-            typed_reactor.callLater(10, check_shutdown)
-
-            run_server(config, typed_reactor)
-        except Exception as e:
-            log.error(f"Process error: {str(e)}")
-            sys.exit(1)
 
     init_system()
     start_service()
@@ -241,8 +246,12 @@ if __name__ == "__main__":
     log.info(f"Started {config['process_num']} server processes")
     log.info(f"Starting server on port {config['port']}")
 
-    signal.sigwait([signal.SIGINT, signal.SIGTERM])
-    shutdown_event.set()
+    def shutdown(_signum, _frame):
+        log.info("Shutting down server...")
+        shutdown_event.set()
+
+    signal.signal(signal.SIGINT, shutdown)
+    signal.signal(signal.SIGTERM, shutdown)
 
     for p in processes:
         p.join()
